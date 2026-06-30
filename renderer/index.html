@@ -110,6 +110,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-
   color:var(--tx);font-family:'JetBrains Mono';font-size:12px;
 }
 #url-input::placeholder{color:var(--tx3);}
+#btn-go{
+  flex-shrink:0;padding:0 12px;height:26px;border-radius:7px;border:none;
+  background:linear-gradient(135deg,var(--c),var(--m));
+  color:#07070f;font-family:'Orbitron';font-size:9px;font-weight:900;
+  cursor:pointer;letter-spacing:1px;transition:opacity .15s;
+}
+#btn-go:hover{opacity:.85;}
 #url-progress{
   position:absolute;bottom:0;left:0;height:2px;width:0%;
   background:linear-gradient(90deg,var(--c),var(--m));
@@ -405,7 +412,8 @@ webview.active{display:block;}
 
   <div id="url-bar-wrap">
     <i class="fa-solid fa-lock" id="sec-icon"></i>
-    <input id="url-input" placeholder="Pesquisar no Google ou introduzir URL (ex: google.com)..." autocomplete="off" spellcheck="false">
+    <input id="url-input" placeholder="Pesquisar no Google ou introduzir URL..." autocomplete="off" spellcheck="false">
+    <button id="btn-go" onclick="navigate(document.getElementById('url-input').value)" title="Ir (Enter)">GO</button>
   </div>
 
   <div class="sep"></div>
