@@ -191,7 +191,9 @@ webview.active{visibility:visible;pointer-events:auto;}
 @keyframes progressAnim{0%{background-position:200% 0}100%{background-position:0 0}}
 
 #newtab-page{
-  position:absolute;inset:0;background:var(--bg);
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 110%, rgba(138,43,226,.45) 0%, rgba(80,0,160,.18) 40%, transparent 70%),
+             linear-gradient(to bottom, #07070f 0%, #07070f 55%, #0d0718 75%, #130a24 100%);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:28px;
 }
