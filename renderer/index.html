@@ -590,9 +590,6 @@ function setupListeners() {
   });
   urlInput.addEventListener('focus', () => urlInput.select());
 
-  // Also handle clicking the GO button in new tab search
-  document.getElementById('url-input').addEventListener('change', () => {}); // keep reactive
-
   // New tab search
   document.getElementById('nt-search-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') ntSearch();
@@ -645,7 +642,8 @@ function newTab(url = '') {
   wv.setAttribute('webpreferences', 'contextIsolation=true');
   document.getElementById('webview-container').appendChild(wv);
 
-  const tab = { id, url: url || '', title: 'Nova Aba', favicon: '', loading: false, wv };
+  // ready=false until dom-ready fires; pendingUrl queues navigation before ready
+  const tab = { id, url: url || '', title: 'Nova Aba', favicon: '', loading: false, wv, ready: false, pendingUrl: null };
   tabs.push(tab);
 
   // Webview events
@@ -660,6 +658,7 @@ function newTab(url = '') {
     renderTabs(); updateNavBtns();
   });
   wv.addEventListener('did-navigate', e => {
+    if (e.url === 'about:blank') return; // ignore blank init
     tab.url = e.url;
     if (id === activeTabId) {
       document.getElementById('url-input').value = e.url;
@@ -684,19 +683,26 @@ function newTab(url = '') {
     renderTabs();
   });
   wv.addEventListener('dom-ready', () => {
+    tab.ready = true;
+    // Process any URL queued before webview was ready
+    if (tab.pendingUrl) {
+      const u = tab.pendingUrl;
+      tab.pendingUrl = null;
+      wv.loadURL(u).catch(() => { wv.src = u; });
+    }
     if (id === activeTabId) updateNavBtns();
   });
   wv.addEventListener('new-window', e => {
     newTab(e.url);
   });
 
-  // Always initialize webview with about:blank so it's ready
+  // Initialize webview (creates webContents so loadURL() works later)
   wv.src = 'about:blank';
 
   if (url) {
     const norm = normalizeUrl(url);
     tab.url = norm;
-    wv.addEventListener('dom-ready', () => { wv.src = norm; }, { once: true });
+    tab.pendingUrl = norm; // will be processed in dom-ready handler above
   } else {
     showNewTabPage();
   }
@@ -776,7 +782,15 @@ function navigate(input) {
   if (!tab) return;
   tab.url = url;
   document.getElementById('newtab-page').style.display = 'none';
-  tab.wv.src = url;
+
+  if (tab.ready) {
+    // Webview webContents is initialized — loadURL() is reliable
+    tab.wv.loadURL(url).catch(() => { tab.wv.src = url; });
+  } else {
+    // Webview still initializing about:blank — queue URL for dom-ready
+    tab.pendingUrl = url;
+  }
+
   document.getElementById('url-input').value = url;
   updateSecIcon(url);
   document.getElementById('url-input').blur();
