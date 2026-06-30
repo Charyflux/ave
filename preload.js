@@ -24,6 +24,11 @@ contextBridge.exposeInMainWorld('ave', {
   getIp:         () => ipcRenderer.invoke('get-ip'),
   torStatus:     () => ipcRenderer.invoke('tor-status'),
 
+  // Cookies
+  getCookies:    (url) => ipcRenderer.invoke('get-cookies', url),
+  getAllCookies:  () => ipcRenderer.invoke('get-all-cookies'),
+  removeCookie:  (url, name) => ipcRenderer.invoke('remove-cookie', url, name),
+
   // Events
   on:  (ch, cb) => {
     const ok = ['request-captured','response-captured','window-state','open-devtools-for','tor-ip-changed'];
