@@ -253,10 +253,33 @@ function createWindow() {
     return new Promise((resolve) => {
       const t0 = Date.now();
       try {
-        const req = electronNet.request({ method: method || 'GET', url, useSessionCookies: true, partition: PARTITION });
+        // Validate URL first — evita ERR_INVALID_ARGUMENT por URLs malformadas
+        let safeUrl;
+        try { safeUrl = new URL(url).toString(); }
+        catch (e) { return resolve({ ok: false, error: 'URL inválida: ' + e.message, ms: 0 }); }
+
+        const req = electronNet.request({ method: method || 'GET', url: safeUrl, useSessionCookies: true, partition: PARTITION });
+
+        // Headers que o Chromium net stack recusa (além dos proibidos que o cliente filtra)
+        const _SKIP_NET = new Set([
+          'host','content-length','connection','transfer-encoding','upgrade','via',
+          'proxy-authorization','proxy-connection','trailer','te','keep-alive',
+          'accept-encoding', // Chromium trata internamente
+          'sec-ch-ua','sec-ch-ua-mobile','sec-ch-ua-platform','sec-ch-ua-arch',
+          'sec-ch-ua-bitness','sec-ch-ua-full-version','sec-ch-ua-full-version-list',
+          'sec-ch-ua-model','sec-ch-ua-wow64',
+          'sec-fetch-site','sec-fetch-mode','sec-fetch-dest','sec-fetch-user','sec-purpose',
+        ]);
+
         Object.entries(headers || {}).forEach(([k, v]) => {
-          try { req.setHeader(k, String(v)); } catch (e) { /* skip forbidden headers */ }
+          if (_SKIP_NET.has(k.toLowerCase())) return;
+          // Sanitize: remove newlines e null bytes que causam ERR_INVALID_ARGUMENT
+          const safeVal = String(v).replace(/[\r\n\0]/g, ' ').trim();
+          const safeKey = String(k).replace(/[\r\n\0:]/g, '').trim();
+          if (!safeKey || !safeVal) return;
+          try { req.setHeader(safeKey, safeVal); } catch (_) { /* skip remaining forbidden */ }
         });
+
         req.on('response', (res) => {
           const hdrs = [];
           Object.entries(res.headers).forEach(([k, v]) => hdrs.push([k, Array.isArray(v) ? v.join(', ') : v]));
@@ -266,7 +289,9 @@ function createWindow() {
           res.on('error', e => resolve({ ok: false, error: e.message, ms: Date.now() - t0 }));
         });
         req.on('error', e => resolve({ ok: false, error: e.message, ms: Date.now() - t0 }));
-        if (body && !['GET', 'HEAD'].includes((method || '').toUpperCase())) req.write(body);
+        if (body && !['GET', 'HEAD'].includes((method || '').toUpperCase())) {
+          try { req.write(String(body)); } catch (_) {}
+        }
         req.end();
       } catch (e) {
         resolve({ ok: false, error: e.message, ms: Date.now() - t0 });

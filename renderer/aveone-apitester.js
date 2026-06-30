@@ -1,11 +1,23 @@
 // ── AveOne DevTools Inspector — API Tester / mini-repeater ──────────────────
 // Funções de envio e testes ativos. UI fica em panel.js.
 
-// Headers que o fetch() do browser proíbe definir manualmente (forbidden header names).
+// Headers que o Electron net.request() e o Chromium proíbem definir manualmente.
+// Inclui: headers proibidos pelo Fetch spec + headers Sec-* que o Chromium controla
+// internamente (causam net::ERR_INVALID_ARGUMENT se definidos manualmente).
 const _AVEONE_FORBIDDEN_HEADERS = new Set([
-  'host', 'content-length', 'connection', 'origin', 'cookie',
-  'cookie2', 'date', 'dnt', 'expect', 'keep-alive', 'referer', 'te',
-  'trailer', 'transfer-encoding', 'upgrade', 'via'
+  // Fetch spec forbidden
+  'host', 'content-length', 'connection', 'origin', 'cookie', 'cookie2',
+  'date', 'dnt', 'expect', 'keep-alive', 'referer', 'te', 'trailer',
+  'transfer-encoding', 'upgrade', 'via',
+  // Chromium-controlled / causam ERR_INVALID_ARGUMENT no electronNet
+  'accept-encoding', 'accept-charset',
+  'sec-ch-ua', 'sec-ch-ua-mobile', 'sec-ch-ua-platform',
+  'sec-ch-ua-arch', 'sec-ch-ua-bitness', 'sec-ch-ua-full-version',
+  'sec-ch-ua-full-version-list', 'sec-ch-ua-model', 'sec-ch-ua-wow64',
+  'sec-fetch-site', 'sec-fetch-mode', 'sec-fetch-dest', 'sec-fetch-user',
+  'sec-purpose', 'sec-websocket-key', 'sec-websocket-extensions',
+  'sec-websocket-protocol', 'sec-websocket-version',
+  'proxy-authorization', 'proxy-connection',
 ]);
 
 function aveoneHeadersToObject(headerLines, includeAuth) {
@@ -14,8 +26,9 @@ function aveoneHeadersToObject(headerLines, includeAuth) {
     const idx = line.indexOf(':');
     if (idx === -1) continue;
     const name = line.slice(0, idx).trim();
-    const value = line.slice(idx + 1).trim();
-    if (!name) continue;
+    // Sanitize value: remove newlines and null bytes that causam ERR_INVALID_ARGUMENT
+    const value = line.slice(idx + 1).trim().replace(/[\r\n\0]/g, ' ');
+    if (!name || /[\r\n\0]/.test(name)) continue;
     if (_AVEONE_FORBIDDEN_HEADERS.has(name.toLowerCase())) continue;
     if (!includeAuth && /^authorization$/i.test(name)) continue;
     out[name] = value;

@@ -190,6 +190,37 @@ aoId('net-toggle')?.addEventListener('change', e => { _aoNetActive = e.target.ch
 
 const _AO_STATIC_EXT = /\.(js|mjs|css|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|eot|mp4|mp3|map|wasm)(\?|#|$)/i;
 
+// Padrões de URLs de telemetria/analytics/beacon — não são APIs reais, não vale testar
+const _AO_NOISE_PATTERNS = [
+  /\/api\/stats\//i,        // YouTube /api/stats/qoe, /api/stats/atr
+  /[?&](\w+=)*[^&]{200}/,  // URLs com query strings > 200 chars são provavelmente telemetria
+  /\/collect(\?|$)/i,
+  /\/analytics(\?|\/)/i,
+  /\/telemetry(\?|\/)/i,
+  /\/beacon(\?|\/)/i,
+  /\/log(\?|$)/i,
+  /\/ping(\?|$)/i,
+  /\/pixel(\?|\/)/i,
+  /\/gen_204(\?|$)/i,
+  /\/csi(\?|$)/i,
+  /\/qoe(\?|$)/i,
+  /\/atr(\?|$)/i,
+  /\/bat\.bing\.com/i,
+  /doubleclick\.net/i,
+  /google-analytics\.com/i,
+  /googletagmanager\.com/i,
+  /googlesyndication\.com/i,
+  /facebook\.com\/tr(\?|$)/i,
+  /fbevents\.js/i,
+  /clarity\.ms/i,
+  /hotjar\.com/i,
+  /newrelic\.com/i,
+  /sentry\.io/i,
+  /datadog/i,
+  /segment\.io/i,
+  /mixpanel\.com/i,
+];
+
 function aoIsApiLike(row) {
   if (_AO_STATIC_EXT.test(row.url.split('?')[0])) return false;
   const ct = (row.respHeaders || []).find(h => /^content-type$/i.test(h.name));
@@ -241,6 +272,8 @@ window.ave.on('response-captured', data => {
 
 aoId('net-clear')?.addEventListener('click', () => {
   _aoNetRows = [];
+  _aoAutoTestQueue = [];
+  _aoAutoTested.clear(); // reset deduplication so re-navigation tests fresh
   const tb = aoId('net-tbody'); if (tb) tb.innerHTML = '';
   const no = aoId('net-output'); if (no) no.innerHTML = '';
   const fn = aoId('findings-network'); if (fn) fn.innerHTML = '';
@@ -365,14 +398,31 @@ aoId('btn-scan-page')?.addEventListener('click', () => {
 // ── TAB API Tester ────────────────────────────────────────────────────────────
 let _aoAutoTestQueue = [];
 let _aoAutoTestRunning = false;
+const _aoAutoTested = new Set(); // deduplication: URLs já testadas nesta sessão
 
 function aoShouldAutoTest(url) {
   const toggle = aoId('auto-test-toggle'), domainInput = aoId('auto-test-domain');
   if (!toggle?.checked) return false;
   const domain = (domainInput?.value || '').trim().toLowerCase();
   if (!domain) return false;
-  const host = (() => { try { return new URL(url).hostname.toLowerCase(); } catch(e) { return ''; } })();
-  return host === domain;
+
+  let host = '';
+  try { host = new URL(url).hostname.toLowerCase(); } catch { return false; }
+  if (host !== domain) return false;
+
+  // Rejeitar URLs de telemetria/analytics/beacon — não são alvos válidos
+  if (_AO_NOISE_PATTERNS.some(p => p.test(url))) return false;
+
+  // Deduplicação: normalizar URL (ignorar query strings dinâmicas como timestamps)
+  // Usa só scheme+host+path para não testar o mesmo endpoint com params diferentes
+  let canonicalKey = url;
+  try {
+    const u = new URL(url);
+    canonicalKey = u.origin + u.pathname; // ignora query string
+  } catch {}
+  if (_aoAutoTested.has(canonicalKey)) return false;
+  _aoAutoTested.add(canonicalKey);
+  return true;
 }
 
 async function aoProcessAutoTestQueue() {
@@ -391,12 +441,21 @@ async function aoProcessAutoTestQueue() {
     for (const [label, fn] of tests) {
       try {
         const result = await fn();
+
+        // Se TODAS as sub-respostas falharam com erro de rede, não poluir o feed
+        const allNetErr = [result.withAuth, result.noAuth, result.accountB, result.resPlus, result.resMinus]
+          .filter(Boolean)
+          .every(r => !r.ok && r.error && /ERR_|INVALID|FAILED|ABORTED|REFUSED/i.test(r.error));
+        if (allNetErr) continue;
+
         const cls = result.verdict === 'critical' ? 'verdict-critical' : (result.verdict === 'warn' ? 'verdict-warn' : 'verdict-ok');
         aoAddFeedItem(cls, '🤖 Auto: ' + label, result.verdictMsg, row.method + ' ' + row.url);
         if (result.verdict === 'critical') aoNotify('CRITICAL', label + ': ' + result.verdictMsg.replace(/^🚨\s*/,''));
-      } catch(e) {}
+      } catch(e) {
+        // Silenciar erros de rede no auto-test — não são vulnerabilidades
+      }
     }
-    await new Promise(r => setTimeout(r, 800));
+    await new Promise(r => setTimeout(r, 300));
   }
   _aoAutoTestRunning = false;
 }
