@@ -421,17 +421,34 @@ function createWindow() {
       return ses.getAllExtensions().map(e => {
         const mf = e.manifest || {};
         const action = mf.browser_action || mf.action || {};
-        // Resolve best icon (closest to 32px)
-        const iconMap = action.default_icon || mf.icons || {};
-        const sizes = Object.keys(iconMap).map(Number).sort((a, b) => Math.abs(a - 32) - Math.abs(b - 32));
-        const iconPath = sizes.length ? iconMap[String(sizes[0])] : null;
+        // default_icon pode ser um mapa {16:'...',48:'...'} OU uma string única (comum em MV3)
+        let iconMap = action.default_icon || mf.icons || {};
+        if (typeof iconMap === 'string') iconMap = { '32': iconMap };
+        const sizes = Object.keys(iconMap).map(Number).filter(n => !isNaN(n))
+          .sort((a, b) => Math.abs(a - 32) - Math.abs(b - 32));
+        const iconRelPath = sizes.length ? iconMap[String(sizes[0])] : null;
+
+        // Lê o ícone diretamente do disco (como o Chrome nativo faz) em vez de pedir
+        // via chrome-extension://, que é bloqueado se o ícone não estiver listado em
+        // web_accessible_resources do manifesto da extensão.
+        let iconUrl = null;
+        if (iconRelPath) {
+          try {
+            const iconFullPath = path.join(e.path, iconRelPath);
+            const buf = fs.readFileSync(iconFullPath);
+            const fext = path.extname(iconFullPath).slice(1).toLowerCase();
+            const mime = fext === 'svg' ? 'image/svg+xml' : fext === 'jpg' || fext === 'jpeg' ? 'image/jpeg' : 'image/png';
+            iconUrl = `data:${mime};base64,${buf.toString('base64')}`;
+          } catch { /* ícone não encontrado no disco */ }
+        }
+
         return {
           id: e.id,
           name: e.name,
           version: e.version,
           path: e.path,
           baseUrl: e.url,                         // chrome-extension://id/
-          iconUrl: iconPath ? e.url + iconPath.replace(/^\//, '') : null,
+          iconUrl,                                 // data: URI, sempre carregável
           popupPath: action.default_popup || null, // relative path to popup HTML
           title: action.default_title || e.name,
         };
