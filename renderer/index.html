@@ -695,6 +695,18 @@ function newTab(url = '') {
   wv.addEventListener('new-window', e => {
     newTab(e.url);
   });
+  wv.addEventListener('did-fail-load', e => {
+    if (e.errorCode === -3 || e.validatedURL === 'about:blank') return; // ignore abort/blank
+    if (id !== activeTabId) return;
+    const html = `<body style="background:#07070f;color:#e2e8f0;font-family:monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:12px;">
+      <div style="font-size:48px;">⚠️</div>
+      <div style="font-size:18px;color:#ff3355;">Erro ao carregar página</div>
+      <div style="font-size:12px;color:#888;">${e.errorDescription || 'Sem internet ou URL inválida'}</div>
+      <div style="font-size:11px;color:#555;">${e.validatedURL}</div>
+      <button onclick="history.back()" style="margin-top:16px;padding:8px 20px;background:#1a1a2e;border:1px solid #333;color:#ccc;border-radius:6px;cursor:pointer;">Voltar</button>
+    </body>`;
+    wv.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(html));
+  });
 
   // Initialize webview (creates webContents so loadURL() works later)
   wv.src = 'about:blank';

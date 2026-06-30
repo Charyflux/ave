@@ -80,6 +80,11 @@ function createWindow() {
 
   const ses = session.fromPartition(PARTITION);
 
+  // Always reset proxy on startup — persisted SOCKS5 from a previous TOR session
+  // would block ALL traffic silently since TOR isn't running
+  ses.setProxy({ mode: 'direct' }).catch(() => {});
+  torEnabled = false;
+
   // ── Request interception ────────────────────────────────────────────────────
   ses.webRequest.onBeforeSendHeaders({ urls: ['<all_urls>'] }, (details, callback) => {
     if (captureEnabled && !['image','stylesheet','font'].includes(details.resourceType)) {
