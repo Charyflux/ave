@@ -544,6 +544,31 @@ webview.active{visibility:visible;pointer-events:auto;}
 #sb-capture-label{color:var(--tx3);font-size:9px;}
 #sb-req-count{color:var(--c);font-size:9px;min-width:50px;}
 
+/* ── BOOKMARKS BAR ── */
+#bookmarks-bar{
+  height:30px;display:flex;align-items:center;gap:2px;padding:0 8px;
+  background:var(--sf);border-bottom:1px solid var(--bd);flex-shrink:0;
+  overflow-x:auto;overflow-y:hidden;white-space:nowrap;
+}
+#bookmarks-bar.hidden{display:none;}
+#bookmarks-bar::-webkit-scrollbar{height:0;}
+#bookmarks-bar-items{display:flex;align-items:center;gap:2px;min-width:0;}
+#bookmarks-bar-empty{font-size:10.5px;color:var(--tx3);font-family:'Space Grotesk';display:none;}
+#bookmarks-bar.empty #bookmarks-bar-empty{display:inline;}
+.bk-chip{
+  display:flex;align-items:center;gap:5px;height:24px;padding:0 8px;border-radius:6px;
+  border:1px solid transparent;background:transparent;color:var(--tx2);cursor:pointer;
+  font-family:'Space Grotesk';font-size:11px;flex-shrink:0;max-width:160px;
+  transition:all .15s;
+}
+.bk-chip:hover{background:rgba(255,255,255,.06);border-color:var(--bd2);color:var(--tx);}
+.bk-chip img{width:14px;height:14px;border-radius:3px;flex-shrink:0;object-fit:contain;}
+.bk-chip .bk-fallback{font-size:11px;flex-shrink:0;}
+.bk-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#btn-star{color:var(--tx3);}
+#btn-star.active{color:var(--w);}
+#btn-star.active i{font-weight:900;}
+
 /* ── EXTENSION ICONS BAR ── */
 .ext-icon-btn{
   width:28px;height:28px;border-radius:6px;border:1px solid transparent;
@@ -678,6 +703,7 @@ webview.active{visibility:visible;pointer-events:auto;}
   <div id="url-bar-wrap">
     <i class="fa-solid fa-lock" id="sec-icon"></i>
     <input id="url-input" placeholder="Pesquisar no Google ou introduzir URL..." autocomplete="off" spellcheck="false">
+    <button class="nav-btn" id="btn-star" onclick="toggleBookmark()" title="Adicionar à barra de favoritos (Ctrl+D)" style="width:22px;height:22px;flex-shrink:0;"><i class="fa-regular fa-star"></i></button>
     <button id="btn-go" onclick="navigate(document.getElementById('url-input').value)" title="Ir (Enter)">GO</button>
   </div>
 
@@ -715,6 +741,12 @@ webview.active{visibility:visible;pointer-events:auto;}
   <button id="btn-aveone" onclick="window.ave.openAveOne()" title="Abrir AveOne">
     <i class="fa-solid fa-shield-halved"></i> AVEONE
   </button>
+</div>
+
+<!-- BOOKMARKS BAR -->
+<div id="bookmarks-bar">
+  <div id="bookmarks-bar-items"></div>
+  <span id="bookmarks-bar-empty">Adiciona páginas com ⭐ ou Ctrl+D — vão aparecer aqui</span>
 </div>
 
 <!-- MAIN AREA -->
@@ -1205,6 +1237,10 @@ window.addEventListener('resize', syncWebviewSizes);
 // ── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   renderBookmarks();
+  renderBookmarksBar();
+  if (localStorage.getItem('ave-bookmarks-bar-visible') === '0') {
+    document.getElementById('bookmarks-bar').classList.add('hidden');
+  }
   newTab();
   setupListeners();
   loadNotes();
@@ -1266,7 +1302,8 @@ function setupListeners() {
     // Print / source
     if (e.ctrlKey && e.key === 'p')         { e.preventDefault(); getActiveTab()?.wv?.print(); }
     if (e.ctrlKey && e.key === 'u')         { e.preventDefault(); viewSource(); }
-    if (e.ctrlKey && e.key === 'd')         { e.preventDefault(); addBookmark(); }
+    if (e.ctrlKey && e.key === 'd')         { e.preventDefault(); toggleBookmark(); }
+    if (e.ctrlKey && e.shiftKey && (e.key === 'b' || e.key === 'B')) { e.preventDefault(); toggleBookmarksBar(); }
   });
 
   // Window state
@@ -1365,6 +1402,7 @@ function newTab(url = '') {
     if (id === activeTabId) {
       document.getElementById('url-input').value = e.url;
       updateSecIcon(e.url);
+      updateStarIcon(e.url);
       document.getElementById('sb-url').textContent = e.url;
       document.getElementById('notes-domain').textContent = getDomain(e.url);
       loadNoteForDomain(getDomain(e.url));
@@ -1463,6 +1501,7 @@ function activateTab(id) {
   if (tab.url) {
     document.getElementById('url-input').value = tab.url;
     updateSecIcon(tab.url);
+    updateStarIcon(tab.url);
     document.getElementById('sb-url').textContent = tab.url;
     document.getElementById('notes-domain').textContent = getDomain(tab.url);
     loadNoteForDomain(getDomain(tab.url));
@@ -1471,6 +1510,7 @@ function activateTab(id) {
     document.getElementById('url-input').value = '';
     document.getElementById('sb-url').textContent = '';
     document.getElementById('notes-domain').textContent = 'sem domínio activo';
+    updateStarIcon('');
   }
   updateNavBtns();
   renderTabs();
@@ -1509,7 +1549,7 @@ function renderTabs() {
     const el = document.createElement('div');
     el.className = 'tab' + (tab.id === activeTabId ? ' active' : '') + (tab.loading ? ' tab-loading' : '');
     el.innerHTML = `
-      <div class="tab-icon">${tab.favicon ? `<img src="${tab.favicon}" width="14" height="14" style="border-radius:3px;" onerror="this.style.display='none'">` : '<i class="fa-solid fa-globe" style="font-size:10px;color:var(--tx3)"></i>'}</div>
+      <div class="tab-icon">${tab.favicon ? `<img src="${esc(tab.favicon)}" width="14" height="14" style="border-radius:3px;" onerror="this.style.display='none'">` : '<i class="fa-solid fa-globe" style="font-size:10px;color:var(--tx3)"></i>'}</div>
       <div class="tab-title">${esc(tab.title || 'Nova Aba')}</div>
       ${tab.audio ? '<i class="fa-solid fa-volume-high" style="font-size:9px;color:var(--c);flex-shrink:0;"></i>' : ''}
       <button class="tab-close" data-id="${tab.id}"><i class="fa-solid fa-xmark"></i></button>
@@ -1553,7 +1593,7 @@ function ntSearch() {
 function navBack()    { getActiveTab()?.wv?.goBack(); }
 function navForward() { getActiveTab()?.wv?.goForward(); }
 function navReload()  { getActiveTab()?.wv?.reload(); }
-function navHome()    { const t = getActiveTab(); if(t){t.url=''; t.wv.stop(); showNewTabPage(); document.getElementById('url-input').value=''; renderTabs();} }
+function navHome()    { const t = getActiveTab(); if(t){t.url=''; t.wv.stop(); showNewTabPage(); document.getElementById('url-input').value=''; updateStarIcon(''); renderTabs();} }
 
 function updateNavBtns() {
   const t = getActiveTab();
@@ -1986,17 +2026,99 @@ function reopenLastTab() {
   if (last) newTab(last);
 }
 
-// ── BOOKMARK ──────────────────────────────────────────────────────────────────
-function addBookmark() {
+// ── BOOKMARKS BAR (estilo Chrome) ────────────────────────────────────────────
+function getBookmarks() {
+  try { return JSON.parse(localStorage.getItem('ave-bookmarks') || '[]'); }
+  catch { return []; }
+}
+function setBookmarks(arr) {
+  localStorage.setItem('ave-bookmarks', JSON.stringify(arr));
+}
+function isBookmarked(url) {
+  return !!url && getBookmarks().some(b => b.url === url);
+}
+
+function toggleBookmark() {
   const tab = getActiveTab(); if (!tab?.url) return;
-  let bk = JSON.parse(localStorage.getItem('ave-bookmarks') || '[]');
-  if (!bk.find(b => b.url === tab.url)) {
+  let bk = getBookmarks();
+  const idx = bk.findIndex(b => b.url === tab.url);
+  if (idx === -1) {
     bk.unshift({ name: tab.title || getDomain(tab.url), url: tab.url, icon: tab.favicon || '' });
-    localStorage.setItem('ave-bookmarks', JSON.stringify(bk));
-    showToast('Bookmark adicionado: ' + getDomain(tab.url));
+    showToast('⭐ Adicionado à barra de favoritos: ' + getDomain(tab.url));
   } else {
-    showToast('Já está nos bookmarks');
+    bk.splice(idx, 1);
+    showToast('Removido dos favoritos: ' + getDomain(tab.url));
   }
+  setBookmarks(bk);
+  renderBookmarksBar();
+  updateStarIcon(tab.url);
+}
+
+function removeBookmark(url) {
+  setBookmarks(getBookmarks().filter(b => b.url !== url));
+  renderBookmarksBar();
+  updateStarIcon(getActiveTab()?.url);
+}
+
+function renameBookmark(url) {
+  const bk = getBookmarks();
+  const b = bk.find(x => x.url === url); if (!b) return;
+  const name = prompt('Nome do favorito:', b.name);
+  if (name === null) return;
+  b.name = name.trim() || getDomain(url);
+  setBookmarks(bk);
+  renderBookmarksBar();
+}
+
+function renderBookmarksBar() {
+  const bar   = document.getElementById('bookmarks-bar');
+  const items = document.getElementById('bookmarks-bar-items');
+  const bk = getBookmarks();
+  bar.classList.toggle('empty', bk.length === 0);
+  items.innerHTML = '';
+  bk.forEach(b => {
+    const chip = document.createElement('button');
+    chip.className = 'bk-chip';
+    chip.title = b.name + ' — ' + b.url;
+    if (b.icon) {
+      const img = document.createElement('img');
+      img.src = b.icon;
+      img.onerror = () => { img.remove(); chip.insertAdjacentHTML('afterbegin', '<i class="fa-solid fa-star bk-fallback"></i>'); };
+      chip.appendChild(img);
+    } else {
+      chip.innerHTML = '<i class="fa-solid fa-star bk-fallback"></i>';
+    }
+    const span = document.createElement('span');
+    span.textContent = b.name;
+    chip.appendChild(span);
+
+    chip.addEventListener('click', () => navigate(b.url));
+    chip.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      const action = prompt('Editar "' + b.name + '":\nEscreve "remover" para apagar, ou um novo nome para renomear.', b.name);
+      if (action === null) return;
+      if (action.trim().toLowerCase() === 'remover') removeBookmark(b.url);
+      else { renameBookmark(b.url); }
+    });
+    items.appendChild(chip);
+  });
+}
+
+function toggleBookmarksBar() {
+  const bar = document.getElementById('bookmarks-bar');
+  const visible = !bar.classList.toggle('hidden');
+  localStorage.setItem('ave-bookmarks-bar-visible', visible ? '1' : '0');
+  showToast(visible ? 'Barra de favoritos visível' : 'Barra de favoritos oculta (Ctrl+Shift+B)');
+}
+
+function updateStarIcon(url) {
+  const btn = document.getElementById('btn-star');
+  if (!btn) return;
+  const icon = btn.querySelector('i');
+  const active = isBookmarked(url);
+  btn.classList.toggle('active', active);
+  icon.className = active ? 'fa-solid fa-star' : 'fa-regular fa-star';
+  btn.title = active ? 'Remover dos favoritos (Ctrl+D)' : 'Adicionar à barra de favoritos (Ctrl+D)';
 }
 
 // ── DOWNLOAD TOAST ────────────────────────────────────────────────────────────

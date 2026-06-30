@@ -233,23 +233,21 @@ async function aveoneTestMassAssignment(row) {
   return { type: 'mass', verdict, verdictMsg, tamperedBody, res, reflected };
 }
 
-// Teste ativo de CORS — NÃO dá pra forjar o header Origin manualmente via fetch() (é um
-// "forbidden header name" do spec, o browser sempre manda o valor real). Mas isso na verdade
-// ajuda: o browser vai mandar Origin: chrome-extension://<id-da-extensão> automaticamente —
-// uma origem que NENHUM servidor legítimo teria colocado numa allowlist de propósito. Se o
-// servidor refletir essa origem de volta em Access-Control-Allow-Origin, é prova definitiva de
-// que ele aceita QUALQUER origem (reflexão real), não apenas uma allowlist fixa.
+// Teste ativo de CORS — enviamos uma Origin marcada e única (impossível de já estar numa
+// allowlist real) via o handler IPC aveone-fetch, que corre no processo principal e por isso
+// não está sujeito à lista de "forbidden header names" do fetch() do browser (só o fetch() de
+// uma página normal não pode forjar Origin — net.request() do Electron no main process pode).
+// Se o servidor refletir essa origem de volta em Access-Control-Allow-Origin, é prova definitiva
+// de que aceita QUALQUER origem (reflexão real), não apenas uma allowlist fixa.
 async function aveoneTestCors(row) {
   const headerLines = aveoneHeaderArrayToLines(row.reqHeaders);
-  const res = await aveoneSend(row.method, row.url, headerLines, row.body, { includeAuth: true, includeCookies: true });
+  const ourOrigin = 'https://avebrowser-cors-probe.invalid';
+  const res = await aveoneSend(row.method, row.url, headerLines, row.body, { includeAuth: true, includeCookies: true, forceOrigin: ourOrigin });
 
   if (!res.ok) return { type: 'cors', verdict: 'ok', verdictMsg: 'Erro ao enviar requisição: ' + res.error, res };
   if (aveoneIsRateLimited(res)) {
     return { type: 'cors', verdict: 'warn', verdictMsg: '⏸ Rate limit (429) durante o teste — resultado inconclusivo.', res };
   }
-
-  let ourOrigin = '';
-  try { ourOrigin = chrome.runtime.getURL('').replace(/\/$/, ''); } catch (e) { /* contexto sem chrome.runtime */ }
 
   const allowOriginEntry = (res.headers || []).find(([k]) => /^access-control-allow-origin$/i.test(k));
   const allowCredsEntry  = (res.headers || []).find(([k]) => /^access-control-allow-credentials$/i.test(k));

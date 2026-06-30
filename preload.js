@@ -1,5 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
+const _listenerWrappers = new Map(); // cb -> [{ch, wrapper}] — lets off() find the real registered listener
+
 contextBridge.exposeInMainWorld('ave', {
   // Window
   minimize:        () => ipcRenderer.invoke('window-minimize'),
@@ -65,7 +67,22 @@ contextBridge.exposeInMainWorld('ave', {
       'ctx-action', 'download-started', 'download-done',
       'permission-denied-toast',
     ];
-    if (ok.includes(ch)) ipcRenderer.on(ch, (_, ...a) => cb(...a));
+    if (!ok.includes(ch)) return;
+    // ipcRenderer.on() needs the exact wrapper instance to unregister later —
+    // removeListener(ch, cb) with the original cb is a no-op since cb was never
+    // the listener Electron actually attached. Track wrapper-per-(cb,ch) so off() works.
+    const wrapper = (_, ...a) => cb(...a);
+    if (!_listenerWrappers.has(cb)) _listenerWrappers.set(cb, []);
+    _listenerWrappers.get(cb).push({ ch, wrapper });
+    ipcRenderer.on(ch, wrapper);
   },
-  off: (ch, cb) => ipcRenderer.removeListener(ch, cb),
+  off: (ch, cb) => {
+    const entries = _listenerWrappers.get(cb);
+    if (!entries) return;
+    const idx = entries.findIndex(e => e.ch === ch);
+    if (idx === -1) return;
+    ipcRenderer.removeListener(ch, entries[idx].wrapper);
+    entries.splice(idx, 1);
+    if (!entries.length) _listenerWrappers.delete(cb);
+  },
 });

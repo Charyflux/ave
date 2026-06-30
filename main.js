@@ -25,6 +25,7 @@ const TOR_CTRL    = 9051;
 
 let mainWindow    = null;
 let torEnabled    = false;
+let appInitialized = false; // guards one-time ipcMain/session setup against re-registration on macOS re-activate
 const capturedRequests = [];
 let captureEnabled = true;
 
@@ -98,6 +99,14 @@ function createWindow() {
   // would block ALL traffic silently since TOR isn't running
   ses.setProxy({ mode: 'direct' }).catch(() => {});
   torEnabled = false;
+
+  // session.fromPartition() returns the same cached Session object every call, and
+  // mainWindow is a module-level binding, so handlers registered once keep working
+  // correctly after later createWindow() calls (e.g. macOS dock re-activate). Only
+  // the BrowserWindow itself needs to be recreated each time — registering all the
+  // ipcMain handlers again would throw "second handler for X" and crash.
+  if (appInitialized) return;
+  appInitialized = true;
 
   // ── Permissions ────────────────────────────────────────────────────────────
   ses.setPermissionRequestHandler((wc, permission, callback, details) => {

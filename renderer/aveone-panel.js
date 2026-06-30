@@ -2,14 +2,14 @@
 // Adaptação de panel.js da extensão Chrome: troca chrome.devtools.* por APIs Electron.
 // Todos os IDs do DOM usam prefixo "ao-" para não conflituar com o AveBrowser.
 
-// ── Mock do chrome.runtime para o aveoneTestCors (apitester.js usa chrome.runtime.getURL) ──
-window.chrome = window.chrome || {};
-window.chrome.runtime = window.chrome.runtime || { getURL: () => 'avebrowser-extension' };
-
 // ── Override aveoneSend: usa IPC em vez de fetch() para evitar bloqueio CORS ──
 async function aveoneSend(method, url, headerLines, body, opts) {
   opts = opts || {};
   const headers = aveoneHeadersToObject(headerLines, opts.includeAuth !== false);
+  // 'origin' está na lista de headers proibidos (mimetiza o forbidden-header-name do fetch()
+  // do browser), mas o teste de CORS ativo precisa de enviar uma Origin marcada de propósito —
+  // o main process (net.request) não tem essa restrição, por isso é seguro adicionar aqui.
+  if (opts.forceOrigin) headers['Origin'] = opts.forceOrigin;
   const t0 = performance.now();
   try {
     const result = await window.ave.aveoneFetch({ method, url, headers, body: body || null });
