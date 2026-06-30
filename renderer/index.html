@@ -609,10 +609,17 @@ function setupListeners() {
       e.preventDefault();
       e.stopPropagation();
       navigate(urlInput.value);
+      // Flash GO button to confirm Enter was received
+      const go = document.getElementById('btn-go');
+      go.style.transform = 'scale(.92)';
+      setTimeout(() => { go.style.transform = ''; }, 120);
     }
     if (e.key === 'Escape') { urlInput.blur(); urlInput.value = getActiveTab()?.url || ''; }
   });
+  // Select all text when focused (easy to replace URL)
   urlInput.addEventListener('focus', () => urlInput.select());
+  // Double-click also selects all
+  urlInput.addEventListener('dblclick', () => urlInput.select());
 
   // New tab search
   document.getElementById('nt-search-input').addEventListener('keydown', e => {
