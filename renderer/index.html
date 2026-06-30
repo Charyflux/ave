@@ -133,6 +133,26 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-
 #btn-tools .dot.off{background:var(--tx3);animation:none;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
+#btn-tor{
+  display:flex;align-items:center;gap:6px;padding:0 11px;height:34px;border-radius:9px;
+  border:1px solid var(--bd2);background:transparent;color:var(--tx3);
+  cursor:pointer;font-size:10px;font-family:'Orbitron';font-weight:700;
+  transition:all .2s;flex-shrink:0;letter-spacing:.5px;
+}
+#btn-tor:hover{border-color:var(--p);color:var(--p);}
+#btn-tor.active{border-color:var(--p);background:rgba(124,58,237,.15);color:var(--p);
+  box-shadow:0 0 12px rgba(124,58,237,.3);}
+#btn-tor.active i{animation:torSpin 3s linear infinite;}
+@keyframes torSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+#btn-caido{
+  display:flex;align-items:center;gap:6px;padding:0 12px;height:34px;border-radius:9px;
+  border:none;background:linear-gradient(135deg,var(--w),#e67e00);color:#07070f;
+  cursor:pointer;font-size:11px;font-family:'Orbitron';font-weight:700;
+  transition:all .2s;flex-shrink:0;letter-spacing:.5px;
+}
+#btn-caido:hover{opacity:.85;transform:scale(1.02);}
+
 #btn-aveone{
   display:flex;align-items:center;gap:6px;padding:0 12px;height:34px;border-radius:9px;
   border:none;background:linear-gradient(135deg,var(--c),var(--m));color:#07070f;
@@ -403,6 +423,18 @@ webview.active{display:block;}
     <i class="fa-solid fa-chevron-right" id="tools-arrow" style="font-size:9px;transition:transform .2s;"></i>
   </button>
 
+  <!-- TOR toggle -->
+  <button id="btn-tor" onclick="torToggle()" title="Activar/desactivar anonimato TOR">
+    <i class="fa-solid fa-user-secret"></i>
+    <span id="tor-label">TOR</span>
+  </button>
+
+  <!-- Caido proxy tool -->
+  <button id="btn-caido" onclick="window.ave.openCaido()" title="Abrir Caido (localhost:8080)">
+    <i class="fa-solid fa-bug-slash"></i> CAIDO
+  </button>
+
+  <!-- AveOne web app -->
   <button id="btn-aveone" onclick="window.ave.openAveOne()" title="Abrir AveOne">
     <i class="fa-solid fa-shield-halved"></i> AVEONE
   </button>
@@ -499,6 +531,18 @@ webview.active{display:block;}
   <div class="sep" style="height:12px;"></div>
   <span id="sb-url" style="flex:1;"></span>
   <span id="sb-tech-quick" style="color:var(--p);"></span>
+  <div class="sep" style="height:12px;"></div>
+  <!-- TOR status -->
+  <i class="fa-solid fa-user-secret" id="sb-tor-icon" style="color:var(--tx3);font-size:10px;"></i>
+  <span id="sb-tor-status" style="color:var(--tx3);">TOR OFF</span>
+  <div class="sep" style="height:12px;"></div>
+  <span id="sb-ip" style="color:var(--tx3);font-family:'JetBrains Mono';">IP: —</span>
+  <button onclick="refreshIp()" style="background:none;border:none;color:var(--tx3);cursor:pointer;padding:0 2px;font-size:9px;" title="Actualizar IP">
+    <i class="fa-solid fa-rotate-right"></i>
+  </button>
+  <button onclick="torNewIp()" style="background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);border-radius:4px;color:var(--p);cursor:pointer;padding:1px 6px;font-size:8px;font-family:'Orbitron';font-weight:700;" title="Rodar IP (novo circuito TOR)">
+    NEW IP
+  </button>
 </div>
 
 <script>
@@ -1117,9 +1161,68 @@ function showToast(msg) {
   clearTimeout(t._t); t._t=setTimeout(()=>t.style.opacity='0',2500);
 }
 
+// ── TOR ──────────────────────────────────────────────────────────────────────
+let torActive = false;
+
+async function torToggle() {
+  const btn = document.getElementById('btn-tor');
+  const label = document.getElementById('tor-label');
+  btn.disabled = true;
+  label.textContent = '...';
+
+  torActive = !torActive;
+  const ok = await window.ave.torToggle(torActive);
+  torActive = ok;
+
+  btn.classList.toggle('active', torActive);
+  label.textContent = torActive ? 'ON' : 'TOR';
+  btn.disabled = false;
+
+  // Update status bar
+  const icon = document.getElementById('sb-tor-icon');
+  const status = document.getElementById('sb-tor-status');
+  if (torActive) {
+    icon.style.color = 'var(--p)';
+    status.style.color = 'var(--p)';
+    status.textContent = 'TOR ON';
+    showToast('TOR activado — tráfego encaminhado via Tor SOCKS5:9050', 'ok');
+    refreshIp();
+  } else {
+    icon.style.color = 'var(--tx3)';
+    status.style.color = 'var(--tx3)';
+    status.textContent = 'TOR OFF';
+    showToast('TOR desactivado — conexão directa', 'warn');
+    refreshIp();
+  }
+}
+
+async function torNewIp() {
+  if (!torActive) { showToast('Activa o TOR primeiro', 'warn'); return; }
+  const label = document.getElementById('sb-ip');
+  label.textContent = 'IP: a rodar...';
+  const ok = await window.ave.torNewIp();
+  if (ok) {
+    showToast('Novo circuito TOR solicitado — aguarda 10s', 'ok');
+    setTimeout(refreshIp, 10000);
+  } else {
+    showToast('Falhou — verifica se o Tor está a correr com ControlPort 9051', 'warn');
+    refreshIp();
+  }
+}
+
+async function refreshIp() {
+  const el = document.getElementById('sb-ip');
+  el.textContent = 'IP: ...';
+  const ip = await window.ave.getIp();
+  el.textContent = 'IP: ' + ip;
+  el.style.color = torActive ? 'var(--p)' : 'var(--tx3)';
+}
+
 // Init capture state
 document.getElementById('sb-dot').className = 'sb-dot on';
 document.getElementById('sb-capture-label').textContent = 'a capturar';
+// Fetch initial IP after 2s
+setTimeout(refreshIp, 2000);
 </script>
 </body>
 </html>

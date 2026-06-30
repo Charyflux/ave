@@ -1,7 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('ave', {
-  // Window controls
+  // Window
   minimize:      () => ipcRenderer.invoke('window-minimize'),
   maximize:      () => ipcRenderer.invoke('window-maximize'),
   close:         () => ipcRenderer.invoke('window-close'),
@@ -12,15 +12,22 @@ contextBridge.exposeInMainWorld('ave', {
   clearCaptures: () => ipcRenderer.invoke('clear-captures'),
   toggleCapture: (v) => ipcRenderer.invoke('toggle-capture', v),
 
-  // AveOne integration
+  // Navigation / integrations
+  openCaido:     () => ipcRenderer.invoke('open-caido'),
   openAveOne:    () => ipcRenderer.invoke('open-aveone'),
-  sendToAveOne:  (data) => ipcRenderer.invoke('send-to-aveone', data),
   openExternal:  (url) => ipcRenderer.invoke('open-external', url),
+  sendToAveOne:  (data) => ipcRenderer.invoke('send-to-aveone', data),
 
-  // Events (renderer listens to main)
-  on: (channel, cb) => {
-    const allowed = ['request-captured','response-captured','window-state','open-devtools-for'];
-    if (allowed.includes(channel)) ipcRenderer.on(channel, (_, ...args) => cb(...args));
+  // TOR
+  torToggle:     (v) => ipcRenderer.invoke('tor-toggle', v),
+  torNewIp:      () => ipcRenderer.invoke('tor-new-ip'),
+  getIp:         () => ipcRenderer.invoke('get-ip'),
+  torStatus:     () => ipcRenderer.invoke('tor-status'),
+
+  // Events
+  on:  (ch, cb) => {
+    const ok = ['request-captured','response-captured','window-state','open-devtools-for','tor-ip-changed'];
+    if (ok.includes(ch)) ipcRenderer.on(ch, (_, ...a) => cb(...a));
   },
-  off: (channel, cb) => ipcRenderer.removeListener(channel, cb),
+  off: (ch, cb) => ipcRenderer.removeListener(ch, cb),
 });

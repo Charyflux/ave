@@ -1,13 +1,60 @@
-const { app, BrowserWindow, ipcMain, session, shell, Menu, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, session, shell, Menu, dialog, net: electronNet } = require('electron');
 const path = require('path');
+const netModule = require('net');
 
-const AVEONE_URL = 'http://localhost:8080';
-const PARTITION  = 'persist:avebrowser';
+const CAIDO_URL   = 'http://localhost:8080';
+const AVEONE_URL  = 'https://www.aveone.com.br/app';
+const PARTITION   = 'persist:avebrowser';
+const TOR_SOCKS   = '127.0.0.1';
+const TOR_PORT    = 9050;
+const TOR_CTRL    = 9051;
 
-let mainWindow = null;
-// Stores captured requests: { id, method, url, requestHeaders, statusCode, responseHeaders, time, duration }
+let mainWindow    = null;
+let torEnabled    = false;
 const capturedRequests = [];
 let captureEnabled = true;
+
+// ── TOR control: send SIGNAL NEWNYM to rotate IP ─────────────────────────────
+function torNewCircuit() {
+  return new Promise((resolve) => {
+    const client = netModule.createConnection({ host: TOR_SOCKS, port: TOR_CTRL });
+    let buf = '';
+    let authed = false;
+    client.setTimeout(4000);
+    client.on('connect', () => client.write('AUTHENTICATE ""\r\n'));
+    client.on('data', (d) => {
+      buf += d.toString();
+      if (!authed && buf.includes('250 OK')) {
+        authed = true;
+        buf = '';
+        client.write('SIGNAL NEWNYM\r\n');
+      } else if (authed && buf.includes('250 OK')) {
+        client.end();
+        resolve(true);
+      } else if (buf.includes('515') || buf.includes('551')) {
+        client.end();
+        resolve(false);
+      }
+    });
+    client.on('error', () => resolve(false));
+    client.on('timeout', () => { client.destroy(); resolve(false); });
+  });
+}
+
+// ── Get current IP via proxied session ───────────────────────────────────────
+async function getCurrentIp() {
+  const ses = session.fromPartition(PARTITION);
+  try {
+    const res = await ses.fetch('https://api.ipify.org?format=json');
+    const { ip } = await res.json();
+    return ip;
+  } catch {
+    try {
+      const res2 = await ses.fetch('https://ifconfig.me/ip');
+      return (await res2.text()).trim();
+    } catch { return '—'; }
+  }
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -29,25 +76,17 @@ function createWindow() {
   });
 
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
-
-  // Remove menu bar
   Menu.setApplicationMenu(null);
 
-  // ── Session-level request interception ───────────────────────────────────
   const ses = session.fromPartition(PARTITION);
 
+  // ── Request interception ────────────────────────────────────────────────────
   ses.webRequest.onBeforeSendHeaders({ urls: ['<all_urls>'] }, (details, callback) => {
-    if (captureEnabled && details.resourceType !== 'image' && details.resourceType !== 'stylesheet' && details.resourceType !== 'font') {
+    if (captureEnabled && !['image','stylesheet','font'].includes(details.resourceType)) {
       const entry = {
-        id:              details.id,
-        method:          details.method,
-        url:             details.url,
-        type:            details.resourceType,
-        requestHeaders:  details.requestHeaders,
-        statusCode:      null,
-        responseHeaders: null,
-        ts:              Date.now(),
-        duration:        null,
+        id: details.id, method: details.method, url: details.url,
+        type: details.resourceType, requestHeaders: details.requestHeaders,
+        statusCode: null, responseHeaders: null, ts: Date.now(), duration: null,
       };
       capturedRequests.unshift(entry);
       if (capturedRequests.length > 200) capturedRequests.pop();
@@ -60,52 +99,62 @@ function createWindow() {
     if (captureEnabled) {
       const entry = capturedRequests.find(r => r.id === details.id);
       if (entry) {
-        entry.statusCode      = details.statusCode;
+        entry.statusCode = details.statusCode;
         entry.responseHeaders = details.responseHeaders;
-        entry.duration        = Date.now() - entry.ts;
+        entry.duration = Date.now() - entry.ts;
         mainWindow?.webContents.send('response-captured', {
-          id:              entry.id,
-          statusCode:      entry.statusCode,
-          responseHeaders: entry.responseHeaders,
-          duration:        entry.duration,
+          id: entry.id, statusCode: entry.statusCode,
+          responseHeaders: entry.responseHeaders, duration: entry.duration,
         });
       }
     }
     callback({ responseHeaders: details.responseHeaders });
   });
 
-  // ── IPC handlers ─────────────────────────────────────────────────────────
-  ipcMain.handle('get-captures', () => capturedRequests.slice(0, 100));
-  ipcMain.handle('clear-captures', () => { capturedRequests.length = 0; return true; });
-  ipcMain.handle('toggle-capture', (_, v) => { captureEnabled = v; return captureEnabled; });
+  // ── IPC: Window ────────────────────────────────────────────────────────────
+  ipcMain.handle('window-minimize', () => mainWindow.minimize());
+  ipcMain.handle('window-maximize', () => mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize());
+  ipcMain.handle('window-close',    () => mainWindow.close());
+  ipcMain.handle('window-is-max',   () => mainWindow.isMaximized());
 
-  ipcMain.handle('window-minimize',  () => mainWindow.minimize());
-  ipcMain.handle('window-maximize',  () => mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize());
-  ipcMain.handle('window-close',     () => mainWindow.close());
-  ipcMain.handle('window-is-max',    () => mainWindow.isMaximized());
+  // ── IPC: Capture ───────────────────────────────────────────────────────────
+  ipcMain.handle('get-captures',    () => capturedRequests.slice(0, 100));
+  ipcMain.handle('clear-captures',  () => { capturedRequests.length = 0; return true; });
+  ipcMain.handle('toggle-capture',  (_, v) => { captureEnabled = v; return captureEnabled; });
 
-  ipcMain.handle('open-devtools', (_, wvId) => {
-    const wv = mainWindow.webContents;
-    wv.send('open-devtools-for', wvId);
-  });
-
-  ipcMain.handle('open-external', (_, url) => shell.openExternal(url));
-  ipcMain.handle('open-aveone',   () => shell.openExternal(AVEONE_URL));
-
-  ipcMain.handle('send-to-aveone', (_, data) => {
-    // Opens AveOne panel in default browser with the request pre-filled
-    const encoded = encodeURIComponent(JSON.stringify(data));
-    shell.openExternal(`${AVEONE_URL}?import=${encoded}`);
+  // ── IPC: Navigation ────────────────────────────────────────────────────────
+  ipcMain.handle('open-caido',      () => shell.openExternal(CAIDO_URL));
+  ipcMain.handle('open-aveone',     () => shell.openExternal(AVEONE_URL));
+  ipcMain.handle('open-external',   (_, url) => shell.openExternal(url));
+  ipcMain.handle('send-to-aveone',  (_, data) => {
+    shell.openExternal(`${AVEONE_URL}?import=${encodeURIComponent(JSON.stringify(data))}`);
     return true;
   });
-
-  ipcMain.handle('show-save-dialog', async () => {
-    const result = await dialog.showSaveDialog(mainWindow, {
+  ipcMain.handle('show-save-dialog', async () =>
+    dialog.showSaveDialog(mainWindow, {
       defaultPath: 'aveone-capture.json',
       filters: [{ name: 'JSON', extensions: ['json'] }],
-    });
-    return result;
+    })
+  );
+
+  // ── IPC: TOR ───────────────────────────────────────────────────────────────
+  ipcMain.handle('tor-toggle', async (_, enable) => {
+    const s = session.fromPartition(PARTITION);
+    if (enable) {
+      await s.setProxy({
+        proxyRules: `socks5://${TOR_SOCKS}:${TOR_PORT}`,
+        proxyBypassRules: '<local>',
+      });
+    } else {
+      await s.setProxy({ mode: 'direct' });
+    }
+    torEnabled = enable;
+    return torEnabled;
   });
+
+  ipcMain.handle('tor-new-ip',  async () => torNewCircuit());
+  ipcMain.handle('get-ip',      async () => getCurrentIp());
+  ipcMain.handle('tor-status',  () => torEnabled);
 
   mainWindow.on('maximize',   () => mainWindow?.webContents.send('window-state', 'maximized'));
   mainWindow.on('unmaximize', () => mainWindow?.webContents.send('window-state', 'normal'));
