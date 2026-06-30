@@ -370,6 +370,29 @@ function createWindow() {
     } catch { return []; }
   };
 
+  // ── IPC: Extension popup window ──────────────────────────────────────────────
+  let extPopupWin = null;
+  ipcMain.handle('ext-open-popup', async (_, { popupUrl, iconX, iconY, width, height }) => {
+    try {
+      if (extPopupWin && !extPopupWin.isDestroyed()) { extPopupWin.close(); extPopupWin = null; }
+      const w = width  || 380;
+      const h = height || 520;
+      const bnd = mainWindow.getBounds();
+      // Position below the icon, aligned right edge to the icon
+      const px = Math.max(bnd.x, Math.min(bnd.x + bnd.width  - w, bnd.x + iconX - w + 16));
+      const py = bnd.y + iconY + 4;
+      extPopupWin = new BrowserWindow({
+        width: w, height: h, x: px, y: py,
+        frame: false, resizable: true, alwaysOnTop: true, skipTaskbar: true,
+        webPreferences: { nodeIntegration: false, contextIsolation: true, session: ses },
+      });
+      extPopupWin.loadURL(popupUrl);
+      extPopupWin.on('blur',   () => { try { if (!extPopupWin?.isDestroyed()) extPopupWin.close(); } catch {} extPopupWin = null; });
+      extPopupWin.on('closed', () => { extPopupWin = null; });
+      return { ok: true };
+    } catch (e) { return { ok: false, error: e.message }; }
+  });
+
   // ── IPC: Chrome Extensions ─────────────────────────────────────────────────
   ipcMain.handle('ext-load', async (_, extPath) => {
     try {
@@ -394,8 +417,26 @@ function createWindow() {
   });
 
   ipcMain.handle('ext-list', () => {
-    try { return ses.getAllExtensions().map(e => ({ id: e.id, name: e.name, version: e.version, path: e.path })); }
-    catch { return []; }
+    try {
+      return ses.getAllExtensions().map(e => {
+        const mf = e.manifest || {};
+        const action = mf.browser_action || mf.action || {};
+        // Resolve best icon (closest to 32px)
+        const iconMap = action.default_icon || mf.icons || {};
+        const sizes = Object.keys(iconMap).map(Number).sort((a, b) => Math.abs(a - 32) - Math.abs(b - 32));
+        const iconPath = sizes.length ? iconMap[String(sizes[0])] : null;
+        return {
+          id: e.id,
+          name: e.name,
+          version: e.version,
+          path: e.path,
+          baseUrl: e.url,                         // chrome-extension://id/
+          iconUrl: iconPath ? e.url + iconPath.replace(/^\//, '') : null,
+          popupPath: action.default_popup || null, // relative path to popup HTML
+          title: action.default_title || e.name,
+        };
+      });
+    } catch { return []; }
   });
 
   // ── IPC: Userscripts ───────────────────────────────────────────────────────

@@ -544,6 +544,21 @@ webview.active{visibility:visible;pointer-events:auto;}
 #sb-capture-label{color:var(--tx3);font-size:9px;}
 #sb-req-count{color:var(--c);font-size:9px;min-width:50px;}
 
+/* ── EXTENSION ICONS BAR ── */
+.ext-icon-btn{
+  width:28px;height:28px;border-radius:6px;border:1px solid transparent;
+  background:transparent;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;padding:2px;flex-shrink:0;position:relative;
+  transition:background .15s,border-color .15s;
+}
+.ext-icon-btn:hover{background:rgba(255,255,255,.08);border-color:var(--bd2);}
+.ext-icon-btn img{width:18px;height:18px;border-radius:3px;object-fit:contain;}
+.ext-icon-btn .ext-icon-fallback{font-size:13px;line-height:1;}
+.ext-icon-btn .ext-icon-badge{
+  position:absolute;bottom:1px;right:1px;width:6px;height:6px;
+  border-radius:50%;background:var(--g);border:1px solid var(--bg);
+}
+
 /* ── EXT MANAGER ── */
 .ext-sub-tabs{display:flex;border-bottom:1px solid var(--bd);flex-shrink:0;background:var(--sf2);}
 .ext-sub-tab{flex:1;background:transparent;border:none;border-bottom:2px solid transparent;
@@ -673,6 +688,9 @@ webview.active{visibility:visible;pointer-events:auto;}
   <button class="nav-btn" onclick="copyCurrentUrl()" title="Copiar URL"><i class="fa-regular fa-copy"></i></button>
   <button class="nav-btn" id="btn-scope" onclick="toggleScope()" title="Verificar scope" style="color:var(--tx3)"><i class="fa-solid fa-crosshairs"></i></button>
   <button class="nav-btn" id="btn-ext-quick" onclick="quickLoadExt()" title="Adicionar extensão Chrome (MV2)" style="color:var(--m);"><i class="fa-solid fa-puzzle-piece"></i></button>
+
+  <!-- Extension icons bar — preenchido dinamicamente -->
+  <div id="ext-icons-bar" style="display:flex;align-items:center;gap:2px;"></div>
 
   <div class="sep"></div>
 
@@ -1559,9 +1577,63 @@ document.querySelectorAll('.ext-sub-tab').forEach(btn => {
   });
 });
 
+// ── Extension icons in toolbar ────────────────────────────────────────────────
+async function renderExtIcons() {
+  const list = await window.ave.extList();
+  const bar  = document.getElementById('ext-icons-bar');
+  if (!bar) return;
+  bar.innerHTML = '';
+  list.forEach(ext => {
+    const btn = document.createElement('button');
+    btn.className = 'ext-icon-btn';
+    btn.title = ext.title + (ext.popupPath ? '' : ' (sem popup)');
+    btn.dataset.extid = ext.id;
+
+    // Icon: use extension's icon if available, else puzzle fallback
+    if (ext.iconUrl) {
+      const img = document.createElement('img');
+      img.src = ext.iconUrl;
+      img.alt = ext.name;
+      img.onerror = () => { img.style.display='none'; btn.insertAdjacentHTML('beforeend','<span class="ext-icon-fallback">🧩</span>'); };
+      btn.appendChild(img);
+    } else {
+      btn.innerHTML = '<span class="ext-icon-fallback">🧩</span>';
+    }
+
+    // Green dot = has popup
+    if (ext.popupPath) btn.insertAdjacentHTML('beforeend', '<span class="ext-icon-badge"></span>');
+
+    btn.addEventListener('click', async () => {
+      if (!ext.popupPath) { showToast('Esta extensão não tem popup'); return; }
+      const rect = btn.getBoundingClientRect();
+      const popupUrl = ext.baseUrl + ext.popupPath.replace(/^\//, '');
+      await window.ave.extOpenPopup({
+        popupUrl,
+        iconX: Math.round(rect.right),
+        iconY: Math.round(rect.bottom),
+        width: 380,
+        height: 520,
+      });
+    });
+
+    // Right-click to remove
+    btn.addEventListener('contextmenu', async (e) => {
+      e.preventDefault();
+      if (!confirm('Remover extensão "' + ext.name + '"?')) return;
+      await window.ave.extRemove(ext.id);
+      showToast('Extensão removida: ' + ext.name);
+      renderExtIcons();
+      extRefreshList();
+    });
+
+    bar.appendChild(btn);
+  });
+}
+
 // ── A: Chrome Extensions ──────────────────────────────────────────────────────
 async function extRefreshList() {
   const list = await window.ave.extList();
+  renderExtIcons(); // keep toolbar in sync
   const c = document.getElementById('ext-list-container');
   if (!list.length) {
     c.innerHTML = `<div class="empty-state" style="padding:24px;text-align:center;">
@@ -1590,13 +1662,10 @@ async function quickLoadExt() {
   showToast('A carregar extensão…');
   const r = await window.ave.extLoad(p);
   if (r.ok) {
-    showToast('🧩 Extensão carregada: ' + r.name);
-    extRefreshList();
-    // Abrir o painel EXT para mostrar a extensão carregada
-    const extTab = document.querySelector('[data-pane="ext"]');
-    if (extTab) { switchPane(extTab); extTab.classList.add('active'); }
+    showToast('🧩 ' + r.name + ' adicionada');
+    extRefreshList(); // also calls renderExtIcons()
   } else {
-    showToast('Erro ao carregar extensão: ' + r.error);
+    showToast('Erro: ' + r.error);
   }
 }
 
@@ -1823,9 +1892,8 @@ document.getElementById('plg-delete-btn').addEventListener('click', async () => 
   showToast('Plugin apagado'); plgCloseEditor(); plgRefreshList();
 });
 
-// Load enabled plugins on startup (after DOM is ready)
-document.addEventListener('DOMContentLoaded', () => {}, false);
-setTimeout(loadEnabledPlugins, 500);
+// Load enabled plugins and extension icons on startup
+setTimeout(() => { loadEnabledPlugins(); renderExtIcons(); }, 500);
 
 // ── ZOOM ─────────────────────────────────────────────────────────────────────
 let currentZoom = 0; // Electron zoom level: 0=100%, 1=120%, -1=83%

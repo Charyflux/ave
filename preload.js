@@ -39,6 +39,7 @@ contextBridge.exposeInMainWorld('ave', {
   extLoad:         (extPath) => ipcRenderer.invoke('ext-load', extPath),
   extRemove:       (id)      => ipcRenderer.invoke('ext-remove', id),
   extList:         ()        => ipcRenderer.invoke('ext-list'),
+  extOpenPopup:    (opts)    => ipcRenderer.invoke('ext-open-popup', opts),
 
   // Userscripts
   usList:          ()        => ipcRenderer.invoke('us-list'),
