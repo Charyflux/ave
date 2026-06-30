@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com; font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com data:;">
+<title>AveBrowser</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap">
+<style>
+:root{
+  --c:#00e5ff;--m:#ff1493;--g:#00ff88;--r:#ff3355;--w:#ff9900;--p:#7c3aed;--y:#ffe600;
+  --bg:#07070f;--sf:#0d0d1a;--sf2:#12121f;--sf3:#16162a;
+  --bd:rgba(255,255,255,.06);--bd2:rgba(255,255,255,.1);--bd3:rgba(255,255,255,.15);
+  --tx:#e2e8f0;--tx2:rgba(226,232,240,.65);--tx3:rgba(226,232,240,.35);
+  --tools-w:360px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-family:'Space Grotesk',sans-serif;user-select:none;}
+
+/* ── TITLE BAR ── */
+#titlebar{
+  height:38px;display:flex;align-items:center;gap:0;
+  background:linear-gradient(135deg,#08081a,#0a0a18);
+  border-bottom:1px solid var(--bd);
+  -webkit-app-region:drag;
+  flex-shrink:0;
+}
+#titlebar .logo{
+  display:flex;align-items:center;gap:8px;padding:0 14px;
+  -webkit-app-region:no-drag;flex-shrink:0;
+}
+.logo-text{font-family:'Orbitron';font-size:11px;font-weight:900;
+  background:linear-gradient(90deg,var(--c),var(--m));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.logo-sub{font-size:8px;color:var(--tx3);font-family:'JetBrains Mono';}
+
+#tabs-bar{
+  flex:1;display:flex;align-items:flex-end;overflow:hidden;
+  padding:0 4px;gap:2px;height:100%;-webkit-app-region:no-drag;
+}
+.tab{
+  display:flex;align-items:center;gap:7px;
+  padding:0 12px 0 10px;height:30px;min-width:140px;max-width:220px;
+  background:var(--sf2);border:1px solid var(--bd);border-bottom:none;
+  border-radius:8px 8px 0 0;cursor:pointer;
+  font-size:11px;color:var(--tx2);transition:all .15s;flex-shrink:0;
+  position:relative;
+}
+.tab.active{background:var(--sf3);border-color:var(--bd2);color:var(--tx);}
+.tab .tab-icon{width:14px;height:14px;border-radius:3px;flex-shrink:0;font-size:10px;}
+.tab .tab-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tab .tab-close{
+  width:16px;height:16px;border-radius:4px;border:none;
+  background:transparent;color:var(--tx3);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:9px;
+  transition:all .15s;flex-shrink:0;padding:0;
+}
+.tab .tab-close:hover{background:rgba(255,51,85,.2);color:var(--r);}
+.tab-loading::after{
+  content:'';position:absolute;bottom:0;left:0;height:2px;
+  background:linear-gradient(90deg,var(--c),var(--m));
+  animation:tabLoad 1.5s ease-in-out infinite;
+}
+@keyframes tabLoad{0%{width:0;left:0}50%{width:60%;left:20%}100%{width:0;left:100%}}
+
+#btn-new-tab{
+  width:26px;height:26px;border-radius:7px;border:1px dashed var(--bd2);
+  background:transparent;color:var(--tx3);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:13px;
+  transition:all .15s;flex-shrink:0;align-self:center;
+}
+#btn-new-tab:hover{border-color:var(--c);color:var(--c);background:rgba(0,229,255,.05);}
+
+.win-controls{
+  display:flex;align-items:center;gap:0;flex-shrink:0;
+  -webkit-app-region:no-drag;padding-right:2px;
+}
+.win-btn{
+  width:46px;height:38px;border:none;background:transparent;
+  color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:12px;transition:all .15s;
+}
+.win-btn:hover{background:rgba(255,255,255,.06);color:var(--tx);}
+.win-btn.close:hover{background:#c42b1c;color:#fff;}
+
+/* ── NAV BAR ── */
+#navbar{
+  height:46px;display:flex;align-items:center;gap:6px;
+  padding:0 10px;background:var(--sf);border-bottom:1px solid var(--bd);flex-shrink:0;
+}
+.nav-btn{
+  width:30px;height:30px;border-radius:8px;border:none;
+  background:transparent;color:var(--tx2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:13px;
+  transition:all .15s;flex-shrink:0;
+}
+.nav-btn:hover:not(:disabled){background:var(--sf2);color:var(--c);}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed;}
+
+#url-bar-wrap{
+  flex:1;display:flex;align-items:center;gap:8px;
+  background:var(--sf2);border:1px solid var(--bd2);border-radius:10px;
+  padding:0 12px;height:34px;transition:border-color .2s;
+}
+#url-bar-wrap:focus-within{border-color:var(--c);box-shadow:0 0 0 2px rgba(0,229,255,.1);}
+#sec-icon{font-size:11px;flex-shrink:0;}
+#sec-icon.https{color:var(--g);}
+#sec-icon.http{color:var(--w);}
+#url-input{
+  flex:1;background:transparent;border:none;outline:none;
+  color:var(--tx);font-family:'JetBrains Mono';font-size:12px;
+}
+#url-input::placeholder{color:var(--tx3);}
+#url-progress{
+  position:absolute;bottom:0;left:0;height:2px;width:0%;
+  background:linear-gradient(90deg,var(--c),var(--m));
+  transition:width .3s ease;pointer-events:none;
+  left:0;border-radius:0 2px 2px 0;
+}
+
+.sep{width:1px;height:24px;background:var(--bd2);flex-shrink:0;}
+
+#btn-tools{
+  display:flex;align-items:center;gap:6px;padding:0 12px;height:34px;border-radius:9px;
+  border:1px solid var(--bd2);background:transparent;color:var(--tx2);
+  cursor:pointer;font-size:11px;font-family:'Space Grotesk';font-weight:600;
+  transition:all .2s;flex-shrink:0;
+}
+#btn-tools:hover,#btn-tools.active{border-color:var(--c);color:var(--c);background:rgba(0,229,255,.07);}
+#btn-tools .dot{
+  width:6px;height:6px;border-radius:50%;background:var(--r);flex-shrink:0;
+  animation:pulse 2s ease-in-out infinite;
+}
+#btn-tools .dot.off{background:var(--tx3);animation:none;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+#btn-aveone{
+  display:flex;align-items:center;gap:6px;padding:0 12px;height:34px;border-radius:9px;
+  border:none;background:linear-gradient(135deg,var(--c),var(--m));color:#07070f;
+  cursor:pointer;font-size:11px;font-family:'Orbitron';font-weight:700;
+  transition:all .2s;flex-shrink:0;letter-spacing:.5px;
+}
+#btn-aveone:hover{opacity:.85;transform:scale(1.02);}
+
+/* ── MAIN AREA ── */
+#main{flex:1;display:flex;overflow:hidden;position:relative;}
+
+#webview-container{flex:1;position:relative;background:#000;}
+webview{
+  position:absolute;inset:0;width:100%;height:100%;
+  border:none;display:none;
+}
+webview.active{display:flex;}
+
+#progress-bar{
+  position:absolute;top:0;left:0;right:0;height:2px;z-index:10;
+  background:linear-gradient(90deg,var(--c),var(--m),var(--c));
+  background-size:200% 100%;
+  animation:progressAnim 1.2s linear infinite;
+  display:none;
+}
+@keyframes progressAnim{0%{background-position:200% 0}100%{background-position:0 0}}
+
+#newtab-page{
+  position:absolute;inset:0;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:28px;
+}
+.nt-logo{font-family:'Orbitron';font-size:36px;font-weight:900;
+  background:linear-gradient(135deg,var(--c),var(--m));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nt-sub{font-size:12px;color:var(--tx3);font-family:'JetBrains Mono';letter-spacing:2px;}
+.nt-search{
+  display:flex;align-items:center;gap:10px;width:520px;max-width:90vw;
+  background:var(--sf2);border:1px solid var(--bd2);border-radius:14px;
+  padding:0 16px;height:48px;
+}
+.nt-search input{
+  flex:1;background:transparent;border:none;outline:none;color:var(--tx);
+  font-size:14px;font-family:'Space Grotesk';
+}
+.nt-search button{
+  background:linear-gradient(135deg,var(--c),var(--m));border:none;
+  border-radius:8px;color:#07070f;padding:6px 14px;cursor:pointer;
+  font-family:'Orbitron';font-size:9px;font-weight:700;
+}
+.nt-bookmarks{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;max-width:600px;}
+.nt-bk{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:16px 20px;background:var(--sf2);border:1px solid var(--bd);
+  border-radius:14px;cursor:pointer;transition:all .2s;min-width:90px;
+}
+.nt-bk:hover{border-color:var(--c);transform:translateY(-2px);}
+.nt-bk .icon{font-size:22px;}
+.nt-bk .name{font-size:10px;color:var(--tx2);}
+
+/* ── TOOLS PANEL ── */
+#tools-panel{
+  width:var(--tools-w);border-left:1px solid var(--bd);
+  background:var(--sf);display:flex;flex-direction:column;
+  flex-shrink:0;transition:width .25s ease,opacity .25s ease;overflow:hidden;
+}
+#tools-panel.hidden{width:0;opacity:0;pointer-events:none;}
+
+.tp-header{
+  display:flex;align-items:center;padding:10px 14px 0;gap:6px;flex-shrink:0;
+}
+.tp-tab{
+  flex:1;padding:7px 0;border:none;background:transparent;
+  color:var(--tx3);cursor:pointer;font-size:10px;font-family:'Orbitron';
+  font-weight:700;letter-spacing:.8px;border-bottom:2px solid transparent;
+  transition:all .15s;
+}
+.tp-tab.active{color:var(--c);border-bottom-color:var(--c);}
+.tp-tab:hover:not(.active){color:var(--tx2);}
+
+.tp-body{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.tp-pane{display:none;flex-direction:column;height:100%;overflow:hidden;}
+.tp-pane.active{display:flex;}
+
+/* INTERCEPT */
+#intercept-toolbar{
+  display:flex;align-items:center;gap:6px;padding:8px 12px;
+  border-bottom:1px solid var(--bd);flex-shrink:0;
+}
+#intercept-toolbar span{font-size:10px;color:var(--tx3);font-family:'JetBrains Mono';}
+.ib{
+  padding:4px 10px;border-radius:6px;border:1px solid var(--bd2);
+  background:transparent;color:var(--tx2);font-size:10px;cursor:pointer;
+  font-family:'Space Grotesk';transition:all .15s;
+}
+.ib:hover{border-color:var(--c);color:var(--c);}
+.ib.active{background:rgba(255,51,85,.12);border-color:var(--r);color:var(--r);}
+#intercept-filter{
+  flex:1;background:var(--sf2);border:1px solid var(--bd);border-radius:6px;
+  padding:4px 8px;color:var(--tx);font-size:10px;font-family:'JetBrains Mono';outline:none;
+}
+
+#requests-list{flex:1;overflow-y:auto;font-family:'JetBrains Mono';font-size:11px;}
+.req-item{
+  display:flex;align-items:center;gap:8px;padding:7px 12px;
+  border-bottom:1px solid var(--bd);cursor:pointer;transition:background .1s;
+  position:relative;
+}
+.req-item:hover{background:rgba(255,255,255,.03);}
+.req-item.selected{background:rgba(0,229,255,.06);}
+.req-method{
+  font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;
+  flex-shrink:0;min-width:36px;text-align:center;
+}
+.m-GET{background:rgba(0,255,136,.15);color:var(--g);}
+.m-POST{background:rgba(255,153,0,.15);color:var(--w);}
+.m-PUT{background:rgba(124,58,237,.2);color:var(--p);}
+.m-DELETE{background:rgba(255,51,85,.15);color:var(--r);}
+.m-PATCH{background:rgba(0,229,255,.1);color:var(--c);}
+.req-status{font-size:10px;font-weight:700;flex-shrink:0;min-width:30px;}
+.s-2xx{color:var(--g);}.s-3xx{color:var(--c);}.s-4xx{color:var(--w);}.s-5xx{color:var(--r);}
+.req-url{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tx2);}
+.req-dur{color:var(--tx3);font-size:9px;flex-shrink:0;}
+
+#req-detail{
+  height:240px;border-top:1px solid var(--bd);overflow-y:auto;
+  flex-shrink:0;background:var(--sf2);
+}
+.rd-tabs{display:flex;border-bottom:1px solid var(--bd);padding:0 8px;}
+.rd-tab{
+  padding:6px 10px;font-size:9px;font-family:'Orbitron';font-weight:700;
+  border:none;background:transparent;color:var(--tx3);cursor:pointer;
+  border-bottom:2px solid transparent;letter-spacing:.5px;transition:all .15s;
+}
+.rd-tab.active{color:var(--c);border-bottom-color:var(--c);}
+.rd-content{padding:10px 12px;font-family:'JetBrains Mono';font-size:10px;
+  color:var(--tx2);line-height:1.6;white-space:pre-wrap;word-break:break-all;}
+.hdr-k{color:var(--c);}.hdr-v{color:var(--tx2);}
+.send-ave-btn{
+  margin:8px 12px;padding:6px 12px;background:linear-gradient(135deg,var(--c),var(--m));
+  border:none;border-radius:7px;color:#07070f;font-size:9px;font-family:'Orbitron';
+  font-weight:700;cursor:pointer;display:block;width:calc(100% - 24px);
+}
+
+/* HEADERS */
+#headers-pane{padding:12px;}
+.h-domain{font-family:'JetBrains Mono';font-size:11px;color:var(--c);margin-bottom:10px;
+  padding:6px 10px;background:var(--sf2);border-radius:7px;}
+.h-section{margin-bottom:12px;}
+.h-section-title{font-size:9px;font-family:'Orbitron';font-weight:700;color:var(--tx3);
+  letter-spacing:1px;margin-bottom:6px;}
+.h-entry{display:flex;gap:8px;padding:4px 0;border-bottom:1px solid var(--bd);font-size:10px;}
+.h-key{color:var(--c);font-family:'JetBrains Mono';min-width:140px;flex-shrink:0;}
+.h-val{color:var(--tx2);font-family:'JetBrains Mono';word-break:break-all;}
+.h-badge{
+  display:inline-block;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:700;
+  margin-left:4px;
+}
+.badge-ok{background:rgba(0,255,136,.15);color:var(--g);}
+.badge-warn{background:rgba(255,153,0,.15);color:var(--w);}
+.badge-bad{background:rgba(255,51,85,.15);color:var(--r);}
+
+/* TECH DETECTOR */
+#tech-pane{overflow-y:auto;padding:12px;}
+.tech-domain{font-family:'JetBrains Mono';font-size:11px;color:var(--c);margin-bottom:12px;
+  padding:6px 10px;background:var(--sf2);border-radius:7px;}
+.tech-group{margin-bottom:14px;}
+.tech-group-title{font-size:9px;font-family:'Orbitron';font-weight:700;color:var(--tx3);
+  letter-spacing:1px;margin-bottom:8px;}
+.tech-item{
+  display:flex;align-items:center;gap:10px;padding:7px 10px;
+  background:var(--sf2);border:1px solid var(--bd);border-radius:9px;margin-bottom:5px;
+}
+.tech-icon{font-size:16px;flex-shrink:0;}
+.tech-name{font-weight:600;font-size:12px;}
+.tech-version{font-size:10px;color:var(--tx3);font-family:'JetBrains Mono';}
+.tech-conf{margin-left:auto;font-size:9px;padding:2px 7px;border-radius:4px;}
+.conf-high{background:rgba(0,255,136,.12);color:var(--g);}
+.conf-med{background:rgba(255,153,0,.12);color:var(--w);}
+.conf-low{background:rgba(255,255,255,.07);color:var(--tx3);}
+
+/* NOTES */
+#notes-pane{display:flex;flex-direction:column;padding:10px;}
+.notes-domain{font-family:'JetBrains Mono';font-size:10px;color:var(--c);margin-bottom:8px;}
+#notes-textarea{
+  flex:1;background:var(--sf2);border:1px solid var(--bd);border-radius:9px;
+  padding:10px;color:var(--tx);font-family:'JetBrains Mono';font-size:11px;
+  resize:none;outline:none;line-height:1.6;
+}
+#notes-textarea:focus{border-color:var(--c);}
+.notes-btn{
+  margin-top:8px;padding:7px;border-radius:8px;border:none;
+  background:rgba(0,229,255,.1);color:var(--c);font-family:'Orbitron';
+  font-size:9px;font-weight:700;cursor:pointer;letter-spacing:.5px;
+}
+
+/* STATUS BAR */
+#statusbar{
+  height:22px;display:flex;align-items:center;padding:0 12px;gap:12px;
+  background:#060610;border-top:1px solid var(--bd);flex-shrink:0;
+  font-size:10px;color:var(--tx3);font-family:'JetBrains Mono';
+}
+#sb-url{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sb-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.sb-dot.on{background:var(--g);box-shadow:0 0 4px var(--g);}
+.sb-dot.off{background:var(--tx3);}
+#sb-capture-label{color:var(--tx3);}
+#sb-req-count{color:var(--c);}
+
+/* SCROLLBARS */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px;}
+
+/* EMPTY STATES */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;gap:10px;color:var(--tx3);}
+.empty-state i{font-size:28px;}
+.empty-state p{font-size:11px;}
+
+/* TOOLTIP */
+[title]{position:relative;}
+</style>
+</head>
+<body style="display:flex;flex-direction:column;height:100vh;">
+
+<!-- TITLE BAR -->
+<div id="titlebar">
+  <div class="logo">
+    <div>
+      <div class="logo-text">AVE<span style="color:var(--m)">BROWSER</span></div>
+      <div class="logo-sub">BUG BOUNTY EDITION</div>
+    </div>
+  </div>
+  <div id="tabs-bar"></div>
+  <button id="btn-new-tab" title="Nova aba (Ctrl+T)"><i class="fa-solid fa-plus"></i></button>
+  <div style="flex:1;min-width:20px;"></div>
+  <div class="win-controls">
+    <button class="win-btn" onclick="window.ave.minimize()" title="Minimizar"><i class="fa-regular fa-window-minimize"></i></button>
+    <button class="win-btn" id="btn-max" onclick="toggleMax()" title="Maximizar"><i class="fa-regular fa-square" id="max-icon"></i></button>
+    <button class="win-btn close" onclick="window.ave.close()" title="Fechar"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+</div>
+
+<!-- NAV BAR -->
+<div id="navbar">
+  <button class="nav-btn" id="btn-back"    onclick="navBack()"    title="Voltar (Alt+Esq)" disabled><i class="fa-solid fa-arrow-left"></i></button>
+  <button class="nav-btn" id="btn-forward" onclick="navForward()" title="Avançar (Alt+Dir)" disabled><i class="fa-solid fa-arrow-right"></i></button>
+  <button class="nav-btn" id="btn-reload"  onclick="navReload()"  title="Recarregar (F5)"><i class="fa-solid fa-rotate-right"></i></button>
+  <button class="nav-btn" id="btn-home"    onclick="navHome()"    title="Nova aba"><i class="fa-solid fa-house"></i></button>
+
+  <div id="url-bar-wrap">
+    <i class="fa-solid fa-lock" id="sec-icon"></i>
+    <input id="url-input" placeholder="Pesquisar ou introduzir URL..." autocomplete="off" spellcheck="false">
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- Quick tools -->
+  <button class="nav-btn" onclick="openDevTools()" title="DevTools (F12)"><i class="fa-solid fa-terminal"></i></button>
+  <button class="nav-btn" onclick="copyCurrentUrl()" title="Copiar URL"><i class="fa-regular fa-copy"></i></button>
+  <button class="nav-btn" id="btn-scope" onclick="toggleScope()" title="Verificar scope" style="color:var(--tx3)"><i class="fa-solid fa-crosshairs"></i></button>
+
+  <div class="sep"></div>
+
+  <button id="btn-tools" onclick="toggleTools()">
+    <div class="dot" id="capture-dot"></div>
+    TOOLS
+    <i class="fa-solid fa-chevron-right" id="tools-arrow" style="font-size:9px;transition:transform .2s;"></i>
+  </button>
+
+  <button id="btn-aveone" onclick="window.ave.openAveOne()" title="Abrir AveOne">
+    <i class="fa-solid fa-shield-halved"></i> AVEONE
+  </button>
+</div>
+
+<!-- MAIN AREA -->
+<div id="main" style="flex:1;overflow:hidden;display:flex;">
+  <!-- WEBVIEWS -->
+  <div id="webview-container">
+    <div id="progress-bar"></div>
+    <!-- webviews created dynamically -->
+    <!-- new tab page -->
+    <div id="newtab-page" style="display:none;">
+      <div>
+        <div class="nt-logo">AVE<span style="background:linear-gradient(90deg,var(--m),var(--p));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">BROWSER</span></div>
+        <div class="nt-sub" style="text-align:center;margin-top:4px;">BUG BOUNTY EDITION · POWERED BY AVEONE</div>
+      </div>
+      <div class="nt-search">
+        <i class="fa-solid fa-magnifying-glass" style="color:var(--tx3);"></i>
+        <input id="nt-search-input" placeholder="Pesquisar ou introduzir URL...">
+        <button onclick="ntSearch()">GO</button>
+      </div>
+      <div class="nt-bookmarks" id="nt-bookmarks"></div>
+    </div>
+  </div>
+
+  <!-- TOOLS PANEL -->
+  <div id="tools-panel" class="hidden">
+    <div class="tp-header">
+      <button class="tp-tab active" data-pane="intercept" onclick="switchPane(this)">INTERCEPT</button>
+      <button class="tp-tab" data-pane="headers"   onclick="switchPane(this)">HEADERS</button>
+      <button class="tp-tab" data-pane="tech"      onclick="switchPane(this)">TECH</button>
+      <button class="tp-tab" data-pane="notes"     onclick="switchPane(this)">NOTAS</button>
+    </div>
+    <div class="tp-body">
+
+      <!-- INTERCEPT PANE -->
+      <div class="tp-pane active" id="pane-intercept">
+        <div id="intercept-toolbar">
+          <button class="ib active" id="btn-capture" onclick="toggleCapture()">
+            <i class="fa-solid fa-circle-dot"></i> CAPTURAR
+          </button>
+          <button class="ib" onclick="clearCaptures()"><i class="fa-solid fa-trash"></i></button>
+          <input id="intercept-filter" placeholder="filtrar URL..." oninput="filterRequests()">
+          <span id="req-count-label">0</span>
+        </div>
+        <div id="requests-list"></div>
+        <div id="req-detail" style="display:none;">
+          <div class="rd-tabs">
+            <button class="rd-tab active" data-rd="req-hdrs" onclick="switchRd(this)">REQ HEADERS</button>
+            <button class="rd-tab" data-rd="res-hdrs"  onclick="switchRd(this)">RES HEADERS</button>
+            <button class="rd-tab" data-rd="raw"       onclick="switchRd(this)">RAW</button>
+          </div>
+          <div class="rd-content" id="rd-req-hdrs"></div>
+          <div class="rd-content" id="rd-res-hdrs" style="display:none;"></div>
+          <div class="rd-content" id="rd-raw"      style="display:none;"></div>
+          <button class="send-ave-btn" onclick="sendSelectedToAveOne()">
+            <i class="fa-solid fa-paper-plane"></i> ENVIAR PARA AVEONE
+          </button>
+        </div>
+      </div>
+
+      <!-- HEADERS PANE -->
+      <div class="tp-pane" id="pane-headers">
+        <div style="overflow-y:auto;flex:1;" id="headers-pane">
+          <div class="empty-state"><i class="fa-solid fa-shield"></i><p>Navega para um site para ver headers</p></div>
+        </div>
+      </div>
+
+      <!-- TECH PANE -->
+      <div class="tp-pane" id="pane-tech">
+        <div style="overflow-y:auto;flex:1;" id="tech-pane">
+          <div class="empty-state"><i class="fa-solid fa-microchip"></i><p>Navega para um site para detectar tecnologias</p></div>
+        </div>
+      </div>
+
+      <!-- NOTES PANE -->
+      <div class="tp-pane" id="pane-notes" style="padding:10px;display:none;flex-direction:column;">
+        <div class="notes-domain" id="notes-domain">sem domínio activo</div>
+        <textarea id="notes-textarea" placeholder="Notas para este alvo...&#10;&#10;- Findings&#10;- Paths interessantes&#10;- Credenciais testadas&#10;- Vulnerabilidades confirmadas"></textarea>
+        <button class="notes-btn" onclick="saveNote()"><i class="fa-solid fa-floppy-disk"></i> GUARDAR NOTA</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- STATUS BAR -->
+<div id="statusbar">
+  <div class="sb-dot off" id="sb-dot"></div>
+  <span id="sb-capture-label">captura inactiva</span>
+  <div class="sep" style="height:12px;"></div>
+  <span id="sb-req-count">0 requests</span>
+  <div class="sep" style="height:12px;"></div>
+  <span id="sb-url" style="flex:1;"></span>
+  <span id="sb-tech-quick" style="color:var(--p);"></span>
+</div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+let tabs = [];
+let activeTabId = null;
+let toolsOpen = false;
+let capturingEnabled = true;
+let allCaptures = [];
+let selectedCapture = null;
+let notes = {};
+let scopeDomains = [];
+
+// Default bookmarks
+const BOOKMARKS = [
+  { name:'HackerOne',  url:'https://hackerone.com',         icon:'🏆' },
+  { name:'Bugcrowd',   url:'https://bugcrowd.com',          icon:'🐛' },
+  { name:'OWASP',      url:'https://owasp.org',             icon:'🛡️' },
+  { name:'AveBounty',  url:'https://aveone.com.br/avebounty/', icon:'⚡' },
+  { name:'CVE',        url:'https://cve.mitre.org',         icon:'🔍' },
+  { name:'Shodan',     url:'https://shodan.io',             icon:'📡' },
+  { name:'GTFOBins',   url:'https://gtfobins.github.io',    icon:'💀' },
+  { name:'PayloadAll', url:'https://payloadallthethings.com',icon:'🎯'},
+];
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderBookmarks();
+  newTab();
+  setupListeners();
+  loadNotes();
+  startCapture();
+});
+
+function setupListeners() {
+  // URL bar
+  const urlInput = document.getElementById('url-input');
+  urlInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') navigate(urlInput.value);
+    if (e.key === 'Escape') { urlInput.blur(); urlInput.value = getActiveTab()?.url || ''; }
+  });
+  urlInput.addEventListener('focus', () => urlInput.select());
+
+  // New tab search
+  document.getElementById('nt-search-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') ntSearch();
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.key === 't') { e.preventDefault(); newTab(); }
+    if (e.ctrlKey && e.key === 'w') { e.preventDefault(); closeTab(activeTabId); }
+    if (e.ctrlKey && e.key === 'l') { e.preventDefault(); document.getElementById('url-input').focus(); }
+    if (e.ctrlKey && e.key === 'r') { e.preventDefault(); navReload(); }
+    if (e.key === 'F5') navReload();
+    if (e.key === 'F12') openDevTools();
+    if (e.altKey && e.key === 'ArrowLeft')  navBack();
+    if (e.altKey && e.key === 'ArrowRight') navForward();
+  });
+
+  // Window state
+  window.ave.on('window-state', state => {
+    document.getElementById('max-icon').className =
+      state === 'maximized' ? 'fa-regular fa-clone' : 'fa-regular fa-square';
+  });
+
+  // Captures from main
+  window.ave.on('request-captured', entry => {
+    allCaptures.unshift(entry);
+    if (allCaptures.length > 300) allCaptures.pop();
+    renderRequests();
+    updateStatusBar();
+  });
+  window.ave.on('response-captured', upd => {
+    const e = allCaptures.find(r => r.id === upd.id);
+    if (e) { Object.assign(e, upd); renderRequests(); }
+    // Update headers pane if same domain
+    updateHeadersPane(upd);
+  });
+
+  // New tab button
+  document.getElementById('btn-new-tab').addEventListener('click', newTab);
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+let tabIdCounter = 0;
+function newTab(url = '') {
+  const id = ++tabIdCounter;
+  const wv = document.createElement('webview');
+  wv.id = `wv-${id}`;
+  wv.setAttribute('partition', 'persist:avebrowser');
+  wv.setAttribute('allowpopups', '');
+  wv.setAttribute('webpreferences', 'contextIsolation=true');
+  document.getElementById('webview-container').appendChild(wv);
+
+  const tab = { id, url: url || '', title: 'Nova Aba', favicon: '', loading: false, wv };
+  tabs.push(tab);
+
+  // Webview events
+  wv.addEventListener('did-start-loading', () => {
+    tab.loading = true;
+    document.getElementById('progress-bar').style.display = 'block';
+    renderTabs(); updateNavBtns();
+  });
+  wv.addEventListener('did-stop-loading', () => {
+    tab.loading = false;
+    document.getElementById('progress-bar').style.display = 'none';
+    renderTabs(); updateNavBtns();
+  });
+  wv.addEventListener('did-navigate', e => {
+    tab.url = e.url;
+    if (id === activeTabId) {
+      document.getElementById('url-input').value = e.url;
+      updateSecIcon(e.url);
+      document.getElementById('sb-url').textContent = e.url;
+      document.getElementById('notes-domain').textContent = getDomain(e.url);
+      loadNoteForDomain(getDomain(e.url));
+      detectTech(id);
+    }
+    updateNavBtns();
+  });
+  wv.addEventListener('did-navigate-in-page', e => {
+    tab.url = e.url;
+    if (id === activeTabId) document.getElementById('url-input').value = e.url;
+  });
+  wv.addEventListener('page-title-updated', e => {
+    tab.title = e.title || 'Sem título';
+    renderTabs();
+  });
+  wv.addEventListener('page-favicon-updated', e => {
+    tab.favicon = e.favicons?.[0] || '';
+    renderTabs();
+  });
+  wv.addEventListener('dom-ready', () => {
+    if (id === activeTabId) updateNavBtns();
+  });
+  wv.addEventListener('new-window', e => {
+    newTab(e.url);
+  });
+
+  // Load URL or show new tab page
+  if (url) {
+    wv.src = normalizeUrl(url);
+    tab.url = normalizeUrl(url);
+  } else {
+    showNewTabPage();
+  }
+
+  activateTab(id);
+  renderTabs();
+  return id;
+}
+
+function activateTab(id) {
+  activeTabId = id;
+  tabs.forEach(t => {
+    t.wv.classList.toggle('active', t.id === id);
+  });
+  const tab = getActiveTab();
+  if (!tab) return;
+
+  const isNew = !tab.url;
+  document.getElementById('newtab-page').style.display = isNew ? 'flex' : 'none';
+
+  if (tab.url) {
+    document.getElementById('url-input').value = tab.url;
+    updateSecIcon(tab.url);
+    document.getElementById('sb-url').textContent = tab.url;
+    document.getElementById('notes-domain').textContent = getDomain(tab.url);
+    loadNoteForDomain(getDomain(tab.url));
+    detectTech(id);
+  } else {
+    document.getElementById('url-input').value = '';
+    document.getElementById('sb-url').textContent = '';
+    document.getElementById('notes-domain').textContent = 'sem domínio activo';
+  }
+  updateNavBtns();
+  renderTabs();
+}
+
+function closeTab(id) {
+  const idx = tabs.findIndex(t => t.id === id);
+  if (idx === -1) return;
+  tabs[idx].wv.remove();
+  tabs.splice(idx, 1);
+  if (tabs.length === 0) { newTab(); return; }
+  if (activeTabId === id) activateTab(tabs[Math.min(idx, tabs.length - 1)].id);
+  else renderTabs();
+}
+
+function getActiveTab() { return tabs.find(t => t.id === activeTabId); }
+
+function showNewTabPage() {
+  document.getElementById('newtab-page').style.display = 'flex';
+  document.getElementById('nt-search-input').focus();
+}
+
+function renderTabs() {
+  const bar = document.getElementById('tabs-bar');
+  bar.innerHTML = '';
+  tabs.forEach(tab => {
+    const el = document.createElement('div');
+    el.className = 'tab' + (tab.id === activeTabId ? ' active' : '') + (tab.loading ? ' tab-loading' : '');
+    el.innerHTML = `
+      <div class="tab-icon">${tab.favicon ? `<img src="${tab.favicon}" width="14" height="14" style="border-radius:3px;" onerror="this.style.display='none'">` : '<i class="fa-solid fa-globe" style="font-size:10px;color:var(--tx3)"></i>'}</div>
+      <div class="tab-title">${esc(tab.title || 'Nova Aba')}</div>
+      <button class="tab-close" data-id="${tab.id}"><i class="fa-solid fa-xmark"></i></button>
+    `;
+    el.addEventListener('mousedown', e => { if (e.button === 1) { closeTab(tab.id); return; } });
+    el.addEventListener('click', e => { if (!e.target.closest('.tab-close')) activateTab(tab.id); });
+    el.querySelector('.tab-close').addEventListener('click', e => { e.stopPropagation(); closeTab(tab.id); });
+    bar.appendChild(el);
+  });
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+function navigate(input) {
+  const url = normalizeUrl(input.trim());
+  const tab = getActiveTab();
+  if (!tab) return;
+  tab.url = url;
+  document.getElementById('newtab-page').style.display = 'none';
+  tab.wv.src = url;
+  document.getElementById('url-input').value = url;
+  updateSecIcon(url);
+  document.getElementById('url-input').blur();
+}
+
+function ntSearch() {
+  const q = document.getElementById('nt-search-input').value.trim();
+  if (!q) return;
+  navigate(q);
+  document.getElementById('nt-search-input').value = '';
+}
+
+function navBack()    { getActiveTab()?.wv?.goBack(); }
+function navForward() { getActiveTab()?.wv?.goForward(); }
+function navReload()  { getActiveTab()?.wv?.reload(); }
+function navHome()    { const t = getActiveTab(); if(t){t.url=''; t.wv.stop(); showNewTabPage(); document.getElementById('url-input').value=''; renderTabs();} }
+
+function updateNavBtns() {
+  const t = getActiveTab();
+  document.getElementById('btn-back').disabled    = !t?.wv?.canGoBack?.();
+  document.getElementById('btn-forward').disabled = !t?.wv?.canGoForward?.();
+  const icon = document.getElementById('btn-reload').querySelector('i');
+  icon.className = t?.loading ? 'fa-solid fa-xmark' : 'fa-solid fa-rotate-right';
+}
+
+function openDevTools() { getActiveTab()?.wv?.openDevTools(); }
+
+function copyCurrentUrl() {
+  const url = getActiveTab()?.url;
+  if (url) navigator.clipboard.writeText(url);
+}
+
+function toggleMax() { window.ave.maximize(); }
+
+// ── SECURITY ICON ─────────────────────────────────────────────────────────────
+function updateSecIcon(url) {
+  const icon = document.getElementById('sec-icon');
+  if (!url || url.startsWith('about:') || url === 'new-tab') {
+    icon.className = 'fa-solid fa-globe'; icon.style.color = 'var(--tx3)'; return;
+  }
+  if (url.startsWith('https://')) {
+    icon.className = 'fa-solid fa-lock https'; icon.style.color = 'var(--g)';
+  } else {
+    icon.className = 'fa-solid fa-lock-open http'; icon.style.color = 'var(--w)';
+  }
+}
+
+// ── TOOLS PANEL ───────────────────────────────────────────────────────────────
+function toggleTools() {
+  toolsOpen = !toolsOpen;
+  document.getElementById('tools-panel').classList.toggle('hidden', !toolsOpen);
+  document.getElementById('btn-tools').classList.toggle('active', toolsOpen);
+  document.getElementById('tools-arrow').style.transform = toolsOpen ? 'rotate(180deg)' : '';
+}
+
+function switchPane(btn) {
+  document.querySelectorAll('.tp-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const pane = btn.dataset.pane;
+  document.querySelectorAll('.tp-pane').forEach(p => {
+    p.classList.remove('active');
+    p.style.display = 'none';
+  });
+  const target = document.getElementById('pane-' + pane);
+  target.classList.add('active');
+  target.style.display = 'flex';
+  if (pane === 'notes') loadNoteForDomain(getDomain(getActiveTab()?.url || ''));
+}
+
+// ── CAPTURE ──────────────────────────────────────────────────────────────────
+function startCapture() {
+  window.ave.on('request-captured', () => {});
+  updateStatusBar();
+}
+
+async function toggleCapture() {
+  capturingEnabled = !capturingEnabled;
+  await window.ave.toggleCapture(capturingEnabled);
+  const btn = document.getElementById('btn-capture');
+  const dot = document.getElementById('capture-dot');
+  const sbdot = document.getElementById('sb-dot');
+  btn.classList.toggle('active', capturingEnabled);
+  btn.innerHTML = `<i class="fa-solid fa-circle-dot"></i> ${capturingEnabled ? 'CAPTURAR' : 'PARADO'}`;
+  dot.classList.toggle('off', !capturingEnabled);
+  sbdot.classList.toggle('on', capturingEnabled);
+  sbdot.classList.toggle('off', !capturingEnabled);
+  document.getElementById('sb-capture-label').textContent = capturingEnabled ? 'a capturar' : 'captura inactiva';
+}
+
+async function clearCaptures() {
+  await window.ave.clearCaptures();
+  allCaptures = [];
+  selectedCapture = null;
+  document.getElementById('req-detail').style.display = 'none';
+  renderRequests();
+  updateStatusBar();
+}
+
+function filterRequests() {
+  renderRequests();
+}
+
+function renderRequests() {
+  const list   = document.getElementById('requests-list');
+  const filter = document.getElementById('intercept-filter').value.toLowerCase();
+  const filtered = allCaptures.filter(r => !filter || r.url.toLowerCase().includes(filter));
+  document.getElementById('req-count-label').textContent = filtered.length;
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty-state" style="padding:40px 0;"><i class="fa-solid fa-satellite-dish"></i><p>Sem requests capturados</p></div>';
+    return;
+  }
+
+  list.innerHTML = filtered.slice(0, 80).map(r => {
+    const domain = getDomain(r.url);
+    const path   = getPath(r.url);
+    const sc     = r.statusCode;
+    const scClass = !sc ? '' : sc < 300 ? 's-2xx' : sc < 400 ? 's-3xx' : sc < 500 ? 's-4xx' : 's-5xx';
+    const dur    = r.duration ? (r.duration < 1000 ? r.duration + 'ms' : (r.duration/1000).toFixed(1)+'s') : '…';
+    return `<div class="req-item${selectedCapture?.id===r.id?' selected':''}" onclick="selectCapture(${r.id})">
+      <span class="req-method m-${r.method}">${r.method}</span>
+      <span class="req-status ${scClass}">${sc||'…'}</span>
+      <span class="req-url" title="${esc(r.url)}">${esc(path)}</span>
+      <span class="req-dur">${dur}</span>
+    </div>`;
+  }).join('');
+}
+
+function selectCapture(id) {
+  selectedCapture = allCaptures.find(r => r.id === id);
+  if (!selectedCapture) return;
+  renderRequests();
+  document.getElementById('req-detail').style.display = 'flex';
+  document.getElementById('req-detail').style.flexDirection = 'column';
+  renderCaptureDetail(selectedCapture);
+}
+
+function renderCaptureDetail(r) {
+  // Request headers
+  const reqHdrs = Object.entries(r.requestHeaders || {})
+    .map(([k,v]) => `<span class="hdr-k">${esc(k)}</span>: <span class="hdr-v">${esc(Array.isArray(v)?v.join(', '):v)}</span>`)
+    .join('\n');
+  document.getElementById('rd-req-hdrs').innerHTML = reqHdrs || '<span style="color:var(--tx3)">Sem dados</span>';
+
+  // Response headers
+  const resHdrs = Object.entries(r.responseHeaders || {})
+    .map(([k,v]) => `<span class="hdr-k">${esc(k)}</span>: <span class="hdr-v">${esc(Array.isArray(v)?v.join(', '):v)}</span>`)
+    .join('\n');
+  document.getElementById('rd-res-hdrs').innerHTML = resHdrs || '<span style="color:var(--tx3)">Aguardar resposta…</span>';
+
+  // Raw
+  const raw = `${r.method} ${getPath(r.url)} HTTP/1.1\nHost: ${getDomain(r.url)}\n` +
+    Object.entries(r.requestHeaders || {}).map(([k,v])=>`${k}: ${Array.isArray(v)?v.join(', '):v}`).join('\n') +
+    (r.statusCode ? `\n\n--- RESPONSE ---\nHTTP/1.1 ${r.statusCode}\n` +
+    Object.entries(r.responseHeaders||{}).map(([k,v])=>`${k}: ${Array.isArray(v)?v.join(', '):v}`).join('\n') : '');
+  document.getElementById('rd-raw').textContent = raw;
+}
+
+function switchRd(btn) {
+  document.querySelectorAll('.rd-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.rd-content').forEach(c => c.style.display = 'none');
+  document.getElementById('rd-' + btn.dataset.rd.replace('-','_').replace('-','_')).style.display = 'block';
+  // fix IDs
+  const map = {'req-hdrs':'req-hdrs','res-hdrs':'res-hdrs','raw':'raw'};
+  document.querySelectorAll('.rd-content').forEach(c=>c.style.display='none');
+  document.getElementById('rd-'+btn.dataset.rd.replace('-','-')).style.display='block';
+}
+
+function sendSelectedToAveOne() {
+  if (!selectedCapture) return;
+  window.ave.sendToAveOne({
+    url: selectedCapture.url,
+    method: selectedCapture.method,
+    requestHeaders: selectedCapture.requestHeaders,
+    responseHeaders: selectedCapture.responseHeaders,
+    statusCode: selectedCapture.statusCode,
+  });
+}
+
+function updateStatusBar() {
+  const dot = document.getElementById('sb-dot');
+  dot.className = 'sb-dot ' + (capturingEnabled ? 'on' : 'off');
+  document.getElementById('sb-req-count').textContent = allCaptures.length + ' requests';
+}
+
+// ── HEADERS ANALYSIS ─────────────────────────────────────────────────────────
+const SECURITY_HEADERS = {
+  'strict-transport-security':  { label: 'HSTS',    good: true  },
+  'content-security-policy':    { label: 'CSP',     good: true  },
+  'x-frame-options':            { label: 'X-Frame', good: true  },
+  'x-content-type-options':     { label: 'XCTO',    good: true  },
+  'referrer-policy':            { label: 'Referrer',good: true  },
+  'permissions-policy':         { label: 'Perms',   good: true  },
+  'x-powered-by':               { label: 'X-Powered-By', expose: true },
+  'server':                     { label: 'Server',  expose: true },
+  'x-aspnet-version':           { label: 'ASP.NET', expose: true },
+  'x-aspnetmvc-version':        { label: 'ASP MVC', expose: true },
+};
+
+function updateHeadersPane(res) {
+  if (!getActiveTab()?.url) return;
+  const activeUrl = getActiveTab()?.url;
+  const resDomain = getDomain(res?.url || activeUrl || '');
+  const activeDomain = getDomain(activeUrl);
+  if (resDomain !== activeDomain) return;
+
+  const hdrs = res?.responseHeaders || {};
+  const hp = document.getElementById('headers-pane');
+  const hLow = Object.fromEntries(Object.entries(hdrs).map(([k,v])=>[k.toLowerCase(),Array.isArray(v)?v[0]:v]));
+
+  let html = `<div class="h-domain">${esc(activeDomain)}</div>`;
+
+  // Security headers check
+  html += '<div class="h-section"><div class="h-section-title">SEGURANÇA</div>';
+  const secKeys = Object.keys(SECURITY_HEADERS);
+  secKeys.forEach(k => {
+    const info = SECURITY_HEADERS[k];
+    const val = hLow[k];
+    if (info.expose) {
+      if (val) html += `<div class="h-entry"><span class="h-key">${k}</span><span class="h-val">${esc(val)} <span class="h-badge badge-warn">EXPOSIÇÃO</span></span></div>`;
+    } else {
+      if (val) html += `<div class="h-entry"><span class="h-key">${k}</span><span class="h-val">${esc(val.substring(0,80))}${val.length>80?'…':''} <span class="h-badge badge-ok">OK</span></span></div>`;
+      else     html += `<div class="h-entry"><span class="h-key" style="color:var(--tx3);">${k}</span><span class="h-val"><span class="h-badge badge-bad">EM FALTA</span></span></div>`;
+    }
+  });
+  html += '</div>';
+
+  // All headers
+  html += '<div class="h-section"><div class="h-section-title">TODOS OS HEADERS</div>';
+  Object.entries(hdrs).forEach(([k,v]) => {
+    const val = Array.isArray(v) ? v.join(', ') : v;
+    html += `<div class="h-entry"><span class="h-key">${esc(k)}</span><span class="h-val">${esc(val.substring(0,200))}</span></div>`;
+  });
+  html += '</div>';
+  hp.innerHTML = html;
+}
+
+// ── TECH DETECTOR ─────────────────────────────────────────────────────────────
+const TECH_PATTERNS = {
+  'WordPress':    { hdrs: ['x-powered-by:wordpress','link:wp-json'], icon:'🔵', cat:'CMS' },
+  'Jetpack':      { hdrs: ['link:jetpack'], icon:'⚡', cat:'Plugin' },
+  'Cloudflare':   { hdrs: ['cf-ray','server:cloudflare','x-amz-cf-id'], icon:'🟠', cat:'CDN/WAF' },
+  'CloudFront':   { hdrs: ['via:cloudfront','x-amz-cf-id','x-amz-cf-pop'], icon:'☁️', cat:'CDN' },
+  'AWS ALB':      { hdrs: ['awsalb','awsalbcors'], icon:'🟡', cat:'Load Balancer' },
+  'Nginx':        { hdrs: ['server:nginx'], icon:'🟢', cat:'Web Server' },
+  'Apache':       { hdrs: ['server:apache'], icon:'🔴', cat:'Web Server' },
+  'PHP':          { hdrs: ['x-powered-by:php'], icon:'🐘', cat:'Language' },
+  'ASP.NET':      { hdrs: ['x-powered-by:asp.net','x-aspnet'], icon:'🔷', cat:'Framework' },
+  'WP Rocket':    { hdrs: ['x-cache-cms'], icon:'🚀', cat:'Cache' },
+  'AWS WAF':      { hdrs: ['x-amzn-waf'], icon:'🔒', cat:'WAF' },
+  'Yoast SEO':    { hdrs: ['link:yoast'], icon:'🟩', cat:'SEO Plugin' },
+};
+
+async function detectTech(tabId) {
+  const tab = tabs.find(t => t.id === tabId);
+  if (!tab || !tab.url) return;
+  const domain = getDomain(tab.url);
+
+  // Collect from recent captures for this domain
+  const domainCaptures = allCaptures.filter(r => getDomain(r.url) === domain);
+  const allHdrs = {};
+  domainCaptures.forEach(c => {
+    Object.entries(c.responseHeaders || {}).forEach(([k,v]) => {
+      allHdrs[k.toLowerCase()] = Array.isArray(v) ? v.join(', ') : v;
+    });
+  });
+
+  const detected = [];
+  Object.entries(TECH_PATTERNS).forEach(([name, pattern]) => {
+    let matched = false;
+    pattern.hdrs.forEach(rule => {
+      const [hk, hv] = rule.split(':');
+      if (hv) {
+        if (allHdrs[hk]?.toLowerCase().includes(hv)) matched = true;
+      } else {
+        if (Object.keys(allHdrs).some(k => k.includes(hk))) matched = true;
+      }
+    });
+    if (matched) detected.push({ name, ...pattern });
+  });
+
+  renderTechPane(domain, detected);
+
+  // Update quick tech in status bar
+  const cms = detected.filter(d => d.cat === 'CMS').map(d=>d.name).join(', ');
+  document.getElementById('sb-tech-quick').textContent = cms ? `• ${cms}` : '';
+}
+
+function renderTechPane(domain, detected) {
+  const pane = document.getElementById('tech-pane');
+  if (!detected.length) {
+    pane.innerHTML = `<div class="tech-domain">${esc(domain)}</div><div class="empty-state"><i class="fa-solid fa-magnifying-glass"></i><p>Nenhuma tecnologia detectada ainda<br><span style="font-size:9px">Continua a navegar para mais dados</span></p></div>`;
+    return;
+  }
+  const bycat = {};
+  detected.forEach(d => { if (!bycat[d.cat]) bycat[d.cat]=[]; bycat[d.cat].push(d); });
+
+  let html = `<div class="tech-domain">${esc(domain)}</div>`;
+  Object.entries(bycat).forEach(([cat, items]) => {
+    html += `<div class="tech-group"><div class="tech-group-title">${esc(cat)}</div>`;
+    items.forEach(d => {
+      html += `<div class="tech-item">
+        <span class="tech-icon">${d.icon}</span>
+        <div><div class="tech-name">${esc(d.name)}</div></div>
+        <span class="tech-conf conf-high">DETECTADO</span>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  pane.innerHTML = html;
+}
+
+// ── SCOPE ─────────────────────────────────────────────────────────────────────
+function toggleScope() {
+  const url = getActiveTab()?.url;
+  if (!url) return;
+  const domain = getDomain(url);
+  const btn = document.getElementById('btn-scope');
+  const idx = scopeDomains.indexOf(domain);
+  if (idx === -1) {
+    scopeDomains.push(domain);
+    btn.style.color = 'var(--g)';
+    btn.title = `${domain} está no scope ✓`;
+  } else {
+    scopeDomains.splice(idx, 1);
+    btn.style.color = 'var(--tx3)';
+    btn.title = 'Verificar scope';
+  }
+}
+
+// ── NOTES ─────────────────────────────────────────────────────────────────────
+function loadNotes() {
+  try { notes = JSON.parse(localStorage.getItem('ave-notes') || '{}'); } catch { notes = {}; }
+}
+function loadNoteForDomain(domain) {
+  document.getElementById('notes-textarea').value = notes[domain] || '';
+  document.getElementById('notes-domain').textContent = domain || 'sem domínio activo';
+}
+function saveNote() {
+  const domain = getDomain(getActiveTab()?.url || '');
+  if (!domain) return;
+  notes[domain] = document.getElementById('notes-textarea').value;
+  localStorage.setItem('ave-notes', JSON.stringify(notes));
+  showToast('Nota guardada para ' + domain);
+}
+
+// ── BOOKMARKS ─────────────────────────────────────────────────────────────────
+function renderBookmarks() {
+  const wrap = document.getElementById('nt-bookmarks');
+  wrap.innerHTML = BOOKMARKS.map(b => `
+    <div class="nt-bk" onclick="navigate('${b.url}')">
+      <div class="icon">${b.icon}</div>
+      <div class="name">${b.name}</div>
+    </div>
+  `).join('');
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function normalizeUrl(input) {
+  if (!input) return '';
+  if (input.startsWith('http://') || input.startsWith('https://')) return input;
+  if (input.includes('.') && !input.includes(' ')) return 'https://' + input;
+  return 'https://www.google.com/search?q=' + encodeURIComponent(input);
+}
+
+function getDomain(url) {
+  try { return new URL(url).hostname; } catch { return url || ''; }
+}
+function getPath(url) {
+  try { const u = new URL(url); return u.pathname + u.search; } catch { return url; }
+}
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showToast(msg) {
+  let t = document.getElementById('_toast');
+  if (!t) { t=document.createElement('div'); t.id='_toast';
+    t.style.cssText='position:fixed;bottom:30px;left:50%;transform:translateX(-50%);z-index:9999;padding:10px 18px;border-radius:9px;background:rgba(0,255,136,.9);color:#07070f;font-size:12px;font-weight:700;pointer-events:none;transition:opacity .3s;';
+    document.body.appendChild(t); }
+  t.textContent=msg; t.style.opacity='1';
+  clearTimeout(t._t); t._t=setTimeout(()=>t.style.opacity='0',2500);
+}
+
+// Init capture state
+document.getElementById('sb-dot').className = 'sb-dot on';
+document.getElementById('sb-capture-label').textContent = 'a capturar';
+</script>
+</body>
+</html>
