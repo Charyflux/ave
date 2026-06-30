@@ -19,6 +19,7 @@
     "appId": "com.aveone.browser",
     "productName": "AveBrowser",
     "copyright": "AveOne Security",
+    "publish": "never",
     "directories": { "output": "dist" },
     "win": {
       "target": [{ "target": "nsis", "arch": ["x64"] }],
