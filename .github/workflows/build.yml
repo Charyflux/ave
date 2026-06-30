@@ -20,8 +20,11 @@ jobs:
 
       - name: Build Linux AppImage
         run: npm run build:linux
+        env:
+          GH_TOKEN: ""
+          GITHUB_TOKEN: ""
 
-      - name: Upload to Release
+      - name: Upload AppImage to Release
         uses: softprops/action-gh-release@v2
         with:
           files: dist/*.AppImage
@@ -42,8 +45,11 @@ jobs:
 
       - name: Build Windows installer
         run: npm run build:win
+        env:
+          GH_TOKEN: ""
+          GITHUB_TOKEN: ""
 
-      - name: Upload to Release
+      - name: Upload Windows installer to Release
         uses: softprops/action-gh-release@v2
         with:
           files: dist/*.exe
@@ -64,8 +70,11 @@ jobs:
 
       - name: Build macOS DMG
         run: npm run build:mac
+        env:
+          GH_TOKEN: ""
+          GITHUB_TOKEN: ""
 
-      - name: Upload to Release
+      - name: Upload macOS DMG to Release
         uses: softprops/action-gh-release@v2
         with:
           files: dist/*.dmg

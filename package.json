@@ -6,9 +6,9 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build:win": "electron-builder --win --publish never",
-    "build:mac": "electron-builder --mac --publish never",
-    "build:linux": "electron-builder --linux --publish never"
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
   },
   "dependencies": {},
   "devDependencies": {
@@ -19,26 +19,21 @@
     "appId": "com.aveone.browser",
     "productName": "AveBrowser",
     "copyright": "AveOne Security",
-    "publish": "never",
     "directories": { "output": "dist" },
-    "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
-      "icon": "assets/icon.ico"
-    },
-    "mac": {
-      "target": "dmg",
-      "icon": "assets/icon.icns"
-    },
     "linux": {
       "target": "AppImage",
       "icon": "assets/icon.png",
       "category": "Network"
     },
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }]
+    },
+    "mac": {
+      "target": "dmg"
+    },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "installerIcon": "assets/icon.ico",
-      "installerHeaderIcon": "assets/icon.ico"
+      "allowToChangeInstallationDirectory": true
     }
   }
 }
