@@ -146,10 +146,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-
 
 #webview-container{flex:1;position:relative;background:#000;}
 webview{
-  position:absolute;inset:0;width:100%;height:100%;
+  position:absolute;top:0;left:0;width:100%;height:100%;
   border:none;display:none;
 }
-webview.active{display:flex;}
+webview.active{display:block;}
 
 #progress-bar{
   position:absolute;top:0;left:0;right:0;height:2px;z-index:10;
@@ -641,8 +641,12 @@ function newTab(url = '') {
 
   // Load URL or show new tab page
   if (url) {
-    wv.src = normalizeUrl(url);
-    tab.url = normalizeUrl(url);
+    const norm = normalizeUrl(url);
+    tab.url = norm;
+    wv.addEventListener('dom-ready', () => {
+      if (wv.loadURL) wv.loadURL(norm).catch(()=>{});
+    }, { once: true });
+    wv.src = norm;
   } else {
     showNewTabPage();
   }
@@ -721,7 +725,12 @@ function navigate(input) {
   if (!tab) return;
   tab.url = url;
   document.getElementById('newtab-page').style.display = 'none';
-  tab.wv.src = url;
+  // loadURL is more reliable than .src on all platforms
+  if (tab.wv.loadURL) {
+    tab.wv.loadURL(url).catch(() => { tab.wv.src = url; });
+  } else {
+    tab.wv.src = url;
+  }
   document.getElementById('url-input').value = url;
   updateSecIcon(url);
   document.getElementById('url-input').blur();
