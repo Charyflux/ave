@@ -672,6 +672,7 @@ webview.active{visibility:visible;pointer-events:auto;}
   <button class="nav-btn" onclick="openDevTools()" title="DevTools (F12)"><i class="fa-solid fa-terminal"></i></button>
   <button class="nav-btn" onclick="copyCurrentUrl()" title="Copiar URL"><i class="fa-regular fa-copy"></i></button>
   <button class="nav-btn" id="btn-scope" onclick="toggleScope()" title="Verificar scope" style="color:var(--tx3)"><i class="fa-solid fa-crosshairs"></i></button>
+  <button class="nav-btn" id="btn-ext-quick" onclick="quickLoadExt()" title="Adicionar extensão Chrome (MV2)" style="color:var(--m);"><i class="fa-solid fa-puzzle-piece"></i></button>
 
   <div class="sep"></div>
 
@@ -1583,6 +1584,22 @@ async function extRefreshList() {
     });
   });
 }
+async function quickLoadExt() {
+  const p = await window.ave.dialogOpenFolder();
+  if (!p) return;
+  showToast('A carregar extensão…');
+  const r = await window.ave.extLoad(p);
+  if (r.ok) {
+    showToast('🧩 Extensão carregada: ' + r.name);
+    extRefreshList();
+    // Abrir o painel EXT para mostrar a extensão carregada
+    const extTab = document.querySelector('[data-pane="ext"]');
+    if (extTab) { switchPane(extTab); extTab.classList.add('active'); }
+  } else {
+    showToast('Erro ao carregar extensão: ' + r.error);
+  }
+}
+
 document.getElementById('ext-load-btn').addEventListener('click', async () => {
   const p = await window.ave.dialogOpenFolder();
   if (!p) return;
