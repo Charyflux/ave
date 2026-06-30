@@ -542,6 +542,47 @@ webview.active{visibility:visible;pointer-events:auto;}
 #sb-capture-label{color:var(--tx3);font-size:9px;}
 #sb-req-count{color:var(--c);font-size:9px;min-width:50px;}
 
+/* ── FIND BAR ── */
+#find-bar{
+  position:absolute;bottom:8px;right:8px;z-index:500;
+  display:none;align-items:center;gap:5px;
+  background:var(--sf2);border:1px solid var(--bd2);
+  border-radius:8px;padding:5px 8px;
+  box-shadow:0 4px 20px rgba(0,0,0,.5);
+}
+#find-bar.visible{display:flex;}
+#find-input{
+  background:var(--sf3);border:1px solid var(--bd2);border-radius:5px;
+  color:var(--tx);padding:4px 8px;font-family:'JetBrains Mono';font-size:11px;
+  width:180px;outline:none;
+}
+#find-input:focus{border-color:var(--c);}
+#find-count{font-size:10px;color:var(--tx3);min-width:40px;font-family:'JetBrains Mono';}
+.find-btn{
+  background:transparent;border:1px solid var(--bd2);color:var(--tx3);
+  border-radius:5px;cursor:pointer;padding:3px 7px;font-size:11px;transition:all .1s;
+}
+.find-btn:hover{border-color:var(--c);color:var(--c);}
+
+/* ── DOWNLOAD TOAST ── */
+#dl-toast{
+  position:fixed;bottom:36px;right:8px;z-index:600;
+  background:var(--sf2);border:1px solid var(--g);border-radius:8px;
+  padding:8px 12px;font-size:10px;font-family:'JetBrains Mono';
+  color:var(--g);display:none;max-width:300px;
+  box-shadow:0 2px 12px rgba(0,255,136,.15);
+}
+
+/* ── ZOOM INDICATOR ── */
+#zoom-indicator{
+  position:absolute;top:8px;right:8px;z-index:400;
+  background:rgba(0,229,255,.15);border:1px solid var(--c);
+  border-radius:6px;padding:3px 10px;font-size:11px;
+  font-family:'Orbitron';font-weight:700;color:var(--c);
+  display:none;letter-spacing:1px;
+}
+#zoom-indicator.visible{display:block;}
+
 /* SCROLLBARS */
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
@@ -627,6 +668,16 @@ webview.active{visibility:visible;pointer-events:auto;}
   <!-- WEBVIEWS -->
   <div id="webview-container">
     <div id="progress-bar"></div>
+    <!-- Find in page bar -->
+    <div id="find-bar">
+      <input id="find-input" placeholder="Pesquisar na página..." autocomplete="off">
+      <span id="find-count"></span>
+      <button class="find-btn" id="find-prev" title="Anterior (Shift+Enter)">▲</button>
+      <button class="find-btn" id="find-next" title="Seguinte (Enter)">▼</button>
+      <button class="find-btn" id="find-close" title="Fechar (Esc)" style="color:var(--r);">✕</button>
+    </div>
+    <!-- Zoom indicator -->
+    <div id="zoom-indicator">100%</div>
     <!-- webviews created dynamically -->
     <!-- new tab page -->
     <div id="newtab-page" style="display:none;">
@@ -960,6 +1011,9 @@ webview.active{visibility:visible;pointer-events:auto;}
   </button>
 </div>
 
+<!-- Download notification -->
+<div id="dl-toast"></div>
+
 <!-- Floating reopen tab (shown when tools panel is closed) -->
 <button id="tp-reopen" onclick="toggleTools()" title="Abrir painel de ferramentas">TOOLS</button>
 
@@ -1046,14 +1100,31 @@ function setupListeners() {
 
   // Keyboard shortcuts
   document.addEventListener('keydown', e => {
-    if (e.ctrlKey && e.key === 't') { e.preventDefault(); newTab(); }
-    if (e.ctrlKey && e.key === 'w') { e.preventDefault(); closeTab(activeTabId); }
-    if (e.ctrlKey && e.key === 'l') { e.preventDefault(); document.getElementById('url-input').focus(); }
-    if (e.ctrlKey && e.key === 'r') { e.preventDefault(); navReload(); }
-    if (e.key === 'F5') navReload();
-    if (e.key === 'F12') openDevTools();
+    // Tab management
+    if (e.ctrlKey && e.key === 't')         { e.preventDefault(); newTab(); }
+    if (e.ctrlKey && e.key === 'w')         { e.preventDefault(); closeTab(activeTabId); }
+    if (e.ctrlKey && e.shiftKey && e.key === 'T') { e.preventDefault(); reopenLastTab(); }
+    if (e.ctrlKey && e.key === 'Tab')       { e.preventDefault(); switchTabBy(1); }
+    if (e.ctrlKey && e.shiftKey && e.key === 'Tab') { e.preventDefault(); switchTabBy(-1); }
+    if (e.ctrlKey && /^[1-9]$/.test(e.key)) { e.preventDefault(); activateTab(tabs[Math.min(+e.key - 1, tabs.length - 1)]?.id); }
+    // Navigation
+    if (e.ctrlKey && e.key === 'l')         { e.preventDefault(); urlFocus(); }
+    if (e.ctrlKey && e.key === 'r')         { e.preventDefault(); navReload(); }
+    if (e.key === 'F5')                     navReload();
+    if (e.key === 'F12')                    openDevTools();
+    if (e.key === 'F11')                    { e.preventDefault(); toggleFullscreen(); }
     if (e.altKey && e.key === 'ArrowLeft')  navBack();
     if (e.altKey && e.key === 'ArrowRight') navForward();
+    // Find in page
+    if (e.ctrlKey && e.key === 'f')         { e.preventDefault(); openFindBar(); }
+    // Zoom
+    if (e.ctrlKey && (e.key === '+' || e.key === '=')) { e.preventDefault(); zoomBy(1); }
+    if (e.ctrlKey && e.key === '-')         { e.preventDefault(); zoomBy(-1); }
+    if (e.ctrlKey && e.key === '0')         { e.preventDefault(); zoomReset(); }
+    // Print / source
+    if (e.ctrlKey && e.key === 'p')         { e.preventDefault(); getActiveTab()?.wv?.print(); }
+    if (e.ctrlKey && e.key === 'u')         { e.preventDefault(); viewSource(); }
+    if (e.ctrlKey && e.key === 'd')         { e.preventDefault(); addBookmark(); }
   });
 
   // Window state
@@ -1075,6 +1146,43 @@ function setupListeners() {
     // Update headers pane if same domain
     updateHeadersPane(upd);
   });
+
+  // Context menu actions from main process
+  window.ave.on('ctx-action', (action, data) => {
+    const tab = getActiveTab();
+    const wv = tab?.wv;
+    switch (action) {
+      case 'back':        wv?.goBack(); break;
+      case 'forward':     wv?.goForward(); break;
+      case 'reload':      wv?.reload(); break;
+      case 'copy':        wv?.copy(); break;
+      case 'cut':         wv?.cut(); break;
+      case 'paste':       wv?.paste(); break;
+      case 'select-all':  wv?.selectAll(); break;
+      case 'open-tab':    if (data?.url) newTab(data.url); break;
+      case 'search':      if (data?.text) navigate('https://www.google.com/search?q=' + encodeURIComponent(data.text)); break;
+      case 'view-source': viewSource(); break;
+      case 'devtools':    wv?.openDevTools(); break;
+      case 'print':       wv?.print(); break;
+      case 'save':        wv?.downloadURL(tab?.url || ''); break;
+    }
+  });
+
+  // Download notifications
+  window.ave.on('download-started', (info) => {
+    showDownloadToast(`⬇ A transferir: ${info.filename}`);
+  });
+  window.ave.on('download-done', (info) => {
+    if (info.state === 'completed') showDownloadToast(`✅ Concluído: ${info.filename}`);
+    else showDownloadToast(`❌ Falhou: ${info.filename}`);
+  });
+
+  // URL bar focus helper
+  function urlFocus() {
+    const inp = document.getElementById('url-input');
+    inp.focus();
+    inp.select();
+  }
 
   // New tab button
   document.getElementById('btn-new-tab').addEventListener('click', newTab);
@@ -1141,9 +1249,29 @@ function newTab(url = '') {
     }
     if (id === activeTabId) updateNavBtns();
   });
-  wv.addEventListener('new-window', e => {
-    newTab(e.url);
+  // new-window (legacy) + did-create-window (Electron 28)
+  wv.addEventListener('new-window', e => { newTab(e.url); });
+  wv.addEventListener('did-create-window', (win) => { win.close(); });
+
+  // Right-click context menu
+  wv.addEventListener('context-menu', (e) => {
+    const params = e.params || {};
+    params.canGoBack    = wv.canGoBack?.()    ?? false;
+    params.canGoForward = wv.canGoForward?.() ?? false;
+    window.ave.showContextMenu(params);
   });
+
+  // Find in page results
+  wv.addEventListener('found-in-page', (e) => {
+    const r = e.result;
+    const el = document.getElementById('find-count');
+    if (el) el.textContent = r.matches > 0 ? `${r.activeMatchOrdinal}/${r.matches}` : 'Nenhum';
+  });
+
+  // Audio playing indicator
+  wv.addEventListener('media-started-playing', () => { tab.audio = true; renderTabs(); });
+  wv.addEventListener('media-paused',           () => { tab.audio = false; renderTabs(); });
+
   wv.addEventListener('did-fail-load', e => {
     if (e.errorCode === -3 || e.validatedURL === 'about:blank') return; // ignore abort/blank
     if (id !== activeTabId) return;
@@ -1200,11 +1328,20 @@ function activateTab(id) {
   }
   updateNavBtns();
   renderTabs();
+  // Reset find bar and zoom indicator when switching tabs
+  closeFindBar?.();
+  document.getElementById('zoom-indicator')?.classList.remove('visible');
+  if (tab.wv) currentZoom = tab.zoom || 0;
 }
 
 function closeTab(id) {
   const idx = tabs.findIndex(t => t.id === id);
   if (idx === -1) return;
+  const url = tabs[idx].url;
+  if (url && !url.startsWith('about:') && !url.startsWith('view-source:')) {
+    _closedTabs.push(url);
+    if (_closedTabs.length > 20) _closedTabs.shift();
+  }
   tabs[idx].wv.remove();
   tabs.splice(idx, 1);
   if (tabs.length === 0) { newTab(); return; }
@@ -1228,6 +1365,7 @@ function renderTabs() {
     el.innerHTML = `
       <div class="tab-icon">${tab.favicon ? `<img src="${tab.favicon}" width="14" height="14" style="border-radius:3px;" onerror="this.style.display='none'">` : '<i class="fa-solid fa-globe" style="font-size:10px;color:var(--tx3)"></i>'}</div>
       <div class="tab-title">${esc(tab.title || 'Nova Aba')}</div>
+      ${tab.audio ? '<i class="fa-solid fa-volume-high" style="font-size:9px;color:var(--c);flex-shrink:0;"></i>' : ''}
       <button class="tab-close" data-id="${tab.id}"><i class="fa-solid fa-xmark"></i></button>
     `;
     el.addEventListener('mousedown', e => { if (e.button === 1) { closeTab(tab.id); return; } });
@@ -1280,6 +1418,118 @@ function updateNavBtns() {
 }
 
 function openDevTools() { getActiveTab()?.wv?.openDevTools(); }
+
+// ── ZOOM ─────────────────────────────────────────────────────────────────────
+let currentZoom = 0; // Electron zoom level: 0=100%, 1=120%, -1=83%
+const ZOOM_LEVELS = [-4,-3,-2,-1,0,1,2,3,4,5]; // ~50%..300%
+let zoomHideTimer = null;
+
+function zoomBy(delta) {
+  const tab = getActiveTab(); if (!tab?.wv) return;
+  const idx = ZOOM_LEVELS.indexOf(currentZoom);
+  const next = ZOOM_LEVELS[Math.max(0, Math.min(ZOOM_LEVELS.length-1, idx + delta))];
+  currentZoom = next;
+  tab.zoom = next;
+  tab.wv.setZoomLevel(currentZoom);
+  showZoomIndicator();
+}
+function zoomReset() {
+  const tab = getActiveTab(); if (!tab?.wv) return;
+  currentZoom = 0; tab.zoom = 0; tab.wv.setZoomLevel(0); showZoomIndicator();
+}
+function showZoomIndicator() {
+  const pct = Math.round(Math.pow(1.2, currentZoom) * 100);
+  const el = document.getElementById('zoom-indicator');
+  el.textContent = pct + '%';
+  el.classList.add('visible');
+  clearTimeout(zoomHideTimer);
+  zoomHideTimer = setTimeout(() => el.classList.remove('visible'), 1500);
+}
+
+// ── FIND IN PAGE ─────────────────────────────────────────────────────────────
+let findText = '';
+
+function openFindBar() {
+  document.getElementById('find-bar').classList.add('visible');
+  const inp = document.getElementById('find-input');
+  inp.focus(); inp.select();
+}
+function closeFindBar() {
+  document.getElementById('find-bar').classList.remove('visible');
+  document.getElementById('find-count').textContent = '';
+  findText = '';
+  getActiveTab()?.wv?.stopFindInPage('clearSelection');
+}
+document.getElementById('find-close').addEventListener('click', closeFindBar);
+document.getElementById('find-input').addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeFindBar(); return; }
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const wv = getActiveTab()?.wv; if (!wv || !findText) return;
+    wv.findInPage(findText, { forward: !e.shiftKey, findNext: true });
+  }
+});
+document.getElementById('find-input').addEventListener('input', e => {
+  findText = e.target.value;
+  const wv = getActiveTab()?.wv; if (!wv) return;
+  if (findText) wv.findInPage(findText);
+  else { wv.stopFindInPage('clearSelection'); document.getElementById('find-count').textContent = ''; }
+});
+document.getElementById('find-prev').addEventListener('click', () => {
+  const wv = getActiveTab()?.wv; if (!wv || !findText) return;
+  wv.findInPage(findText, { forward: false, findNext: true });
+});
+document.getElementById('find-next').addEventListener('click', () => {
+  const wv = getActiveTab()?.wv; if (!wv || !findText) return;
+  wv.findInPage(findText, { forward: true, findNext: true });
+});
+
+// ── FULLSCREEN ────────────────────────────────────────────────────────────────
+function toggleFullscreen() { window.ave.maximize(); }
+
+// ── VIEW SOURCE ───────────────────────────────────────────────────────────────
+function viewSource() {
+  const url = getActiveTab()?.url;
+  if (url && !url.startsWith('view-source:')) newTab('view-source:' + url);
+}
+
+// ── REOPEN CLOSED TAB ─────────────────────────────────────────────────────────
+const _closedTabs = [];
+const _origCloseTab = closeTab;
+
+// ── SWITCH TAB BY OFFSET ─────────────────────────────────────────────────────
+function switchTabBy(delta) {
+  const idx = tabs.findIndex(t => t.id === activeTabId);
+  const next = tabs[(idx + delta + tabs.length) % tabs.length];
+  if (next) activateTab(next.id);
+}
+
+// ── REOPEN LAST CLOSED ───────────────────────────────────────────────────────
+function reopenLastTab() {
+  const last = _closedTabs.pop();
+  if (last) newTab(last);
+}
+
+// ── BOOKMARK ──────────────────────────────────────────────────────────────────
+function addBookmark() {
+  const tab = getActiveTab(); if (!tab?.url) return;
+  let bk = JSON.parse(localStorage.getItem('ave-bookmarks') || '[]');
+  if (!bk.find(b => b.url === tab.url)) {
+    bk.unshift({ name: tab.title || getDomain(tab.url), url: tab.url, icon: tab.favicon || '' });
+    localStorage.setItem('ave-bookmarks', JSON.stringify(bk));
+    showToast('Bookmark adicionado: ' + getDomain(tab.url));
+  } else {
+    showToast('Já está nos bookmarks');
+  }
+}
+
+// ── DOWNLOAD TOAST ────────────────────────────────────────────────────────────
+let dlTimer = null;
+function showDownloadToast(msg) {
+  const el = document.getElementById('dl-toast');
+  el.textContent = msg; el.style.display = 'block';
+  clearTimeout(dlTimer); dlTimer = setTimeout(() => { el.style.display = 'none'; }, 4000);
+}
 
 function copyCurrentUrl() {
   const url = getActiveTab()?.url;
@@ -1417,11 +1667,8 @@ function switchRd(btn) {
   document.querySelectorAll('.rd-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   document.querySelectorAll('.rd-content').forEach(c => c.style.display = 'none');
-  document.getElementById('rd-' + btn.dataset.rd.replace('-','_').replace('-','_')).style.display = 'block';
-  // fix IDs
-  const map = {'req-hdrs':'req-hdrs','res-hdrs':'res-hdrs','raw':'raw'};
-  document.querySelectorAll('.rd-content').forEach(c=>c.style.display='none');
-  document.getElementById('rd-'+btn.dataset.rd.replace('-','-')).style.display='block';
+  const el = document.getElementById('rd-' + btn.dataset.rd);
+  if (el) el.style.display = 'block';
 }
 
 function sendSelectedToAveOne() {

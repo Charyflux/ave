@@ -2,39 +2,46 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('ave', {
   // Window
-  minimize:      () => ipcRenderer.invoke('window-minimize'),
-  maximize:      () => ipcRenderer.invoke('window-maximize'),
-  close:         () => ipcRenderer.invoke('window-close'),
-  isMaximized:   () => ipcRenderer.invoke('window-is-max'),
+  minimize:        () => ipcRenderer.invoke('window-minimize'),
+  maximize:        () => ipcRenderer.invoke('window-maximize'),
+  close:           () => ipcRenderer.invoke('window-close'),
+  isMaximized:     () => ipcRenderer.invoke('window-is-max'),
 
   // Capture
-  getCaptures:   () => ipcRenderer.invoke('get-captures'),
-  clearCaptures: () => ipcRenderer.invoke('clear-captures'),
-  toggleCapture: (v) => ipcRenderer.invoke('toggle-capture', v),
+  getCaptures:     () => ipcRenderer.invoke('get-captures'),
+  clearCaptures:   () => ipcRenderer.invoke('clear-captures'),
+  toggleCapture:   (v) => ipcRenderer.invoke('toggle-capture', v),
 
   // Navigation / integrations
-  openCaido:     () => ipcRenderer.invoke('open-caido'),
-  openAveOne:    () => ipcRenderer.invoke('open-aveone'),
-  openExternal:  (url) => ipcRenderer.invoke('open-external', url),
-  sendToAveOne:  (data) => ipcRenderer.invoke('send-to-aveone', data),
+  openCaido:       () => ipcRenderer.invoke('open-caido'),
+  openAveOne:      () => ipcRenderer.invoke('open-aveone'),
+  openExternal:    (url) => ipcRenderer.invoke('open-external', url),
+  sendToAveOne:    (data) => ipcRenderer.invoke('send-to-aveone', data),
 
   // TOR
-  torToggle:     (v) => ipcRenderer.invoke('tor-toggle', v),
-  torNewIp:      () => ipcRenderer.invoke('tor-new-ip'),
-  getIp:         () => ipcRenderer.invoke('get-ip'),
-  torStatus:     () => ipcRenderer.invoke('tor-status'),
+  torToggle:       (v) => ipcRenderer.invoke('tor-toggle', v),
+  torNewIp:        () => ipcRenderer.invoke('tor-new-ip'),
+  getIp:           () => ipcRenderer.invoke('get-ip'),
+  torStatus:       () => ipcRenderer.invoke('tor-status'),
 
   // AveOne Inspector
-  aveoneFetch:   (opts) => ipcRenderer.invoke('aveone-fetch', opts),
+  aveoneFetch:     (opts) => ipcRenderer.invoke('aveone-fetch', opts),
 
   // Cookies
-  getCookies:    (url) => ipcRenderer.invoke('get-cookies', url),
-  getAllCookies:  () => ipcRenderer.invoke('get-all-cookies'),
-  removeCookie:  (url, name) => ipcRenderer.invoke('remove-cookie', url, name),
+  getCookies:      (url) => ipcRenderer.invoke('get-cookies', url),
+  getAllCookies:    () => ipcRenderer.invoke('get-all-cookies'),
+  removeCookie:    (url, name) => ipcRenderer.invoke('remove-cookie', url, name),
+
+  // Context menu
+  showContextMenu: (params) => ipcRenderer.send('show-context-menu', params),
 
   // Events
-  on:  (ch, cb) => {
-    const ok = ['request-captured','response-captured','window-state','open-devtools-for','tor-ip-changed'];
+  on: (ch, cb) => {
+    const ok = [
+      'request-captured', 'response-captured', 'window-state',
+      'open-devtools-for', 'tor-ip-changed',
+      'ctx-action', 'download-started', 'download-done',
+    ];
     if (ok.includes(ch)) ipcRenderer.on(ch, (_, ...a) => cb(...a));
   },
   off: (ch, cb) => ipcRenderer.removeListener(ch, cb),

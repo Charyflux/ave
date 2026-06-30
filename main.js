@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, session, shell, Menu, dialog, net: electronNet } = require('electron');
+const { app, BrowserWindow, ipcMain, session, shell, Menu, dialog, net: electronNet, clipboard } = require('electron');
 const path = require('path');
 const netModule = require('net');
 
@@ -88,6 +88,79 @@ function createWindow() {
   // would block ALL traffic silently since TOR isn't running
   ses.setProxy({ mode: 'direct' }).catch(() => {});
   torEnabled = false;
+
+  // ── Permissions: allow media/clipboard, ask user for others ──────────────────
+  ses.setPermissionRequestHandler((wc, permission, callback, details) => {
+    const autoAllow = ['clipboard-read', 'clipboard-sanitized-write', 'media', 'mediaKeySystem', 'fullscreen', 'pointerLock'];
+    if (autoAllow.includes(permission)) { callback(true); return; }
+    const choice = dialog.showMessageBoxSync(mainWindow, {
+      type: 'question',
+      buttons: ['Permitir', 'Bloquear'],
+      title: 'Permissão solicitada',
+      message: `O site pede permissão: ${permission}`,
+      detail: details?.requestingUrl || '',
+    });
+    callback(choice === 0);
+  });
+
+  // ── Downloads ──────────────────────────────────────────────────────────────
+  ses.on('will-download', (event, item) => {
+    mainWindow?.webContents.send('download-started', { filename: item.getFilename(), url: item.getURL(), total: item.getTotalBytes() });
+    item.on('done', (e, state) => {
+      mainWindow?.webContents.send('download-done', { filename: item.getFilename(), state, path: item.getSavePath() });
+    });
+  });
+
+  // ── Context menu (right-click in webview) ─────────────────────────────────
+  ipcMain.on('show-context-menu', (event, params) => {
+    const send = (action, data) => event.sender.send('ctx-action', action, data || {});
+    const tpl = [];
+
+    if (params.linkURL) {
+      tpl.push(
+        { label: 'Abrir link em nova aba',      click: () => send('open-tab', { url: params.linkURL }) },
+        { label: 'Copiar endereço do link',      click: () => clipboard.writeText(params.linkURL) },
+        { type: 'separator' }
+      );
+    }
+    if (params.mediaType === 'image' && params.srcURL) {
+      tpl.push(
+        { label: 'Abrir imagem em nova aba',     click: () => send('open-tab', { url: params.srcURL }) },
+        { label: 'Copiar endereço da imagem',    click: () => clipboard.writeText(params.srcURL) },
+        { type: 'separator' }
+      );
+    }
+    if (params.selectionText) {
+      const sel = params.selectionText.slice(0, 32) + (params.selectionText.length > 32 ? '…' : '');
+      tpl.push(
+        { label: 'Copiar',                       click: () => send('copy', {}) },
+        { label: `Pesquisar "${sel}"`,            click: () => send('search', { text: params.selectionText }) },
+        { type: 'separator' }
+      );
+    } else if (params.isEditable) {
+      tpl.push(
+        { label: 'Cortar',      click: () => send('cut', {}) },
+        { label: 'Copiar',      click: () => send('copy', {}) },
+        { label: 'Colar',       click: () => send('paste', {}) },
+        { label: 'Selecionar tudo', click: () => send('select-all', {}) },
+        { type: 'separator' }
+      );
+    }
+
+    tpl.push(
+      { label: 'Voltar',              enabled: !!params.canGoBack,    click: () => send('back', {}) },
+      { label: 'Avançar',             enabled: !!params.canGoForward, click: () => send('forward', {}) },
+      { label: 'Recarregar',          click: () => send('reload', {}) },
+      { type: 'separator' },
+      { label: 'Guardar página como…', click: () => send('save', {}) },
+      { label: 'Imprimir…',           click: () => send('print', {}) },
+      { type: 'separator' },
+      { label: 'Ver código fonte',    click: () => send('view-source', {}) },
+      { label: 'Inspecionar elemento', click: () => send('devtools', {}) },
+    );
+
+    Menu.buildFromTemplate(tpl).popup({ window: mainWindow });
+  });
 
   // ── Request interception ────────────────────────────────────────────────────
   ses.webRequest.onBeforeSendHeaders({ urls: ['<all_urls>'] }, (details, callback) => {
