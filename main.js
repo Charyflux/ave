@@ -165,6 +165,32 @@ function createWindow() {
   ipcMain.handle('get-ip',      async () => getCurrentIp());
   ipcMain.handle('tor-status',  () => torEnabled);
 
+  // ── IPC: AveOne CORS-free fetch ────────────────────────────────────────────
+  ipcMain.handle('aveone-fetch', (_, { method, url, headers, body }) => {
+    return new Promise((resolve) => {
+      const t0 = Date.now();
+      try {
+        const req = electronNet.request({ method: method || 'GET', url, useSessionCookies: true, partition: PARTITION });
+        Object.entries(headers || {}).forEach(([k, v]) => {
+          try { req.setHeader(k, String(v)); } catch (e) { /* skip forbidden headers */ }
+        });
+        req.on('response', (res) => {
+          const hdrs = [];
+          Object.entries(res.headers).forEach(([k, v]) => hdrs.push([k, Array.isArray(v) ? v.join(', ') : v]));
+          let data = '';
+          res.on('data', chunk => { if (data.length < 500000) data += chunk.toString(); });
+          res.on('end', () => resolve({ ok: true, status: res.statusCode, statusText: '', headers: hdrs, body: data, ms: Date.now() - t0 }));
+          res.on('error', e => resolve({ ok: false, error: e.message, ms: Date.now() - t0 }));
+        });
+        req.on('error', e => resolve({ ok: false, error: e.message, ms: Date.now() - t0 }));
+        if (body && !['GET', 'HEAD'].includes((method || '').toUpperCase())) req.write(body);
+        req.end();
+      } catch (e) {
+        resolve({ ok: false, error: e.message, ms: Date.now() - t0 });
+      }
+    });
+  });
+
   // ── IPC: Cookies ───────────────────────────────────────────────────────────
   ipcMain.handle('get-cookies', async (_, url) => {
     const s = session.fromPartition(PARTITION);

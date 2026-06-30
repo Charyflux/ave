@@ -24,6 +24,9 @@ contextBridge.exposeInMainWorld('ave', {
   getIp:         () => ipcRenderer.invoke('get-ip'),
   torStatus:     () => ipcRenderer.invoke('tor-status'),
 
+  // AveOne Inspector
+  aveoneFetch:   (opts) => ipcRenderer.invoke('aveone-fetch', opts),
+
   // Cookies
   getCookies:    (url) => ipcRenderer.invoke('get-cookies', url),
   getAllCookies:  () => ipcRenderer.invoke('get-all-cookies'),
