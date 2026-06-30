@@ -227,11 +227,37 @@ webview.active{visibility:visible;pointer-events:auto;}
   width:400px;border-left:1px solid var(--bd);
   background:var(--sf);display:flex;flex-direction:column;
   flex-shrink:0;transition:width .25s ease,opacity .25s ease;overflow:hidden;
+  position:relative;
 }
 #tools-panel.hidden{width:0;opacity:0;pointer-events:none;}
 
+/* Close button inside the panel */
+#tp-close{
+  position:absolute;top:6px;right:6px;z-index:10;
+  width:22px;height:22px;border:none;border-radius:6px;
+  background:rgba(255,255,255,.06);color:var(--tx3);
+  cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0;
+}
+#tp-close:hover{background:rgba(255,51,85,.15);color:var(--r);}
+
+/* Floating reopen tab on right edge when panel is closed */
+#tp-reopen{
+  position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:200;
+  width:18px;height:60px;border:none;border-radius:8px 0 0 8px;
+  background:linear-gradient(180deg,var(--c),var(--m));
+  color:#07070f;font-size:9px;font-weight:900;cursor:pointer;
+  writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:1px;
+  font-family:'Orbitron';padding:0;
+  display:none;align-items:center;justify-content:center;
+  transition:width .15s,opacity .15s;opacity:.7;
+  box-shadow:-2px 0 12px rgba(0,229,255,.3);
+}
+#tp-reopen:hover{width:24px;opacity:1;}
+#tp-reopen.visible{display:flex;}
+
 .tp-header{
-  display:flex;flex-wrap:wrap;padding:8px 8px 0;gap:2px;flex-shrink:0;
+  display:flex;flex-wrap:wrap;padding:8px 30px 0 8px;gap:2px;flex-shrink:0;
   border-bottom:1px solid var(--bd);
 }
 .tp-tab{
@@ -539,6 +565,7 @@ webview.active{visibility:visible;pointer-events:auto;}
 
   <!-- TOOLS PANEL -->
   <div id="tools-panel" class="hidden">
+    <button id="tp-close" onclick="toggleTools()" title="Fechar painel">✕</button>
     <div class="tp-header">
       <button class="tp-tab active" data-pane="intercept" onclick="switchPane(this)">INTERCEPT</button>
       <button class="tp-tab" data-pane="headers"   onclick="switchPane(this)">HEADERS</button>
@@ -720,6 +747,9 @@ webview.active{visibility:visible;pointer-events:auto;}
   </button>
 </div>
 
+<!-- Floating reopen tab (shown when tools panel is closed) -->
+<button id="tp-reopen" onclick="toggleTools()" title="Abrir painel de ferramentas">TOOLS</button>
+
 <script src="payloads.js"></script>
 <script>
 // ── State ────────────────────────────────────────────────────────────────────
@@ -779,7 +809,8 @@ function setupListeners() {
     if (e.key === 'Enter') {
       e.preventDefault();
       e.stopPropagation();
-      navigate(urlInput.value);
+      // Trigger GO button click — identical to clicking it with the mouse
+      document.getElementById('btn-go').click();
       const go = document.getElementById('btn-go');
       go.classList.add('pressed');
       setTimeout(() => go.classList.remove('pressed'), 180);
@@ -1059,6 +1090,7 @@ function toggleTools() {
   document.getElementById('tools-panel').classList.toggle('hidden', !toolsOpen);
   document.getElementById('btn-tools').classList.toggle('active', toolsOpen);
   document.getElementById('tools-arrow').style.transform = toolsOpen ? 'rotate(180deg)' : '';
+  document.getElementById('tp-reopen').classList.toggle('visible', !toolsOpen);
 }
 
 function switchPane(btn) {
