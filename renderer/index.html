@@ -9,19 +9,25 @@
 <style>
 :root{
   --c:#00e5ff;--m:#ff1493;--g:#00ff88;--r:#ff3355;--w:#ff9900;--p:#7c3aed;--y:#ffe600;
-  --bg:#07070f;--sf:#0d0d1a;--sf2:#12121f;--sf3:#16162a;
+  --bg:transparent;--sf:rgba(10,10,22,.82);--sf2:rgba(14,14,26,.80);--sf3:rgba(18,18,32,.85);
   --bd:rgba(255,255,255,.06);--bd2:rgba(255,255,255,.1);--bd3:rgba(255,255,255,.15);
   --tx:#e2e8f0;--tx2:rgba(226,232,240,.65);--tx3:rgba(226,232,240,.35);
   --tools-w:360px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-family:'Space Grotesk',sans-serif;user-select:none;}
+html,body{
+  height:100%;overflow:hidden;color:var(--tx);font-family:'Space Grotesk',sans-serif;user-select:none;
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 115%, rgba(124,58,237,.35) 0%, rgba(80,0,180,.12) 45%, transparent 70%),
+    linear-gradient(180deg, #07070f 0%, #07070f 45%, #0c0818 70%, #110826 100%);
+}
 
 /* ── TITLE BAR ── */
 #titlebar{
   height:38px;display:flex;align-items:center;gap:0;
-  background:linear-gradient(135deg,#08081a,#0a0a18);
-  border-bottom:1px solid var(--bd);
+  background:rgba(7,7,15,.75);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(124,58,237,.18);
   -webkit-app-region:drag;
   flex-shrink:0;
 }
@@ -85,7 +91,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-
 /* ── NAV BAR ── */
 #navbar{
   height:44px;display:flex;align-items:center;gap:5px;
-  padding:0 8px;background:var(--sf);border-bottom:1px solid var(--bd);flex-shrink:0;
+  padding:0 8px;background:rgba(10,10,22,.78);border-bottom:1px solid rgba(124,58,237,.12);flex-shrink:0;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
 }
 .nav-btn{
   width:28px;height:28px;border-radius:7px;border:none;
@@ -171,7 +178,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-
 /* ── MAIN AREA ── */
 #main{flex:1;display:flex;overflow:hidden;min-height:0;}
 
-#webview-container{flex:1;position:relative;background:#000;min-height:0;overflow:hidden;}
+#webview-container{flex:1;position:relative;background:rgba(5,5,15,.92);min-height:0;overflow:hidden;}
 webview{
   /* visibility:hidden keeps webview IN layout so Electron sizes render surface correctly.
      display:none removes it from layout → render surface gets size 0 → black screen. */
@@ -226,10 +233,10 @@ webview.active{visibility:visible;pointer-events:auto;}
 
 /* ── TOOLS PANEL ── */
 #tools-panel{
-  width:400px;border-left:1px solid var(--bd);
-  background:var(--sf);display:flex;flex-direction:column;
+  width:400px;border-left:1px solid rgba(124,58,237,.18);
+  background:rgba(10,8,20,.85);display:flex;flex-direction:column;
   flex-shrink:0;transition:width .25s ease,opacity .25s ease;overflow:hidden;
-  position:relative;
+  position:relative;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
 }
 #tools-panel.hidden{width:0;opacity:0;pointer-events:none;}
 
@@ -547,8 +554,9 @@ webview.active{visibility:visible;pointer-events:auto;}
 /* ── BOOKMARKS BAR ── */
 #bookmarks-bar{
   height:30px;display:flex;align-items:center;gap:2px;padding:0 8px;
-  background:var(--sf);border-bottom:1px solid var(--bd);flex-shrink:0;
+  background:rgba(9,9,20,.72);border-bottom:1px solid rgba(124,58,237,.10);flex-shrink:0;
   overflow-x:auto;overflow-y:hidden;white-space:nowrap;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
 }
 #bookmarks-bar.hidden{display:none;}
 #bookmarks-bar::-webkit-scrollbar{height:0;}
