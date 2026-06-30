@@ -2,6 +2,10 @@ const { app, BrowserWindow, ipcMain, session, shell, Menu, dialog, net: electron
 const path = require('path');
 const netModule = require('net');
 
+// Fix SSL and rendering issues on Windows
+app.commandLine.appendSwitch('ignore-certificate-errors');
+app.commandLine.appendSwitch('allow-insecure-localhost');
+
 const CAIDO_URL   = 'http://localhost:8080';
 const AVEONE_URL  = 'https://www.aveone.com.br/app';
 const PARTITION   = 'persist:avebrowser';
