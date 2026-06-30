@@ -62,6 +62,7 @@ contextBridge.exposeInMainWorld('ave', {
       'request-captured', 'response-captured', 'window-state',
       'open-devtools-for', 'tor-ip-changed',
       'ctx-action', 'download-started', 'download-done',
+      'permission-denied-toast',
     ];
     if (ok.includes(ch)) ipcRenderer.on(ch, (_, ...a) => cb(...a));
   },

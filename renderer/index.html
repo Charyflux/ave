@@ -1299,6 +1299,9 @@ function setupListeners() {
     if (info.state === 'completed') showDownloadToast(`✅ Concluído: ${info.filename}`);
     else showDownloadToast(`❌ Falhou: ${info.filename}`);
   });
+  window.ave.on('permission-denied-toast', (permission, host) => {
+    showToast(`🚫 ${host} — ${permission} bloqueado`);
+  });
 
   // URL bar focus helper
   function urlFocus() {

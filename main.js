@@ -99,18 +99,44 @@ function createWindow() {
   ses.setProxy({ mode: 'direct' }).catch(() => {});
   torEnabled = false;
 
-  // ── Permissions: allow media/clipboard, ask user for others ──────────────────
+  // ── Permissions ────────────────────────────────────────────────────────────
   ses.setPermissionRequestHandler((wc, permission, callback, details) => {
-    const autoAllow = ['clipboard-read', 'clipboard-sanitized-write', 'media', 'mediaKeySystem', 'fullscreen', 'pointerLock'];
+    // Auto-allow: inócuas ou necessárias para uso normal
+    const autoAllow = [
+      'clipboard-read', 'clipboard-sanitized-write',
+      'media', 'mediaKeySystem',
+      'fullscreen', 'pointerLock',
+      'accessibility-events',
+    ];
+    // Auto-deny silencioso: sensíveis à privacidade — bloqueamos sem pedir
+    const autoDeny = [
+      'geolocation', 'notifications', 'push',
+      'midi', 'midiSysex', 'payment',
+      'background-sync', 'ambient-light-sensor',
+      'accelerometer', 'gyroscope', 'magnetometer',
+      'idle-detection', 'periodic-background-sync',
+    ];
+
     if (autoAllow.includes(permission)) { callback(true); return; }
-    const choice = dialog.showMessageBoxSync(mainWindow, {
+
+    if (autoDeny.includes(permission)) {
+      callback(false);
+      // Toast não-bloqueante no renderer
+      const host = (() => { try { return new URL(details?.requestingUrl || '').hostname; } catch { return '?'; } })();
+      mainWindow?.webContents.send('permission-denied-toast', permission, host);
+      return;
+    }
+
+    // Permissões que o tester pode querer conceder (câmara/mic para testes WebRTC):
+    // mostrar diálogo ASSÍNCRONO para não bloquear o browser
+    dialog.showMessageBox(mainWindow, {
       type: 'question',
       buttons: ['Permitir', 'Bloquear'],
+      defaultId: 1,
       title: 'Permissão solicitada',
-      message: `O site pede permissão: ${permission}`,
+      message: `O site pede: ${permission}`,
       detail: details?.requestingUrl || '',
-    });
-    callback(choice === 0);
+    }).then(({ response }) => callback(response === 0));
   });
 
   // ── Downloads ──────────────────────────────────────────────────────────────
