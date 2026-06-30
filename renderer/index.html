@@ -114,9 +114,15 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-
   flex-shrink:0;padding:0 10px;height:22px;border-radius:5px;border:none;
   background:linear-gradient(135deg,var(--c),var(--m));
   color:#07070f;font-family:'Orbitron';font-size:8px;font-weight:900;
-  cursor:pointer;letter-spacing:1px;transition:opacity .15s;
+  cursor:pointer;letter-spacing:1px;
+  transition:transform .08s ease, opacity .15s, box-shadow .08s ease;
 }
 #btn-go:hover{opacity:.8;}
+#btn-go:active, #btn-go.pressed{
+  transform:scale(.88)!important;
+  box-shadow:0 0 10px var(--c), 0 0 20px var(--m);
+  opacity:1;
+}
 
 .sep{width:1px;height:18px;background:var(--bd2);flex-shrink:0;margin:0 2px;}
 
@@ -774,10 +780,9 @@ function setupListeners() {
       e.preventDefault();
       e.stopPropagation();
       navigate(urlInput.value);
-      // Flash GO button to confirm Enter was received
       const go = document.getElementById('btn-go');
-      go.style.transform = 'scale(.92)';
-      setTimeout(() => { go.style.transform = ''; }, 120);
+      go.classList.add('pressed');
+      setTimeout(() => go.classList.remove('pressed'), 180);
     }
     if (e.key === 'Escape') { urlInput.blur(); urlInput.value = getActiveTab()?.url || ''; }
   });
