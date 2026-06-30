@@ -257,7 +257,7 @@ webview.active{visibility:visible;pointer-events:auto;}
 #tp-reopen.visible{display:flex;}
 
 .tp-header{
-  display:flex;flex-wrap:wrap;padding:8px 30px 0 8px;gap:2px;flex-shrink:0;
+  display:flex;flex-wrap:wrap;padding:6px 8px 0 8px;gap:2px;flex-shrink:0;
   border-bottom:1px solid var(--bd);
 }
 .tp-tab{
@@ -645,24 +645,18 @@ webview.active{visibility:visible;pointer-events:auto;}
 
   <!-- TOOLS PANEL -->
   <div id="tools-panel" class="hidden">
-    <button id="tp-close" onclick="toggleTools()" title="Fechar painel">✕</button>
     <div class="tp-header">
-      <button class="tp-tab active" data-pane="intercept" onclick="switchPane(this)">INTERCEPT</button>
-      <button class="tp-tab" data-pane="headers"   onclick="switchPane(this)">HEADERS</button>
-      <button class="tp-tab" data-pane="tech"      onclick="switchPane(this)">TECH</button>
-      <button class="tp-tab" data-pane="cookies"   onclick="switchPane(this)">COOKIES</button>
-      <button class="tp-tab" data-pane="storage"   onclick="switchPane(this)">STORAGE</button>
+      <button class="tp-tab active" data-pane="aveone"   onclick="switchPane(this)" style="color:var(--c);">AVEONE</button>
       <button class="tp-tab" data-pane="jwt"       onclick="switchPane(this)">JWT</button>
       <button class="tp-tab" data-pane="encode"    onclick="switchPane(this)">ENCODE</button>
       <button class="tp-tab" data-pane="payloads"  onclick="switchPane(this)">PAYLOADS</button>
       <button class="tp-tab" data-pane="recon"     onclick="switchPane(this)">RECON</button>
       <button class="tp-tab" data-pane="notes"     onclick="switchPane(this)">NOTAS</button>
-      <button class="tp-tab" data-pane="aveone"    onclick="switchPane(this)" style="color:var(--c);border-bottom-color:transparent;">AVEONE</button>
     </div>
     <div class="tp-body">
 
-      <!-- INTERCEPT PANE -->
-      <div class="tp-pane active" id="pane-intercept">
+      <!-- INTERCEPT PANE (hidden — sem tab visível) -->
+      <div class="tp-pane" id="pane-intercept">
         <div id="intercept-toolbar">
           <button class="ib active" id="btn-capture" onclick="toggleCapture()">
             <i class="fa-solid fa-circle-dot"></i> CAPTURAR
@@ -803,7 +797,7 @@ webview.active{visibility:visible;pointer-events:auto;}
 
 
       <!-- AVEONE INSPECTOR PANE -->
-      <div class="tp-pane" id="pane-aveone">
+      <div class="tp-pane active" id="pane-aveone">
         <div class="ao-tabs">
           <button class="ao-tab-btn active" data-tab="feed">📋 ACHADOS <span id="ao-feed-count" class="ao-badge ao-badge-0">0</span></button>
           <button class="ao-tab-btn" data-tab="format">✨ FORMAT</button>
@@ -1031,12 +1025,12 @@ function setupListeners() {
   urlInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      e.stopPropagation();
-      // Trigger GO button click — identical to clicking it with the mouse
-      document.getElementById('btn-go').click();
+      const val = urlInput.value.trim();
+      if (!val) return;
       const go = document.getElementById('btn-go');
       go.classList.add('pressed');
       setTimeout(() => go.classList.remove('pressed'), 180);
+      navigate(val);
     }
     if (e.key === 'Escape') { urlInput.blur(); urlInput.value = getActiveTab()?.url || ''; }
   });
