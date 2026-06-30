@@ -577,6 +577,21 @@ const BOOKMARKS = [
   { name:'PayloadAll', url:'https://payloadallthethings.com',icon:'🎯'},
 ];
 
+// ── Webview size sync ────────────────────────────────────────────────────────
+// Electron creates the webview render surface before CSS layout completes,
+// so % heights are wrong. We measure the container and apply px sizes directly.
+function syncWebviewSizes() {
+  const c = document.getElementById('webview-container');
+  const w = c.offsetWidth;
+  const h = c.offsetHeight;
+  if (!w || !h) return;
+  tabs.forEach(t => {
+    t.wv.style.width  = w + 'px';
+    t.wv.style.height = h + 'px';
+  });
+}
+window.addEventListener('resize', syncWebviewSizes);
+
 // ── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   renderBookmarks();
@@ -584,6 +599,10 @@ document.addEventListener('DOMContentLoaded', () => {
   setupListeners();
   loadNotes();
   startCapture();
+  // Sync after layout is painted (requestAnimationFrame = after first render)
+  requestAnimationFrame(() => requestAnimationFrame(syncWebviewSizes));
+  // Also use ResizeObserver for dynamic resizes (window resize, tools panel toggle)
+  new ResizeObserver(syncWebviewSizes).observe(document.getElementById('webview-container'));
 });
 
 function setupListeners() {
@@ -738,12 +757,8 @@ function activateTab(id) {
   tabs.forEach(t => {
     t.wv.classList.toggle('active', t.id === id);
   });
-  // Force webview to recalculate its render size after becoming visible
-  const activeWv = tabs.find(t => t.id === id)?.wv;
-  if (activeWv) {
-    activeWv.style.height = 'calc(100% - 1px)';
-    requestAnimationFrame(() => { activeWv.style.height = '100%'; });
-  }
+  // Re-sync all webview sizes whenever a tab is activated
+  requestAnimationFrame(syncWebviewSizes);
   const tab = getActiveTab();
   if (!tab) return;
 
