@@ -2,6 +2,7 @@
   "name": "avebrowser",
   "version": "1.0.0",
   "description": "AveBrowser — Bug Bounty Browser by AveOne",
+  "author": "AveOne Security <contact@aveone.com.br>",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -9,10 +10,9 @@
     "build:mac": "electron-builder --mac",
     "build:linux": "electron-builder --linux"
   },
-  "dependencies": {
-    "electron": "^28.3.3"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "electron": "^28.3.3",
     "electron-builder": "^24.13.3"
   },
   "build": {
