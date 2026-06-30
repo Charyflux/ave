@@ -1,6 +1,16 @@
 const { app, BrowserWindow, ipcMain, session, shell, Menu, dialog, net: electronNet, clipboard } = require('electron');
 const path = require('path');
+const fs   = require('fs');
 const netModule = require('net');
+
+// Match a URL against a glob pattern (e.g. *://example.com/*)
+function matchUrlPattern(pattern, url) {
+  if (!pattern || pattern === '*' || pattern === '<all_urls>') return true;
+  try {
+    const re = '^' + pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\\\*/g, '.*') + '$';
+    return new RegExp(re).test(url);
+  } catch { return false; }
+}
 
 // Fix SSL and rendering issues on Windows
 app.commandLine.appendSwitch('ignore-certificate-errors');
@@ -281,6 +291,106 @@ function createWindow() {
   mainWindow.on('maximize',   () => mainWindow?.webContents.send('window-state', 'maximized'));
   mainWindow.on('unmaximize', () => mainWindow?.webContents.send('window-state', 'normal'));
   mainWindow.on('closed',     () => { mainWindow = null; });
+
+  // ── Extension / Userscript / Plugin system ────────────────────────────────
+  const userData        = app.getPath('userData');
+  const EXTS_FILE       = path.join(userData, 'ave-extensions.json');
+  const USERSCRIPTS_DIR = path.join(userData, 'userscripts');
+  const PLUGINS_DIR     = path.join(userData, 'plugins');
+  [USERSCRIPTS_DIR, PLUGINS_DIR].forEach(d => { if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true }); });
+
+  // Auto-reload extensions saved from last session
+  try {
+    const saved = JSON.parse(fs.readFileSync(EXTS_FILE, 'utf8') || '[]');
+    for (const p of saved) {
+      if (fs.existsSync(p)) ses.loadExtension(p, { allowFileAccess: true }).catch(e => console.warn('Ext load failed:', e.message));
+    }
+  } catch {}
+
+  // Helpers
+  const safeName = id => id.replace(/[^a-z0-9_-]/gi, '_');
+  const usrPath  = id => path.join(USERSCRIPTS_DIR, safeName(id) + '.json');
+  const plugPath = id => path.join(PLUGINS_DIR,     safeName(id) + '.json');
+  const readAll  = dir => {
+    try {
+      return fs.readdirSync(dir).filter(f => f.endsWith('.json'))
+        .map(f => { try { return JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')); } catch { return null; } })
+        .filter(Boolean).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    } catch { return []; }
+  };
+
+  // ── IPC: Chrome Extensions ─────────────────────────────────────────────────
+  ipcMain.handle('ext-load', async (_, extPath) => {
+    try {
+      const ext = await ses.loadExtension(extPath, { allowFileAccess: true });
+      let saved = []; try { saved = JSON.parse(fs.readFileSync(EXTS_FILE, 'utf8') || '[]'); } catch {}
+      if (!saved.includes(extPath)) { saved.push(extPath); fs.writeFileSync(EXTS_FILE, JSON.stringify(saved)); }
+      return { ok: true, id: ext.id, name: ext.name, version: ext.version };
+    } catch (e) { return { ok: false, error: e.message }; }
+  });
+
+  ipcMain.handle('ext-remove', async (_, id) => {
+    try {
+      const all = ses.getAllExtensions();
+      const ext = all.find(e => e.id === id);
+      ses.removeExtension(id);
+      if (ext?.path) {
+        let saved = []; try { saved = JSON.parse(fs.readFileSync(EXTS_FILE, 'utf8') || '[]'); } catch {}
+        fs.writeFileSync(EXTS_FILE, JSON.stringify(saved.filter(p => p !== ext.path)));
+      }
+      return { ok: true };
+    } catch (e) { return { ok: false, error: e.message }; }
+  });
+
+  ipcMain.handle('ext-list', () => {
+    try { return ses.getAllExtensions().map(e => ({ id: e.id, name: e.name, version: e.version, path: e.path })); }
+    catch { return []; }
+  });
+
+  // ── IPC: Userscripts ───────────────────────────────────────────────────────
+  ipcMain.handle('us-list',   ()         => readAll(USERSCRIPTS_DIR));
+  ipcMain.handle('us-delete', (_, id)    => {
+    try { const f = usrPath(id); if (fs.existsSync(f)) fs.unlinkSync(f); return { ok: true }; }
+    catch (e) { return { ok: false, error: e.message }; }
+  });
+  ipcMain.handle('us-save', (_, s) => {
+    try {
+      if (!s.id) s.id = 'us_' + Date.now();
+      fs.writeFileSync(usrPath(s.id), JSON.stringify(s, null, 2));
+      return { ok: true, id: s.id };
+    } catch (e) { return { ok: false, error: e.message }; }
+  });
+  ipcMain.handle('us-get-for-url', (_, url) => {
+    return readAll(USERSCRIPTS_DIR).filter(s => s.enabled && matchUrlPattern(s.match || '*', url));
+  });
+
+  // ── IPC: Plugins ───────────────────────────────────────────────────────────
+  ipcMain.handle('plugin-list',   ()         => readAll(PLUGINS_DIR));
+  ipcMain.handle('plugin-delete', (_, id)    => {
+    try { const f = plugPath(id); if (fs.existsSync(f)) fs.unlinkSync(f); return { ok: true }; }
+    catch (e) { return { ok: false, error: e.message }; }
+  });
+  ipcMain.handle('plugin-save', (_, p) => {
+    try {
+      if (!p.id) p.id = 'plg_' + Date.now();
+      fs.writeFileSync(plugPath(p.id), JSON.stringify(p, null, 2));
+      return { ok: true, id: p.id };
+    } catch (e) { return { ok: false, error: e.message }; }
+  });
+
+  // ── IPC: Dialogs / FS ─────────────────────────────────────────────────────
+  ipcMain.handle('dialog-open-folder', async () => {
+    const r = await dialog.showOpenDialog(mainWindow, { title: 'Selecionar pasta da extensão', properties: ['openDirectory'], buttonLabel: 'Carregar' });
+    return r.canceled ? null : r.filePaths[0];
+  });
+  ipcMain.handle('dialog-open-file', async (_, opts) => {
+    const r = await dialog.showOpenDialog(mainWindow, { title: opts?.title || 'Abrir', filters: opts?.filters || [], properties: ['openFile'] });
+    return r.canceled ? null : r.filePaths[0];
+  });
+  ipcMain.handle('fs-read', (_, p) => {
+    try { return { ok: true, data: fs.readFileSync(p, 'utf8') }; }
+    catch (e) { return { ok: false, error: e.message }; }
+  });
 }
 
 app.whenReady().then(createWindow);

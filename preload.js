@@ -35,6 +35,27 @@ contextBridge.exposeInMainWorld('ave', {
   // Context menu
   showContextMenu: (params) => ipcRenderer.send('show-context-menu', params),
 
+  // Chrome Extensions (MV2, unpacked)
+  extLoad:         (extPath) => ipcRenderer.invoke('ext-load', extPath),
+  extRemove:       (id)      => ipcRenderer.invoke('ext-remove', id),
+  extList:         ()        => ipcRenderer.invoke('ext-list'),
+
+  // Userscripts
+  usList:          ()        => ipcRenderer.invoke('us-list'),
+  usSave:          (s)       => ipcRenderer.invoke('us-save', s),
+  usDelete:        (id)      => ipcRenderer.invoke('us-delete', id),
+  usGetForUrl:     (url)     => ipcRenderer.invoke('us-get-for-url', url),
+
+  // Plugins (run in renderer context)
+  pluginList:      ()        => ipcRenderer.invoke('plugin-list'),
+  pluginSave:      (p)       => ipcRenderer.invoke('plugin-save', p),
+  pluginDelete:    (id)      => ipcRenderer.invoke('plugin-delete', id),
+
+  // Dialogs / FS
+  dialogOpenFolder: ()        => ipcRenderer.invoke('dialog-open-folder'),
+  dialogOpenFile:   (opts)    => ipcRenderer.invoke('dialog-open-file', opts),
+  fsRead:           (p)       => ipcRenderer.invoke('fs-read', p),
+
   // Events
   on: (ch, cb) => {
     const ok = [

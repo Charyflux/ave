@@ -542,6 +542,39 @@ webview.active{visibility:visible;pointer-events:auto;}
 #sb-capture-label{color:var(--tx3);font-size:9px;}
 #sb-req-count{color:var(--c);font-size:9px;min-width:50px;}
 
+/* ── EXT MANAGER ── */
+.ext-sub-tabs{display:flex;border-bottom:1px solid var(--bd);flex-shrink:0;background:var(--sf2);}
+.ext-sub-tab{flex:1;background:transparent;border:none;border-bottom:2px solid transparent;
+  color:var(--tx3);padding:5px 4px;cursor:pointer;font-family:'Orbitron';font-size:7.5px;
+  font-weight:700;letter-spacing:.4px;transition:all .15s;}
+.ext-sub-tab:hover{color:var(--tx2);}
+.ext-sub-tab.active{color:var(--c);border-bottom-color:var(--c);}
+.ext-sub-pane{display:none;flex-direction:column;flex:1;overflow:hidden;}
+.ext-sub-pane.active{display:flex;}
+.ext-item{display:flex;align-items:center;gap:6px;padding:7px 8px;border-bottom:1px solid var(--bd);
+  font-family:'JetBrains Mono';font-size:10px;}
+.ext-item-info{flex:1;min-width:0;}
+.ext-item-name{color:var(--tx);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ext-item-meta{color:var(--tx3);font-size:9px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ext-item-toggle{accent-color:var(--c);cursor:pointer;flex-shrink:0;}
+.ext-item-btn{background:transparent;border:1px solid var(--bd2);color:var(--c);
+  border-radius:4px;padding:2px 7px;font-size:9px;cursor:pointer;font-family:'JetBrains Mono';
+  flex-shrink:0;transition:all .1s;}
+.ext-item-btn:hover{border-color:var(--c);background:rgba(0,229,255,.07);}
+.ext-item-btn.danger{color:var(--r);border-color:var(--r);}
+.ext-item-btn.danger:hover{background:rgba(255,92,92,.1);}
+.ext-item-btn.success{color:var(--g);border-color:var(--g);}
+.ext-editor{display:none;flex:1;flex-direction:column;overflow:hidden;}
+.ext-editor.active{display:flex;}
+.ext-editor-hdr{padding:4px 8px;background:var(--sf2);border-bottom:1px solid var(--bd);
+  font-size:9px;color:var(--tx3);font-family:'Orbitron';letter-spacing:.5px;flex-shrink:0;}
+.ext-code{flex:1;resize:none;width:100%;box-sizing:border-box;background:var(--sf);
+  border:none;color:var(--tx);font-family:'JetBrains Mono';font-size:10px;
+  padding:8px;outline:none;overflow-y:auto;line-height:1.5;}
+.ext-editor-bar{display:flex;gap:5px;padding:6px 8px;background:var(--sf2);
+  border-top:1px solid var(--bd);flex-shrink:0;align-items:center;}
+.ext-notice{font-size:9px;color:var(--tx3);padding:6px 8px;border-top:1px solid var(--bd);flex-shrink:0;}
+
 /* ── FIND BAR ── */
 #find-bar{
   position:absolute;bottom:8px;right:8px;z-index:500;
@@ -703,6 +736,7 @@ webview.active{visibility:visible;pointer-events:auto;}
       <button class="tp-tab" data-pane="payloads"  onclick="switchPane(this)">PAYLOADS</button>
       <button class="tp-tab" data-pane="recon"     onclick="switchPane(this)">RECON</button>
       <button class="tp-tab" data-pane="notes"     onclick="switchPane(this)">NOTAS</button>
+      <button class="tp-tab" data-pane="ext"       onclick="switchPane(this)">EXT</button>
     </div>
     <div class="tp-body">
 
@@ -846,6 +880,93 @@ webview.active{visibility:visible;pointer-events:auto;}
         </div>
       </div>
 
+
+      <!-- EXT PANE: Extensions / Userscripts / Plugins -->
+      <div class="tp-pane" id="pane-ext" style="display:none;flex-direction:column;height:100%;overflow:hidden;">
+
+        <!-- Sub-tabs -->
+        <div class="ext-sub-tabs">
+          <button class="ext-sub-tab active" data-exttab="extensions">EXTENSÕES</button>
+          <button class="ext-sub-tab"         data-exttab="userscripts">USERSCRIPTS</button>
+          <button class="ext-sub-tab"         data-exttab="plugins">PLUGINS</button>
+        </div>
+
+        <!-- ── A: Chrome Extensions ────────────────────────────────────── -->
+        <div class="ext-sub-pane active" id="ext-sub-extensions">
+          <div class="tool-section" style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+            <button class="tool-btn tool-btn-primary"   id="ext-load-btn"><i class="fa-solid fa-folder-open"></i> CARREGAR PASTA</button>
+            <button class="tool-btn tool-btn-secondary" id="ext-refresh-btn">↻</button>
+          </div>
+          <div class="ao-scroll" id="ext-list-container" style="flex:1;">
+            <div class="empty-state" style="padding:24px;text-align:center;">
+              <i class="fa-solid fa-puzzle-piece" style="font-size:22px;margin-bottom:8px;display:block;color:var(--tx3);"></i>
+              <span style="font-size:10px;color:var(--tx3);">Nenhuma extensão carregada</span>
+            </div>
+          </div>
+          <div class="ext-notice">⚠ Apenas Manifest V2 descompactado (pasta). Não suporta .crx nem Chrome Web Store.</div>
+        </div>
+
+        <!-- ── B: Userscripts ───────────────────────────────────────────── -->
+        <div class="ext-sub-pane" id="ext-sub-userscripts">
+          <div class="tool-section" style="display:flex;gap:5px;align-items:center;flex-shrink:0;">
+            <button class="tool-btn tool-btn-primary"   id="us-new-btn">+ NOVO</button>
+            <button class="tool-btn tool-btn-secondary" id="us-import-btn"><i class="fa-solid fa-file-import"></i> IMPORTAR</button>
+            <button class="tool-btn tool-btn-secondary" id="us-refresh-btn">↻</button>
+          </div>
+          <div id="us-list-container" style="flex-shrink:0;max-height:130px;overflow-y:auto;border-bottom:1px solid var(--bd);">
+            <div style="color:var(--tx3);font-size:10px;padding:10px;font-family:'JetBrains Mono';">Nenhum userscript</div>
+          </div>
+          <div class="ext-editor" id="us-editor">
+            <div class="ext-editor-hdr">EDITOR DE USERSCRIPT</div>
+            <textarea class="ext-code" id="us-code" placeholder="// ==UserScript==
+// @name         Meu Script
+// @description  Corre dentro da página
+// @match        *://*/*
+// @version      1.0
+// ==/UserScript==
+(function() {
+  'use strict';
+  console.log('[UserScript]', location.href);
+})();"></textarea>
+            <div class="ext-editor-bar">
+              <button class="tool-btn tool-btn-primary"   id="us-save-btn">GUARDAR</button>
+              <button class="tool-btn tool-btn-secondary" id="us-cancel-btn">CANCELAR</button>
+              <button class="ext-item-btn danger" id="us-delete-btn" style="display:none;margin-left:auto;">APAGAR</button>
+            </div>
+          </div>
+          <div class="ext-notice">💡 Userscripts correm dentro da <b>página</b> visitada (como Tampermonkey).</div>
+        </div>
+
+        <!-- ── C: Plugins ────────────────────────────────────────────────── -->
+        <div class="ext-sub-pane" id="ext-sub-plugins">
+          <div class="tool-section" style="display:flex;gap:5px;align-items:center;flex-shrink:0;">
+            <button class="tool-btn tool-btn-primary"   id="plg-new-btn">+ NOVO</button>
+            <button class="tool-btn tool-btn-secondary" id="plg-refresh-btn">↻</button>
+          </div>
+          <div id="plg-list-container" style="flex-shrink:0;max-height:130px;overflow-y:auto;border-bottom:1px solid var(--bd);">
+            <div style="color:var(--tx3);font-size:10px;padding:10px;font-family:'JetBrains Mono';">Nenhum plugin</div>
+          </div>
+          <div class="ext-editor" id="plg-editor">
+            <div class="ext-editor-hdr">EDITOR DE PLUGIN</div>
+            <textarea class="ext-code" id="plg-code" placeholder="// ==AvePlugin==
+// @name         Meu Plugin
+// @description  Corre no contexto do AveBrowser
+// @version      1.0
+// ==/AvePlugin==
+(function() {
+  // Acesso a: showToast, getActiveTab, newTab, navigate, window.ave
+  showToast('Plugin carregado!');
+})();"></textarea>
+            <div class="ext-editor-bar">
+              <button class="tool-btn tool-btn-primary"   id="plg-save-btn">GUARDAR</button>
+              <button class="tool-btn tool-btn-secondary" id="plg-cancel-btn">CANCELAR</button>
+              <button class="ext-item-btn danger" id="plg-delete-btn" style="display:none;margin-left:auto;">APAGAR</button>
+            </div>
+          </div>
+          <div class="ext-notice">💡 Plugins correm no contexto do <b>browser</b> (acesso a window.ave, capturas, etc).</div>
+        </div>
+
+      </div>
 
       <!-- AVEONE INSPECTOR PANE -->
       <div class="tp-pane active" id="pane-aveone">
@@ -1226,6 +1347,7 @@ function newTab(url = '') {
       detectTech(id);
     }
     updateNavBtns();
+    runUserscriptsForUrl(e.url, wv); // inject matching userscripts
   });
   wv.addEventListener('did-navigate-in-page', e => {
     tab.url = e.url;
@@ -1419,6 +1541,270 @@ function updateNavBtns() {
 
 function openDevTools() { getActiveTab()?.wv?.openDevTools(); }
 
+// ── EXTENSION MANAGER ─────────────────────────────────────────────────────────
+
+// Sub-tab switching
+document.querySelectorAll('.ext-sub-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.ext-sub-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.ext-sub-pane').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('ext-sub-' + btn.dataset.exttab).classList.add('active');
+  });
+});
+
+// ── A: Chrome Extensions ──────────────────────────────────────────────────────
+async function extRefreshList() {
+  const list = await window.ave.extList();
+  const c = document.getElementById('ext-list-container');
+  if (!list.length) {
+    c.innerHTML = `<div class="empty-state" style="padding:24px;text-align:center;">
+      <i class="fa-solid fa-puzzle-piece" style="font-size:22px;margin-bottom:8px;display:block;color:var(--tx3);"></i>
+      <span style="font-size:10px;color:var(--tx3);">Nenhuma extensão carregada</span></div>`;
+    return;
+  }
+  c.innerHTML = list.map(e => `
+    <div class="ext-item">
+      <div class="ext-item-info">
+        <div class="ext-item-name">${esc(e.name)}</div>
+        <div class="ext-item-meta">v${esc(e.version)} &nbsp;·&nbsp; ${esc(e.path)}</div>
+      </div>
+      <button class="ext-item-btn danger" data-extid="${esc(e.id)}">✕</button>
+    </div>`).join('');
+  c.querySelectorAll('[data-extid]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const r = await window.ave.extRemove(btn.dataset.extid);
+      r.ok ? (showToast('Extensão removida'), extRefreshList()) : showToast('Erro: ' + r.error);
+    });
+  });
+}
+document.getElementById('ext-load-btn').addEventListener('click', async () => {
+  const p = await window.ave.dialogOpenFolder();
+  if (!p) return;
+  showToast('A carregar extensão…');
+  const r = await window.ave.extLoad(p);
+  r.ok ? (showToast('Extensão carregada: ' + r.name), extRefreshList()) : showToast('Erro: ' + r.error);
+});
+document.getElementById('ext-refresh-btn').addEventListener('click', extRefreshList);
+
+// ── B: Userscripts ─────────────────────────────────────────────────────────────
+let _usEditId = null;
+
+function _parseUsMeta(code) {
+  const g = (re) => (code.match(re) || [])[1]?.trim() || '';
+  return {
+    name:  g(/@name\s+(.+)/)  || 'Script sem nome',
+    match: g(/@match\s+(.+)/) || '*',
+    desc:  g(/@description\s+(.+)/),
+  };
+}
+
+async function usRefreshList() {
+  const list = await window.ave.usList();
+  const c = document.getElementById('us-list-container');
+  if (!list.length) {
+    c.innerHTML = '<div style="color:var(--tx3);font-size:10px;padding:10px;font-family:\'JetBrains Mono\';">Nenhum userscript — clica + NOVO para criar</div>';
+    return;
+  }
+  c.innerHTML = list.map(s => `
+    <div class="ext-item">
+      <label style="display:flex;align-items:center;gap:5px;flex:1;cursor:pointer;min-width:0;">
+        <input type="checkbox" class="ext-item-toggle us-toggle" data-usid="${esc(s.id)}" ${s.enabled ? 'checked' : ''}>
+        <div class="ext-item-info">
+          <div class="ext-item-name" style="color:${s.enabled ? 'var(--tx)' : 'var(--tx3)'};">${esc(s.name)}</div>
+          <div class="ext-item-meta">${esc(s.match || '*')}</div>
+        </div>
+      </label>
+      <button class="ext-item-btn us-edit" data-usid="${esc(s.id)}">✎</button>
+    </div>`).join('');
+  c.querySelectorAll('.us-toggle').forEach(cb => {
+    cb.addEventListener('change', async (e) => {
+      e.stopPropagation();
+      const all = await window.ave.usList();
+      const s = all.find(x => x.id === cb.dataset.usid);
+      if (s) { s.enabled = cb.checked; await window.ave.usSave(s); usRefreshList(); }
+    });
+  });
+  c.querySelectorAll('.us-edit').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const all = await window.ave.usList();
+      const s = all.find(x => x.id === btn.dataset.usid);
+      if (s) usOpenEditor(s);
+    });
+  });
+}
+
+const _usTemplate = `// ==UserScript==
+// @name         Meu Script
+// @description  Corre dentro da página visitada
+// @match        *://*/*
+// @version      1.0
+// ==/UserScript==
+(function() {
+  'use strict';
+  // Tens acesso ao DOM da página visitada
+  console.log('[UserScript] a correr em', location.href);
+})();`;
+
+function usOpenEditor(script) {
+  _usEditId = script?.id || null;
+  document.getElementById('us-code').value = script?.code || _usTemplate;
+  document.getElementById('us-editor').classList.add('active');
+  document.getElementById('us-delete-btn').style.display = _usEditId ? 'inline-block' : 'none';
+  document.getElementById('us-code').focus();
+}
+function usCloseEditor() {
+  document.getElementById('us-editor').classList.remove('active');
+  _usEditId = null;
+}
+document.getElementById('us-new-btn').addEventListener('click', () => usOpenEditor(null));
+document.getElementById('us-refresh-btn').addEventListener('click', usRefreshList);
+document.getElementById('us-cancel-btn').addEventListener('click', usCloseEditor);
+document.getElementById('us-import-btn').addEventListener('click', async () => {
+  const p = await window.ave.dialogOpenFile({ title: 'Importar userscript', filters: [{ name: 'JavaScript', extensions: ['js'] }] });
+  if (!p) return;
+  const r = await window.ave.fsRead(p);
+  r.ok ? usOpenEditor({ code: r.data }) : showToast('Erro ao ler: ' + r.error);
+});
+document.getElementById('us-save-btn').addEventListener('click', async () => {
+  const code = document.getElementById('us-code').value.trim();
+  if (!code) return;
+  const meta = _parseUsMeta(code);
+  const r = await window.ave.usSave({ id: _usEditId || ('us_' + Date.now()), name: meta.name, description: meta.desc, match: meta.match, enabled: true, code });
+  r.ok ? (showToast('Guardado: ' + meta.name), usCloseEditor(), usRefreshList()) : showToast('Erro: ' + r.error);
+});
+document.getElementById('us-delete-btn').addEventListener('click', async () => {
+  if (!_usEditId || !confirm('Apagar este userscript?')) return;
+  await window.ave.usDelete(_usEditId);
+  showToast('Apagado'); usCloseEditor(); usRefreshList();
+});
+
+// Inject userscripts into webview on navigation
+async function runUserscriptsForUrl(url, wv) {
+  try {
+    const scripts = await window.ave.usGetForUrl(url);
+    for (const s of scripts) {
+      wv.executeJavaScript(`try{${s.code}}catch(e){console.error('[UserScript "${s.name.replace(/"/g,"'")}"] erro:',e.message);}`)
+        .catch(() => {});
+    }
+  } catch {}
+}
+
+// ── C: Plugins ─────────────────────────────────────────────────────────────────
+let _plgEditId = null;
+
+function _parsePlgMeta(code) {
+  const g = (re) => (code.match(re) || [])[1]?.trim() || '';
+  return { name: g(/@name\s+(.+)/) || 'Plugin sem nome', desc: g(/@description\s+(.+)/) };
+}
+
+async function plgRefreshList() {
+  const list = await window.ave.pluginList();
+  const c = document.getElementById('plg-list-container');
+  if (!list.length) {
+    c.innerHTML = '<div style="color:var(--tx3);font-size:10px;padding:10px;font-family:\'JetBrains Mono\';">Nenhum plugin — clica + NOVO para criar</div>';
+    return;
+  }
+  c.innerHTML = list.map(p => `
+    <div class="ext-item">
+      <label style="display:flex;align-items:center;gap:5px;flex:1;cursor:pointer;min-width:0;">
+        <input type="checkbox" class="ext-item-toggle plg-toggle" data-plgid="${esc(p.id)}" ${p.enabled ? 'checked' : ''}>
+        <div class="ext-item-info">
+          <div class="ext-item-name" style="color:${p.enabled ? 'var(--tx)' : 'var(--tx3)'};">${esc(p.name)}</div>
+          <div class="ext-item-meta">${esc(p.description || '')}</div>
+        </div>
+      </label>
+      <button class="ext-item-btn success plg-run" data-plgid="${esc(p.id)}" title="Executar agora">▶</button>
+      <button class="ext-item-btn plg-edit" data-plgid="${esc(p.id)}">✎</button>
+    </div>`).join('');
+  c.querySelectorAll('.plg-toggle').forEach(cb => {
+    cb.addEventListener('change', async (e) => {
+      e.stopPropagation();
+      const all = await window.ave.pluginList();
+      const p = all.find(x => x.id === cb.dataset.plgid);
+      if (p) { p.enabled = cb.checked; await window.ave.pluginSave(p); plgRefreshList(); }
+    });
+  });
+  c.querySelectorAll('.plg-run').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const all = await window.ave.pluginList();
+      const p = all.find(x => x.id === btn.dataset.plgid);
+      if (p) _runPlugin(p);
+    });
+  });
+  c.querySelectorAll('.plg-edit').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const all = await window.ave.pluginList();
+      const p = all.find(x => x.id === btn.dataset.plgid);
+      if (p) plgOpenEditor(p);
+    });
+  });
+}
+
+const _plgTemplate = `// ==AvePlugin==
+// @name         Meu Plugin
+// @description  Corre no contexto do AveBrowser
+// @version      1.0
+// ==/AvePlugin==
+(function() {
+  // Tens acesso a: showToast, getActiveTab, newTab, navigate, window.ave, tabs
+
+  showToast('Plugin "Meu Plugin" carregado!');
+
+  // Exemplo: alertar quando uma API é detectada
+  // window.ave.on('request-captured', (req) => {
+  //   if (req.url.includes('/api/v')) showToast('API: ' + req.url);
+  // });
+})();`;
+
+function _runPlugin(plugin) {
+  try {
+    const fn = new Function('ave', 'showToast', 'getActiveTab', 'newTab', 'navigate', 'tabs', plugin.code);
+    fn(window.ave, showToast, getActiveTab, newTab, navigate, tabs);
+  } catch (e) {
+    showToast('Plugin "' + plugin.name + '" erro: ' + e.message);
+    console.error('[Plugin]', plugin.name, e);
+  }
+}
+
+async function loadEnabledPlugins() {
+  try {
+    const list = await window.ave.pluginList();
+    list.filter(p => p.enabled).forEach(p => _runPlugin(p));
+  } catch {}
+}
+
+function plgOpenEditor(plugin) {
+  _plgEditId = plugin?.id || null;
+  document.getElementById('plg-code').value = plugin?.code || _plgTemplate;
+  document.getElementById('plg-editor').classList.add('active');
+  document.getElementById('plg-delete-btn').style.display = _plgEditId ? 'inline-block' : 'none';
+  document.getElementById('plg-code').focus();
+}
+function plgCloseEditor() {
+  document.getElementById('plg-editor').classList.remove('active');
+  _plgEditId = null;
+}
+document.getElementById('plg-new-btn').addEventListener('click', () => plgOpenEditor(null));
+document.getElementById('plg-refresh-btn').addEventListener('click', plgRefreshList);
+document.getElementById('plg-cancel-btn').addEventListener('click', plgCloseEditor);
+document.getElementById('plg-save-btn').addEventListener('click', async () => {
+  const code = document.getElementById('plg-code').value.trim();
+  if (!code) return;
+  const meta = _parsePlgMeta(code);
+  const r = await window.ave.pluginSave({ id: _plgEditId || ('plg_' + Date.now()), name: meta.name, description: meta.desc, enabled: true, code });
+  r.ok ? (showToast('Plugin guardado: ' + meta.name), plgCloseEditor(), plgRefreshList()) : showToast('Erro: ' + r.error);
+});
+document.getElementById('plg-delete-btn').addEventListener('click', async () => {
+  if (!_plgEditId || !confirm('Apagar este plugin?')) return;
+  await window.ave.pluginDelete(_plgEditId);
+  showToast('Plugin apagado'); plgCloseEditor(); plgRefreshList();
+});
+
+// Load enabled plugins on startup (after DOM is ready)
+document.addEventListener('DOMContentLoaded', () => {}, false);
+setTimeout(loadEnabledPlugins, 500);
+
 // ── ZOOM ─────────────────────────────────────────────────────────────────────
 let currentZoom = 0; // Electron zoom level: 0=100%, 1=120%, -1=83%
 const ZOOM_LEVELS = [-4,-3,-2,-1,0,1,2,3,4,5]; // ~50%..300%
@@ -1572,6 +1958,7 @@ function switchPane(btn) {
   target.classList.add('active');
   target.style.display = 'flex';
   if (pane === 'notes') loadNoteForDomain(getDomain(getActiveTab()?.url || ''));
+  if (pane === 'ext') { extRefreshList(); usRefreshList(); plgRefreshList(); }
 }
 
 // ── CAPTURE ──────────────────────────────────────────────────────────────────
