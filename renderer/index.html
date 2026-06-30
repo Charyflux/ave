@@ -405,7 +405,7 @@ webview.active{display:block;}
 
   <div id="url-bar-wrap">
     <i class="fa-solid fa-lock" id="sec-icon"></i>
-    <input id="url-input" placeholder="Pesquisar ou introduzir URL..." autocomplete="off" spellcheck="false">
+    <input id="url-input" placeholder="Pesquisar no Google ou introduzir URL (ex: google.com)..." autocomplete="off" spellcheck="false">
   </div>
 
   <div class="sep"></div>
@@ -581,10 +581,17 @@ function setupListeners() {
   // URL bar
   const urlInput = document.getElementById('url-input');
   urlInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') navigate(urlInput.value);
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
+      navigate(urlInput.value);
+    }
     if (e.key === 'Escape') { urlInput.blur(); urlInput.value = getActiveTab()?.url || ''; }
   });
   urlInput.addEventListener('focus', () => urlInput.select());
+
+  // Also handle clicking the GO button in new tab search
+  document.getElementById('url-input').addEventListener('change', () => {}); // keep reactive
 
   // New tab search
   document.getElementById('nt-search-input').addEventListener('keydown', e => {
@@ -683,14 +690,13 @@ function newTab(url = '') {
     newTab(e.url);
   });
 
-  // Load URL or show new tab page
+  // Always initialize webview with about:blank so it's ready
+  wv.src = 'about:blank';
+
   if (url) {
     const norm = normalizeUrl(url);
     tab.url = norm;
-    wv.addEventListener('dom-ready', () => {
-      if (wv.loadURL) wv.loadURL(norm).catch(()=>{});
-    }, { once: true });
-    wv.src = norm;
+    wv.addEventListener('dom-ready', () => { wv.src = norm; }, { once: true });
   } else {
     showNewTabPage();
   }
@@ -764,17 +770,13 @@ function renderTabs() {
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
 function navigate(input) {
+  if (!input || !input.trim()) return;
   const url = normalizeUrl(input.trim());
   const tab = getActiveTab();
   if (!tab) return;
   tab.url = url;
   document.getElementById('newtab-page').style.display = 'none';
-  // loadURL is more reliable than .src on all platforms
-  if (tab.wv.loadURL) {
-    tab.wv.loadURL(url).catch(() => { tab.wv.src = url; });
-  } else {
-    tab.wv.src = url;
-  }
+  tab.wv.src = url;
   document.getElementById('url-input').value = url;
   updateSecIcon(url);
   document.getElementById('url-input').blur();
