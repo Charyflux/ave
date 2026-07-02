@@ -679,6 +679,34 @@ webview.active{visibility:visible;pointer-events:auto;}
 
 /* TOOLTIP */
 [title]{position:relative;}
+
+/* ── CUSTOM CONTEXT MENU ─────────────────────────────────────────────────────── */
+#ctx-popup{
+  display:none;position:fixed;z-index:99999;
+  background:linear-gradient(145deg,#12112a,#1a1535);
+  border:1px solid rgba(124,58,237,.5);border-radius:10px;
+  padding:4px 0;min-width:210px;
+  box-shadow:0 16px 40px rgba(0,0,0,.7),0 0 0 1px rgba(124,58,237,.2);
+  backdrop-filter:blur(8px);user-select:none;
+  animation:ctxFadeIn .12s ease;
+}
+@keyframes ctxFadeIn{from{opacity:0;transform:scale(.95) translateY(-4px)}to{opacity:1;transform:none}}
+.ctx-section-label{
+  font-size:9px;font-weight:700;letter-spacing:1px;color:#7c3aed;
+  padding:6px 14px 2px;text-transform:uppercase;
+}
+.ctx-item{
+  display:flex;align-items:center;gap:10px;
+  padding:6px 14px;cursor:pointer;color:#e2e8f0;
+  font-size:11.5px;transition:background .1s;border-radius:0;
+}
+.ctx-item:hover{background:rgba(124,58,237,.25);color:#fff;}
+.ctx-item.danger:hover{background:rgba(239,68,68,.2);color:#f87171;}
+.ctx-item.disabled{opacity:.35;cursor:default;pointer-events:none;}
+.ctx-icon{width:16px;text-align:center;font-size:12px;flex-shrink:0;}
+.ctx-label{flex:1;}
+.ctx-shortcut{font-size:9.5px;color:#6b7280;font-family:'JetBrains Mono',monospace;}
+.ctx-sep{height:1px;background:rgba(124,58,237,.2);margin:4px 6px;}
 </style>
 </head>
 <body style="display:flex;flex-direction:column;height:100vh;">
@@ -741,7 +769,7 @@ webview.active{visibility:visible;pointer-events:auto;}
   </button>
 
   <!-- Caido proxy tool -->
-  <button id="btn-caido" onclick="window.ave.openCaido()" title="Abrir Caido (localhost:8080)">
+  <button id="btn-caido" onclick="openCaidoSafe()" title="Abrir Caido (localhost:8080)">
     <i class="fa-solid fa-bug-slash"></i> CAIDO
   </button>
 
@@ -1445,12 +1473,12 @@ function newTab(url = '') {
   wv.addEventListener('new-window', e => { newTab(e.url); });
   wv.addEventListener('did-create-window', (win) => { win.close(); });
 
-  // Right-click context menu
+  // Right-click context menu — custom HTML popup
   wv.addEventListener('context-menu', (e) => {
-    const params = e.params || {};
-    params.canGoBack    = wv.canGoBack?.()    ?? false;
-    params.canGoForward = wv.canGoForward?.() ?? false;
-    window.ave.showContextMenu(params);
+    const p = e.params || {};
+    p.canGoBack    = wv.canGoBack?.()    ?? false;
+    p.canGoForward = wv.canGoForward?.() ?? false;
+    showCtxMenu(p, wv);
   });
 
   // Find in page results
@@ -1473,7 +1501,10 @@ function newTab(url = '') {
       <div style="font-size:12px;color:#888;">${e.errorDescription || 'Sem internet ou URL inválida'}</div>
       <div style="font-size:11px;color:#555;">${e.validatedURL}</div>
       <button onclick="history.back()" style="margin-top:16px;padding:8px 20px;background:#1a1a2e;border:1px solid #333;color:#ccc;border-radius:6px;cursor:pointer;">Voltar</button>
-    </body>`;
+    
+<!-- Custom context menu popup -->
+<div id="ctx-popup"></div>
+</body>`;
     wv.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(html));
   });
 
@@ -2485,6 +2516,153 @@ function esc(s) {
   if (!s) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+
+// ── CAIDO SAFE OPEN ──────────────────────────────────────────────────────────
+async function openCaidoSafe() {
+  const btn = document.getElementById('btn-caido');
+  if (btn) { btn.style.opacity = '.5'; btn.style.pointerEvents = 'none'; }
+  const result = await window.ave.openCaido().catch(() => ({ running: false }));
+  if (btn) { btn.style.opacity = ''; btn.style.pointerEvents = ''; }
+  if (!result.running) {
+    showCtxToast(
+      '❌ Caido não está a correr',
+      'Instala e inicia o Caido em <b>caido.io</b>, depois volta a clicar.<br>' +
+      'Por padrão corre em <code>localhost:8080</code>.',
+      8000
+    );
+  }
+}
+
+function showCtxToast(title, body, ms = 5000) {
+  let el = document.getElementById('_ctx-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = '_ctx-toast';
+    el.style.cssText = [
+      'position:fixed;bottom:40px;right:24px;z-index:99999',
+      'background:linear-gradient(135deg,#1a1535,#12112a)',
+      'border:1px solid rgba(124,58,237,.5)',
+      'border-radius:10px;padding:12px 16px;max-width:300px',
+      'box-shadow:0 8px 32px rgba(0,0,0,.6)',
+      'font-size:11px;color:#e2e8f0',
+      'transition:opacity .3s,transform .3s',
+      'cursor:pointer'
+    ].join(';');
+    el.addEventListener('click', () => { el.style.opacity='0'; el.style.transform='translateY(10px)'; });
+    document.body.appendChild(el);
+  }
+  el.innerHTML = `<div style="font-weight:700;color:#f87171;margin-bottom:4px">${title}</div><div style="color:#a78bfa;line-height:1.4">${body}</div>`;
+  el.style.opacity = '1';
+  el.style.transform = 'none';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateY(10px)'; }, ms);
+}
+
+// ── CUSTOM CONTEXT MENU ───────────────────────────────────────────────────────
+let _ctxWv = null;
+
+function showCtxMenu(p, wv) {
+  _ctxWv = wv;
+  const popup = document.getElementById('ctx-popup');
+
+  const items = [];
+
+  if (p.linkURL) {
+    items.push({ sec: 'Link' });
+    items.push({ icon: '🔗', label: 'Abrir em nova aba', action: () => newTab(p.linkURL) });
+    items.push({ icon: '📋', label: 'Copiar endereço do link', action: () => navigator.clipboard?.writeText(p.linkURL) });
+    items.push({ sep: true });
+  }
+
+  if (p.mediaType === 'image' && p.srcURL) {
+    items.push({ sec: 'Imagem' });
+    items.push({ icon: '🖼', label: 'Abrir imagem em nova aba', action: () => newTab(p.srcURL) });
+    items.push({ icon: '📋', label: 'Copiar URL da imagem', action: () => navigator.clipboard?.writeText(p.srcURL) });
+    items.push({ sep: true });
+  }
+
+  if (p.selectionText) {
+    const s = p.selectionText.slice(0, 28) + (p.selectionText.length > 28 ? '…' : '');
+    items.push({ sec: 'Seleção' });
+    items.push({ icon: '📋', label: 'Copiar', shortcut: 'Ctrl+C', action: () => wv.copy() });
+    items.push({ icon: '🔍', label: `Pesquisar "${s}"`, action: () => navigate('https://www.google.com/search?q=' + encodeURIComponent(p.selectionText)) });
+    items.push({ icon: '🎯', label: 'Enviar ao Fuzzer', action: () => { navigate('#'); showToast('URL copiado para Fuzzer'); } });
+    items.push({ sep: true });
+  } else if (p.isEditable) {
+    items.push({ sec: 'Campo de texto' });
+    items.push({ icon: '✂️', label: 'Cortar',          shortcut: 'Ctrl+X', action: () => wv.cut() });
+    items.push({ icon: '📋', label: 'Copiar',          shortcut: 'Ctrl+C', action: () => wv.copy() });
+    items.push({ icon: '📌', label: 'Colar',           shortcut: 'Ctrl+V', action: () => wv.paste() });
+    items.push({ icon: '⬛', label: 'Selecionar tudo', shortcut: 'Ctrl+A', action: () => wv.selectAll() });
+    items.push({ sep: true });
+  }
+
+  items.push({ sec: 'Navegação' });
+  items.push({ icon: '◀', label: 'Voltar',     shortcut: 'Alt+←', disabled: !p.canGoBack,    action: () => wv.goBack() });
+  items.push({ icon: '▶', label: 'Avançar',    shortcut: 'Alt+→', disabled: !p.canGoForward, action: () => wv.goForward() });
+  items.push({ icon: '↻', label: 'Recarregar', shortcut: 'Ctrl+R', action: () => wv.reload() });
+  items.push({ sep: true });
+
+  items.push({ sec: 'Página' });
+  items.push({ icon: '💾', label: 'Guardar página…', action: () => wv.downloadURL(getActiveTab()?.url || '') });
+  items.push({ icon: '🖨', label: 'Imprimir…',        action: () => wv.print() });
+  items.push({ sep: true });
+
+  items.push({ icon: '< >', label: 'Ver código fonte',    action: () => newTab('view-source:' + (getActiveTab()?.url || '')) });
+  items.push({ icon: '🔧', label: 'Inspecionar elemento', action: () => wv.openDevTools() });
+
+  // Render HTML
+  let html = '';
+  items.forEach((it, idx) => {
+    if (it.sec)  { html += `<div class="ctx-section-label">${it.sec}</div>`; return; }
+    if (it.sep)  { html += '<div class="ctx-sep"></div>'; return; }
+    html += `<div class="ctx-item${it.disabled?' disabled':''}" data-idx="${idx}">
+      <span class="ctx-icon">${it.icon||''}</span>
+      <span class="ctx-label">${it.label}</span>
+      ${it.shortcut?`<span class="ctx-shortcut">${it.shortcut}</span>`:''}
+    </div>`;
+  });
+  popup.innerHTML = html;
+  popup._items = items;
+
+  popup.querySelectorAll('.ctx-item:not(.disabled)').forEach(el => {
+    el.addEventListener('mousedown', ev => {
+      ev.preventDefault(); ev.stopPropagation();
+      const it = items[+el.dataset.idx];
+      hideCtxMenu();
+      if (it && it.action) it.action();
+    });
+  });
+
+  // Position
+  const wvRect = wv.getBoundingClientRect();
+  let x = wvRect.left + (p.x || 0);
+  let y = wvRect.top  + (p.y || 0);
+  popup.style.display = 'block';
+  popup.style.left = x + 'px';
+  popup.style.top  = y + 'px';
+
+  // Keep within viewport
+  requestAnimationFrame(() => {
+    const pw = popup.offsetWidth, ph = popup.offsetHeight;
+    if (x + pw > window.innerWidth  - 8) popup.style.left = Math.max(4, window.innerWidth  - pw - 8) + 'px';
+    if (y + ph > window.innerHeight - 8) popup.style.top  = Math.max(4, y - ph) + 'px';
+  });
+}
+
+function hideCtxMenu() {
+  const p = document.getElementById('ctx-popup');
+  if (p) p.style.display = 'none';
+  _ctxWv = null;
+}
+
+document.addEventListener('mousedown', e => {
+  if (!e.target.closest('#ctx-popup')) hideCtxMenu();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') hideCtxMenu();
+});
 
 function showToast(msg) {
   let t = document.getElementById('_toast');
