@@ -1,89 +1,76 @@
-// AveBrowser v2.0 — preload (contextBridge)
-// Exposes window.ave API to the renderer. All IPC channels are explicitly
-// allowlisted — no nodeIntegration required.
-
 const { contextBridge, ipcRenderer } = require('electron');
 
-const _listenerWrappers = new Map();
+const _listenerWrappers = new Map(); // cb -> [{ch, wrapper}] — lets off() find the real registered listener
 
 contextBridge.exposeInMainWorld('ave', {
-  // ── Window ────────────────────────────────────────────────────────────────
+  // Window
   minimize:        () => ipcRenderer.invoke('window-minimize'),
   maximize:        () => ipcRenderer.invoke('window-maximize'),
   close:           () => ipcRenderer.invoke('window-close'),
   isMaximized:     () => ipcRenderer.invoke('window-is-max'),
 
-  // ── Navigation ────────────────────────────────────────────────────────────
-  openExternal:    (url)  => ipcRenderer.invoke('open-external', url),
+  // Capture
+  getCaptures:     () => ipcRenderer.invoke('get-captures'),
+  clearCaptures:   () => ipcRenderer.invoke('clear-captures'),
+  toggleCapture:   (v) => ipcRenderer.invoke('toggle-capture', v),
 
-  // ── TOR ───────────────────────────────────────────────────────────────────
-  torToggle:       (v)    => ipcRenderer.invoke('tor-toggle', v),
-  torNewIp:        ()     => ipcRenderer.invoke('tor-new-ip'),
-  getIp:           ()     => ipcRenderer.invoke('get-ip'),
-  torStatus:       ()     => ipcRenderer.invoke('tor-status'),
+  // Navigation / integrations
+  openCaido:       () => ipcRenderer.invoke('open-caido'),
+  openAveOne:      () => ipcRenderer.invoke('open-aveone'),
+  openExternal:    (url) => ipcRenderer.invoke('open-external', url),
+  sendToAveOne:    (data) => ipcRenderer.invoke('send-to-aveone', data),
 
-  // ── Go Proxy API (via main-process relay — no CORS) ───────────────────────
-  proxyInfo:       ()     => ipcRenderer.invoke('proxy-info'),
-  proxyFetch:      (opts) => ipcRenderer.invoke('proxy-fetch', opts),
+  // TOR
+  torToggle:       (v) => ipcRenderer.invoke('tor-toggle', v),
+  torNewIp:        () => ipcRenderer.invoke('tor-new-ip'),
+  getIp:           () => ipcRenderer.invoke('get-ip'),
+  torStatus:       () => ipcRenderer.invoke('tor-status'),
 
-  // ── Fuzzer ────────────────────────────────────────────────────────────────
-  fuzzerRun:       (opts) => ipcRenderer.invoke('fuzzer-run', opts),
-  fuzzerStop:      ()     => ipcRenderer.invoke('fuzzer-stop'),
-
-  // ── AveOne (CORS-free fetch via main process) ─────────────────────────────
+  // AveOne Inspector
   aveoneFetch:     (opts) => ipcRenderer.invoke('aveone-fetch', opts),
 
-  // ── Cookies ───────────────────────────────────────────────────────────────
-  getCookies:      (url)  => ipcRenderer.invoke('get-cookies', url),
-  getAllCookies:   ()      => ipcRenderer.invoke('get-all-cookies'),
+  // Cookies
+  getCookies:      (url) => ipcRenderer.invoke('get-cookies', url),
+  getAllCookies:    () => ipcRenderer.invoke('get-all-cookies'),
   removeCookie:    (url, name) => ipcRenderer.invoke('remove-cookie', url, name),
 
-  // ── Context menu ──────────────────────────────────────────────────────────
+  // Context menu
   showContextMenu: (params) => ipcRenderer.send('show-context-menu', params),
 
-  // ── Chrome Extensions ─────────────────────────────────────────────────────
-  // ── External tool launchers ─────────────────────────────────────────
-  openCaido:       ()     => ipcRenderer.invoke('open-caido'),
-  openAveOne:      ()     => ipcRenderer.invoke('open-aveone'),
-  sendToAveOne:    (d)    => ipcRenderer.invoke('send-to-aveone', d),
+  // Chrome Extensions (MV2, unpacked)
+  extLoad:         (extPath) => ipcRenderer.invoke('ext-load', extPath),
+  extRemove:       (id)      => ipcRenderer.invoke('ext-remove', id),
+  extList:         ()        => ipcRenderer.invoke('ext-list'),
+  extOpenPopup:    (opts)    => ipcRenderer.invoke('ext-open-popup', opts),
 
-  // ── Capture (delegated to Go proxy) ─────────────────────────────────────────────
-  toggleCapture:   (v)    => ipcRenderer.invoke('toggle-capture', v),
-  clearCaptures:   ()     => ipcRenderer.invoke('clear-captures'),
-  getCaptures:     ()     => Promise.resolve([]),
+  // Userscripts
+  usList:          ()        => ipcRenderer.invoke('us-list'),
+  usSave:          (s)       => ipcRenderer.invoke('us-save', s),
+  usDelete:        (id)      => ipcRenderer.invoke('us-delete', id),
+  usGetForUrl:     (url)     => ipcRenderer.invoke('us-get-for-url', url),
 
-  extLoad:         (p)    => ipcRenderer.invoke('ext-load', p),
-  extRemove:       (id)   => ipcRenderer.invoke('ext-remove', id),
-  extList:         ()     => ipcRenderer.invoke('ext-list'),
-  extOpenPopup:    (opts) => ipcRenderer.invoke('ext-open-popup', opts),
-  extInstallCrx:   (inp)  => ipcRenderer.invoke('ext-install-crx', inp),
-  extCwsId:        (url)  => ipcRenderer.invoke('ext-cws-id', url),
+  // Plugins (run in renderer context)
+  pluginList:      ()        => ipcRenderer.invoke('plugin-list'),
+  pluginSave:      (p)       => ipcRenderer.invoke('plugin-save', p),
+  pluginDelete:    (id)      => ipcRenderer.invoke('plugin-delete', id),
 
-  // ── Userscripts ───────────────────────────────────────────────────────────
-  usList:          ()     => ipcRenderer.invoke('us-list'),
-  usSave:          (s)    => ipcRenderer.invoke('us-save', s),
-  usDelete:        (id)   => ipcRenderer.invoke('us-delete', id),
-  usGetForUrl:     (url)  => ipcRenderer.invoke('us-get-for-url', url),
-
-  // ── Plugins ───────────────────────────────────────────────────────────────
-  pluginList:      ()     => ipcRenderer.invoke('plugin-list'),
-  pluginSave:      (p)    => ipcRenderer.invoke('plugin-save', p),
-  pluginDelete:    (id)   => ipcRenderer.invoke('plugin-delete', id),
-
-  // ── Dialogs / FS ──────────────────────────────────────────────────────────
+  // Dialogs / FS
   dialogOpenFolder: ()        => ipcRenderer.invoke('dialog-open-folder'),
   dialogOpenFile:   (opts)    => ipcRenderer.invoke('dialog-open-file', opts),
   fsRead:           (p)       => ipcRenderer.invoke('fs-read', p),
 
-  // ── Event bus ─────────────────────────────────────────────────────────────
+  // Events
   on: (ch, cb) => {
-    const allowed = [
-      'window-state', 'ctx-action',
-      'download-started', 'download-done',
-      'permission-denied-toast', 'tor-ip-changed',
-      'fuzzer-line',             // streamed output from avefuzz
+    const ok = [
+      'request-captured', 'response-captured', 'window-state',
+      'open-devtools-for', 'tor-ip-changed',
+      'ctx-action', 'download-started', 'download-done',
+      'permission-denied-toast',
     ];
-    if (!allowed.includes(ch)) return;
+    if (!ok.includes(ch)) return;
+    // ipcRenderer.on() needs the exact wrapper instance to unregister later —
+    // removeListener(ch, cb) with the original cb is a no-op since cb was never
+    // the listener Electron actually attached. Track wrapper-per-(cb,ch) so off() works.
     const wrapper = (_, ...a) => cb(...a);
     if (!_listenerWrappers.has(cb)) _listenerWrappers.set(cb, []);
     _listenerWrappers.get(cb).push({ ch, wrapper });
