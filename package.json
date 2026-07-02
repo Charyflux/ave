@@ -1,6 +1,6 @@
 {
   "name": "avebrowser",
-  "version": "1.3.11",
+  "version": "1.3.12",
   "description": "AveBrowser — Bug Bounty Browser by AveOne",
   "author": "AveOne Security <contact@aveone.com.br>",
   "main": "main.js",
