@@ -6,7 +6,7 @@
 // longer needed here. The renderer connects to ws://127.0.0.1:7778/ws
 // for real-time request streaming.
 
-const { app, BrowserWindow, ipcMain, session, shell, Menu, dialog, clipboard } = require('electron');
+const { app, BrowserWindow, ipcMain, session, shell, net, Menu, dialog, clipboard } = require('electron');
 const path   = require('path');
 const fs     = require('fs');
 const { spawn, execFile } = require('child_process');
@@ -485,6 +485,65 @@ async function createWindow() {
   ipcMain.handle('plugin-list',     ()         => readAll(PLUGINS_DIR));
   ipcMain.handle('plugin-delete',   (_, id)    => { try { const f = plugPath(id); if (fs.existsSync(f)) fs.unlinkSync(f); return { ok: true }; } catch (e) { return { ok: false, error: e.message }; } });
   ipcMain.handle('plugin-save',     (_, p)     => { try { if (!p.id) p.id = 'plg_' + Date.now(); fs.writeFileSync(plugPath(p.id), JSON.stringify(p, null, 2)); return { ok: true, id: p.id }; } catch (e) { return { ok: false, error: e.message }; } });
+
+  // ── IPC: External tool launchers ──────────────────────────────────────────────
+  ipcMain.handle('open-caido',  () => shell.openExternal('http://localhost:8080'));
+  ipcMain.handle('open-aveone', () => shell.openExternal('http://localhost:3000'));
+
+  // ── IPC: Chrome Web Store CRX installer ──────────────────────────────────────
+  function cwsExtractId(input) {
+    const m = String(input).match(/(?:detail\/[^/]*\/|^)([a-z]{32})(?:\/|$|\?|#|$)/);
+    return m ? m[1] : null;
+  }
+
+  async function crxInstall(extId) {
+    const os = require('os');
+    const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+    const crxUrl = `https://clients2.google.com/service/update2/crx?response=redirect&prodversion=120.0.0.0&x=id%3D${extId}%26installsource%3Dondemand%26uc`;
+
+    const resp = await net.fetch(crxUrl, { headers: { 'User-Agent': UA } });
+    if (!resp.ok) throw new Error(`Falha no download: HTTP ${resp.status}`);
+    const buf = Buffer.from(await resp.arrayBuffer());
+
+    // Locate ZIP payload inside CRX (look for PK\x03\x04 magic)
+    let zipStart = -1;
+    for (let i = 0; i < buf.length - 3; i++) {
+      if (buf[i] === 0x50 && buf[i+1] === 0x4B && buf[i+2] === 0x03 && buf[i+3] === 0x04) {
+        zipStart = i; break;
+      }
+    }
+    if (zipStart === -1) throw new Error('CRX inválido: assinatura ZIP não encontrada');
+
+    const tmpZip = path.join(os.tmpdir(), `ave-crx-${extId}.zip`);
+    fs.writeFileSync(tmpZip, buf.slice(zipStart));
+
+    const extDir = path.join(userData, 'crx-extensions', extId);
+    fs.mkdirSync(extDir, { recursive: true });
+
+    await new Promise((resolve, reject) => {
+      const [cmd, args] = process.platform === 'win32'
+        ? ['powershell', ['-NoProfile', '-NonInteractive', '-Command',
+            `Expand-Archive -Force -LiteralPath '${tmpZip}' -DestinationPath '${extDir}'`]]
+        : ['unzip', ['-o', tmpZip, '-d', extDir]];
+      execFile(cmd, args, err => err ? reject(new Error(err.message)) : resolve());
+    });
+
+    try { fs.unlinkSync(tmpZip); } catch {}
+
+    const ext = await session.fromPartition(PARTITION).loadExtension(extDir, { allowFileAccess: true });
+    let saved = []; try { saved = JSON.parse(fs.readFileSync(EXTS_FILE, 'utf8') || '[]'); } catch {}
+    if (!saved.includes(extDir)) { saved.push(extDir); fs.writeFileSync(EXTS_FILE, JSON.stringify(saved)); }
+    return { ok: true, id: ext.id, name: ext.name, version: ext.version };
+  }
+
+  ipcMain.handle('ext-cws-id',     (_, url)   => cwsExtractId(url));
+  ipcMain.handle('ext-install-crx', async (_, input) => {
+    try {
+      const id = cwsExtractId(input) || (/^[a-z]{32}$/.test(String(input).trim()) ? input.trim() : null);
+      if (!id) return { ok: false, error: 'ID ou URL do Chrome Web Store inválido (ex: https://chromewebstore.google.com/detail/nome/abcdefghijklmnopqrstuvwxyz123456)' };
+      return await crxInstall(id);
+    } catch (e) { return { ok: false, error: e.message }; }
+  });
 
   mainWindow.on('maximize',   () => mainWindow?.webContents.send('window-state', 'maximized'));
   mainWindow.on('unmaximize', () => mainWindow?.webContents.send('window-state', 'normal'));
