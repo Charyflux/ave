@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AveBrowser · bug bounty browser</title>
-    <!-- Font & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
@@ -22,6 +21,8 @@
             color: #eaeef5;
             line-height: 1.6;
             padding: 2rem 1rem;
+            min-height: 100vh;
+            background-image: radial-gradient(ellipse at 50% 0%, #1a0e2e 0%, #0b0b12 70%);
         }
 
         .container {
@@ -55,6 +56,7 @@
             justify-content: center;
             box-shadow: 0 8px 20px -6px rgba(124, 58, 237, 0.3);
             border: 1px solid rgba(124, 58, 237, 0.2);
+            flex-shrink: 0;
         }
 
         .brand-icon img {
@@ -341,6 +343,21 @@
             color: #e2e8f0;
         }
 
+        /* ---- stats row ---- */
+        .stats-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem 2.5rem;
+            padding: 0.8rem 0 0.2rem 0;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .stats-row span i {
+            color: #7c3aed;
+            margin-right: 0.4rem;
+        }
+
         @media (max-width: 700px) {
             .container {
                 padding: 1.5rem 1.2rem;
@@ -407,6 +424,13 @@
             <a href="https://github.com/Charyflux/ave/releases" class="btn-download" style="background:rgba(255,255,255,0.02);">
                 <i class="fas fa-tag"></i> todas as releases
             </a>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-row">
+            <span><i class="fas fa-code"></i> HTML 59.5% · JavaScript 40.5%</span>
+            <span><i class="fas fa-users"></i> Contribuidores: AndreV · Claude · Charyflux</span>
+            <span><i class="fas fa-tag"></i> Electron 28.3.3</span>
         </div>
 
         <!-- FEATURES HIGHLIGHT -->
