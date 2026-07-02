@@ -1,501 +1,741 @@
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AveBrowser · bug bounty browser</title>
-    <!-- Font & Icons -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<div align="center">
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #0b0b12;
-            color: #eaeef5;
-            line-height: 1.6;
-            padding: 2rem 1rem;
-        }
+<img src="https://raw.githubusercontent.com/Charyflux/ave/main/assets/icon.png" width="110" alt="AveBrowser Logo"/>
 
-        .container {
-            max-width: 1280px;
-            margin: 0 auto;
-            background: rgba(15, 15, 28, 0.75);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 2.5rem;
-            padding: 2.5rem 2.8rem;
-            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(124, 58, 237, 0.15);
-            border: 1px solid rgba(124, 58, 237, 0.08);
-        }
+# AveBrowser
 
-        /* ---- header / brand ---- */
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 1.2rem;
-            flex-wrap: wrap;
-            margin-bottom: 1.8rem;
-        }
+<h3>🔐 O Navegador Para Bug Hunters & Pentesters</h3>
 
-        .brand-icon {
-            width: 72px;
-            height: 72px;
-            background: linear-gradient(145deg, #1e132f, #110826);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 8px 20px -6px rgba(124, 58, 237, 0.3);
-            border: 1px solid rgba(124, 58, 237, 0.2);
-        }
+<p>
+  <a href="#"><img src="https://img.shields.io/badge/version-v1.3.6--beta-ff3355?style=for-the-badge&logo=github&logoColor=white" alt="Version"/></a>
+  <a href="#"><img src="https://img.shields.io/badge/status-BETA-orange?style=for-the-badge&logo=statuspage&logoColor=white" alt="Beta"/></a>
+  <a href="#"><img src="https://img.shields.io/badge/Electron-28.3.3-47848F?style=for-the-badge&logo=electron&logoColor=white" alt="Electron"/></a>
+  <a href="#"><img src="https://img.shields.io/badge/Go-1.22-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Go"/></a>
+  <a href="#"><img src="https://img.shields.io/badge/Rust-2021-CE422B?style=for-the-badge&logo=rust&logoColor=white" alt="Rust"/></a>
+  <a href="#"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-00e5ff?style=for-the-badge" alt="Platform"/></a>
+</p>
 
-        .brand-icon img {
-            width: 48px;
-            height: 48px;
-            filter: drop-shadow(0 0 8px rgba(167, 139, 250, 0.3));
-        }
+<p>
+  <a href="#-instalação"><img src="https://img.shields.io/badge/⬇ DOWNLOAD-v1.3.6-7c3aed?style=for-the-badge" alt="Download"/></a>
+  <a href="#-stack-de-tecnologias"><img src="https://img.shields.io/badge/STACK-Go+Rust+JS-00e5ff?style=for-the-badge" alt="Stack"/></a>
+  <a href="#"><img src="https://img.shields.io/badge/licença-MIT-22c55e?style=for-the-badge" alt="License"/></a>
+</p>
 
-        .brand h1 {
-            font-size: 2.4rem;
-            font-weight: 700;
-            letter-spacing: -0.03em;
-            background: linear-gradient(135deg, #f0eaff 0%, #c4b5fd 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+> **⚠️ AVISO BETA** — O AveBrowser está em desenvolvimento ativo. Algumas funcionalidades podem estar incompletas. Use apenas em ambientes autorizados e para fins educacionais, bug bounty e testes de segurança legítimos.
 
-        .brand .tag {
-            font-size: 0.9rem;
-            font-weight: 500;
-            background: rgba(124, 58, 237, 0.15);
-            padding: 0.25rem 0.9rem;
-            border-radius: 40px;
-            border: 1px solid rgba(124, 58, 237, 0.2);
-            color: #a78bfa;
-            letter-spacing: 0.01em;
-            margin-left: 0.5rem;
-        }
+---
 
-        .badge-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.6rem 1.2rem;
-            margin: 1.2rem 0 1.8rem 0;
-        }
+```
+ █████╗ ██╗   ██╗███████╗██████╗ ██████╗  ██████╗ ██╗    ██╗███████╗███████╗██████╗
+██╔══██╗██║   ██║██╔════╝██╔══██╗██╔══██╗██╔═══██╗██║    ██║██╔════╝██╔════╝██╔══██╗
+███████║██║   ██║█████╗  ██████╔╝██████╔╝██║   ██║██║ █╗ ██║███████╗█████╗  ██████╔╝
+██╔══██║╚██╗ ██╔╝██╔══╝  ██╔══██╗██╔══██╗██║   ██║██║███╗██║╚════██║██╔══╝  ██╔══██╗
+██║  ██║ ╚████╔╝ ███████╗██████╔╝██║  ██║╚██████╔╝╚███╔███╔╝███████║███████╗██║  ██║
+╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚═════╝ ╚═╝  ╚═╝ ╚═════╝  ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝
+             Bug Bounty Edition · Powered by AveOne · v1.3.6 BETA
+```
 
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            background: rgba(255, 255, 255, 0.04);
-            padding: 0.3rem 1rem 0.3rem 0.8rem;
-            border-radius: 40px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: #cbd5e1;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(4px);
-        }
+</div>
 
-        .badge i {
-            color: #a78bfa;
-            font-size: 0.9rem;
-        }
+---
 
-        .badge strong {
-            color: #e2e8f0;
-            font-weight: 600;
-        }
+## 📋 Índice
 
-        .lead {
-            font-size: 1.2rem;
-            color: #b9c4d9;
-            max-width: 780px;
-            margin: 0.5rem 0 2rem 0;
-            border-left: 3px solid #7c3aed;
-            padding-left: 1.2rem;
-            background: linear-gradient(90deg, rgba(124, 58, 237, 0.06), transparent);
-        }
+- [🧠 O que é o AveBrowser?](#-o-que-é-o-avebrowser)
+- [🆚 Por que AveBrowser e não outros?](#-por-que-avebrowser-e-não-outros)
+- [⚡ Stack de Tecnologias](#-stack-de-tecnologias)
+- [🔥 Funcionalidades Principais](#-funcionalidades-principais)
+- [🛡️ PHANTOM DevTools](#️-phantom-devtools)
+- [🔍 AveOne Inspector](#-aveone-inspector)
+- [🌐 Proxy MITM (Go)](#-proxy-mitm-go)
+- [⚔️ Fuzzer Assíncrono (Rust)](#️-fuzzer-assíncrono-rust)
+- [🧅 TOR & Anonimato](#-tor--anonimato)
+- [🧩 Sistema de Extensões](#-sistema-de-extensões)
+- [⌨️ Atalhos](#️-atalhos)
+- [📦 Instalação](#-instalação)
+- [🔧 Build do Código Fonte](#-build-do-código-fonte)
+- [⚖️ Legal & Ética](#️-legal--ética)
 
-        /* ---- download buttons ---- */
-        .download-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin: 2rem 0 2.5rem 0;
-        }
+---
 
-        .btn-download {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.7rem;
-            background: rgba(124, 58, 237, 0.12);
-            padding: 0.65rem 1.5rem 0.65rem 1.3rem;
-            border-radius: 60px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: #e2e8f0;
-            border: 1px solid rgba(124, 58, 237, 0.2);
-            transition: all 0.2s ease;
-            text-decoration: none;
-            backdrop-filter: blur(4px);
-        }
+## 🧠 O que é o AveBrowser?
 
-        .btn-download i {
-            color: #a78bfa;
-            font-size: 1.1rem;
-        }
+O **AveBrowser** é um navegador web especializado construído para **bug hunters, pentesters e pesquisadores de segurança**. Diferente de browsers genéricos, o AveBrowser integra nativamente as ferramentas que um profissional de segurança usa no dia-a-dia — sem precisar instalar extensões, configurar proxies externos ou alternar entre janelas.
 
-        .btn-download:hover {
-            background: rgba(124, 58, 237, 0.25);
-            border-color: #7c3aed;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px -8px rgba(124, 58, 237, 0.3);
-            color: #f1f5f9;
-        }
+É o único navegador que combina:
 
-        .btn-download .size {
-            font-weight: 400;
-            font-size: 0.7rem;
-            background: rgba(0, 0, 0, 0.25);
-            padding: 0.1rem 0.6rem;
-            border-radius: 30px;
-            color: #94a3b8;
-        }
+- 🔐 **Proxy MITM nativo** — escrito em Go, intercepta HTTP e HTTPS com full body capture
+- ⚔️ **Fuzzer integrado** — escrito em Rust, 500+ req/s com placeholder `FUZZ`
+- 🧅 **TOR com 1 clique** — troca de IP automática sem configuração
+- 🛡️ **Scanner de vulnerabilidades** — detecta SQLi, XSS, IDOR, CORS, JWT falhos em tempo real
+- 🧩 **Chrome Extensions MV2** — carrega extensões como Wappalyzer, HackBar, etc.
+- 🔒 **SSL bypass nativo** — acessa sites com certificados inválidos sem aviso
 
-        .btn-download .os {
-            font-weight: 500;
-            color: #c4b5fd;
-        }
+> Tudo dentro de uma única janela. Sem janelas extras, sem configuração complicada.
 
-        /* ---- sections ---- */
-        .section-title {
-            font-size: 1.7rem;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-            margin: 2.8rem 0 1.2rem 0;
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            color: #f1f5f9;
-        }
+---
 
-        .section-title i {
-            color: #7c3aed;
-            font-size: 1.6rem;
-        }
+## 🆚 Por que AveBrowser e não outros?
 
-        .section-sub {
-            font-size: 0.95rem;
-            color: #94a3b8;
-            margin-top: -0.5rem;
-            margin-bottom: 1.8rem;
-        }
+### Comparativo Detalhado
 
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 1.2rem;
-        }
+| Funcionalidade | AveBrowser | Chrome/Firefox | Burp Suite | OWASP ZAP |
+|---|:---:|:---:|:---:|:---:|
+| Proxy MITM integrado | ✅ Nativo (Go) | ❌ Precisa configurar | ✅ Mas pago | ✅ Mas pesado |
+| Fuzzer embutido | ✅ Rust (500+ req/s) | ❌ | ❌ Intruder (pago) | ⚠️ Limitado |
+| Scanner automático | ✅ Tempo real | ❌ | ⚠️ Manual | ✅ Mas lento |
+| TOR com 1 clique | ✅ | ❌ | ❌ | ❌ |
+| SSL bypass | ✅ Automático | ⚠️ Manual | ✅ | ✅ |
+| Chrome Extensions | ✅ MV2 + MV3 | ✅ | ❌ | ❌ |
+| Userscripts | ✅ Nativo | ⚠️ Tampermonkey | ❌ | ❌ |
+| JWT Decoder/Editor | ✅ PHANTOM | ❌ | ⚠️ Plugin | ❌ |
+| Cookie Manager | ✅ PHANTOM | ⚠️ DevTools | ✅ | ✅ |
+| Storage Explorer | ✅ PHANTOM | ⚠️ DevTools | ❌ | ❌ |
+| CORS Tester | ✅ Automático | ❌ | ⚠️ Manual | ⚠️ |
+| Export HAR | ✅ `/api/export/har` | ✅ | ✅ | ✅ |
+| Capture histórico | ✅ 10.000 requests | ❌ | ✅ | ✅ |
+| Replay de requests | ✅ Go API | ❌ | ✅ Repeater | ✅ |
+| Preço | 🆓 **GRÁTIS** | 🆓 | 💰 €449/ano | 🆓 |
+| Configuração | 🟢 Zero config | 🟡 Manual | 🔴 Complexo | 🔴 Complexo |
+| Peso / Leveza | 🟢 Leve | 🔴 RAM pesado | 🔴 JVM pesado | 🔴 JVM pesado |
 
-        .feature-card {
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 20px;
-            padding: 1.2rem 1.4rem;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            transition: 0.2s;
-        }
+### Por que não usar Burp Suite?
 
-        .feature-card:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(124, 58, 237, 0.15);
-        }
+O Burp Suite é excelente — mas:
+- A versão gratuita (Community) tem o **Intruder limitado** (throttled)
+- Custa **€449/ano** na versão Pro
+- Precisa de configuração de proxy no browser
+- Não tem TOR integrado
+- Não tem scanner de vulnerabilidades em tempo real sem licença
 
-        .feature-card .emoji {
-            font-size: 1.6rem;
-            margin-bottom: 0.3rem;
-        }
+O AveBrowser entrega o essencial **de graça, sem configuração**.
 
-        .feature-card h4 {
-            font-weight: 600;
-            font-size: 1rem;
-            color: #e2e8f0;
-            margin-bottom: 0.2rem;
-        }
+---
 
-        .feature-card p {
-            font-size: 0.85rem;
-            color: #94a3b8;
-        }
+## ⚡ Stack de Tecnologias
 
-        /* ---- tables / code blocks ---- */
-        .table-wrap {
-            overflow-x: auto;
-            margin: 1.2rem 0 1.8rem 0;
-            border-radius: 18px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            background: rgba(0, 0, 0, 0.2);
-            padding: 0.2rem;
-        }
+O AveBrowser usa as melhores linguagens para cada função:
 
-        .table-wrap table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    AVEBROWSER v2.0                          │
+│                                                             │
+│  ┌─────────────┐  ┌────────────┐  ┌──────────────────────┐ │
+│  │   ELECTRON  │  │  Go 1.22   │  │     Rust 2021        │ │
+│  │  (Shell UI) │  │ MITM Proxy │  │  Fast HTTP Fuzzer    │ │
+│  │  HTML/JS/CS │  │  :7777     │  │  avefuzz CLI         │ │
+│  │  48.8%      │  │  7.8%      │  │  6.2%                │ │
+│  └──────┬──────┘  └─────┬──────┘  └──────────┬───────────┘ │
+│         │               │                     │             │
+│         └───────────────┴─────────────────────┘             │
+│                         │                                   │
+│              ┌──────────▼──────────┐                        │
+│              │  Bash Scripts 2.6%  │                        │
+│              │  setup / build / run│                        │
+│              └─────────────────────┘                        │
+└─────────────────────────────────────────────────────────────┘
+```
 
-        .table-wrap th {
-            text-align: left;
-            padding: 0.8rem 1rem;
-            font-weight: 600;
-            color: #c4b5fd;
-            background: rgba(124, 58, 237, 0.05);
-            border-bottom: 1px solid rgba(124, 58, 237, 0.1);
-        }
+| Linguagem | % | Uso |
+|---|---|---|
+| **HTML/CSS** | 48.8% | Interface do browser, DevTools PHANTOM, painéis |
+| **JavaScript** | 34.6% | Lógica do renderer, eventos, IPC, scanner AveOne |
+| **Go** | 7.8% | Proxy MITM HTTP/HTTPS, WebSocket API, replay, HAR export |
+| **Rust** | 6.2% | Fuzzer assíncrono (tokio), 500+ req/s, scan de vulns |
+| **Shell/Bash** | 2.6% | Build pipeline, setup automático, launcher |
 
-        .table-wrap td {
-            padding: 0.7rem 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-            color: #d1d9e8;
-        }
+---
 
-        .table-wrap tr:last-child td {
-            border-bottom: none;
-        }
+## 🔥 Funcionalidades Principais
 
-        .code-block {
-            background: #0e0e1a;
-            border-radius: 16px;
-            padding: 1.2rem 1.6rem;
-            font-family: 'Fira Code', 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            border: 1px solid rgba(124, 58, 237, 0.08);
-            color: #d4dcec;
-            overflow-x: auto;
-            white-space: pre-wrap;
-            word-break: break-all;
-            margin: 1.2rem 0;
-        }
+<details>
+<summary><b>🌐 Browser Core (Electron + Chromium)</b></summary>
 
-        .badge-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.4rem 0.8rem;
-            margin: 0.8rem 0;
-        }
+- Motor Chromium 120 via Electron 28
+- Abas múltiplas com session persistente (`persist:avebrowser`)
+- User-Agent customizável por aba
+- SSL/TLS bypass automático (`ignore-certificate-errors`)
+- Gestão de permissões: auto-allow para media/clipboard, auto-deny para geolocalização/notificações
+- Barra de favoritos, bookmarks integrados (HackerOne, Bugcrowd, OWASP, Shodan, GTFOBins...)
+- Detecção automática de tecnologias (Wappalyzer-like)
+- Find-in-page (`Ctrl+F`), Zoom, DevTools (`F12`)
+- Modo fullscreen (`F11`)
+- Notas por domínio (salvas localmente)
 
-        .badge-sm {
-            background: rgba(124, 58, 237, 0.08);
-            padding: 0.15rem 0.8rem;
-            border-radius: 40px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            color: #b9a9f0;
-            border: 1px solid rgba(124, 58, 237, 0.05);
-        }
+</details>
 
-        hr {
-            border: none;
-            border-top: 1px solid rgba(255, 255, 255, 0.04);
-            margin: 2.5rem 0;
-        }
+<details>
+<summary><b>🔄 Intercepção de Traffic em Tempo Real</b></summary>
 
-        .footer {
-            text-align: center;
-            margin-top: 2.5rem;
-            color: #64748b;
-            font-size: 0.85rem;
-        }
+O proxy Go intercepta **100% do tráfego** — HTTP e HTTPS via MITM:
 
-        .footer a {
-            color: #a78bfa;
-            text-decoration: none;
-            border-bottom: 1px dotted rgba(167, 139, 250, 0.2);
-        }
+- Captura request headers, body, response headers, response body
+- Streaming em tempo real via WebSocket para o renderer
+- Histórico de até **10.000 requests** em memória
+- Filtros por host, status code, content-type
+- Busca full-text no corpo das respostas
+- Export em **HAR** (compatível com Burp Suite, OWASP ZAP, Postman)
+- **Replay** de qualquer request com modificações
+- Scanner de vulnerabilidades embutido em cada resposta
 
-        .footer a:hover {
-            color: #c4b5fd;
-            border-bottom-color: #7c3aed;
-        }
+</details>
 
-        .legal {
-            background: rgba(124, 58, 237, 0.04);
-            border-radius: 20px;
-            padding: 1.2rem 1.6rem;
-            border-left: 3px solid #7c3aed;
-            font-size: 0.9rem;
-            color: #b9c4d9;
-            margin: 2rem 0 0.5rem 0;
-        }
+<details>
+<summary><b>📡 Captura & Análise de Requests</b></summary>
 
-        .legal strong {
-            color: #e2e8f0;
-        }
+Cada request capturado mostra:
+- Método, URL, Status Code, Duração (ms), Tamanho
+- Request Headers completos
+- Request Body (POST, PUT, PATCH)
+- Response Headers completos  
+- Response Body com highlight de JSON/HTML
+- **Flags de vulnerabilidade** automáticas: SQL-Error, Stack-Trace, AWS-Key, Private-Key, JWT-Token, Debug-Mode, Dir-Listing, PHP-Error, Secret-Env, Open-Redirect, CORS-Wildcard
 
-        @media (max-width: 700px) {
-            .container {
-                padding: 1.5rem 1.2rem;
-                border-radius: 1.8rem;
-            }
-            .brand h1 {
-                font-size: 1.8rem;
-            }
-            .download-grid {
-                flex-direction: column;
-            }
-            .btn-download {
-                justify-content: center;
-            }
-            .lead {
-                font-size: 1rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
+</details>
 
-        <!-- BRAND -->
-        <div class="brand">
-            <div class="brand-icon">
-                <img src="https://raw.githubusercontent.com/Charyflux/ave/main/assets/icon.png" alt="AveBrowser" />
-            </div>
-            <div>
-                <h1>AveBrowser <span class="tag">v1.3.6</span></h1>
-                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.1rem;">
-                    <span class="badge"><i class="fas fa-bolt"></i> bug bounty</span>
-                    <span class="badge"><i class="fas fa-skull"></i> pentesting</span>
-                    <span class="badge"><i class="fas fa-shield-alt"></i> TOR + scanner</span>
-                </div>
-            </div>
-        </div>
+---
 
-        <div class="badge-grid">
-            <span class="badge"><i class="fas fa-check-circle" style="color:#4ade80;"></i> <strong>+70</strong> payloads</span>
-            <span class="badge"><i class="fas fa-robot"></i> scanner automático</span>
-            <span class="badge"><i class="fas fa-ghost"></i> TOR integrado</span>
-            <span class="badge"><i class="fas fa-puzzle-piece"></i> Chrome MV2</span>
-            <span class="badge"><i class="fas fa-code"></i> Userscripts</span>
-            <span class="badge"><i class="fas fa-lock-open"></i> SSL bypass</span>
-        </div>
+## 🛡️ PHANTOM DevTools
 
-        <div class="lead">
-            <i class="fas fa-terminal" style="color:#7c3aed; margin-right: 0.6rem;"></i>
-            Browser especializado em <strong>bug bounty</strong> e <strong>pentesting</strong> — scanner de vulnerabilidades, payload library, TOR anónimo e extensões Chrome num só ambiente.
-        </div>
+O PHANTOM é o conjunto de ferramentas de segurança integrado ao AveBrowser. Abre com o botão **TOOLS** na barra superior.
 
-        <!-- DOWNLOAD -->
-        <div class="download-grid">
-            <a href="https://github.com/Charyflux/ave/releases/download/v1.3.6/AveBrowser.Setup.1.3.6.exe" class="btn-download">
-                <i class="fab fa-windows"></i> <span class="os">Windows</span> <span class="size">73 MB</span>
-            </a>
-            <a href="https://github.com/Charyflux/ave/releases/download/v1.3.6/AveBrowser-1.3.6-arm64.dmg" class="btn-download">
-                <i class="fab fa-apple"></i> <span class="os">macOS (arm64)</span> <span class="size">90 MB</span>
-            </a>
-            <a href="https://github.com/Charyflux/ave/releases/download/v1.3.6/AveBrowser-1.3.6.AppImage" class="btn-download">
-                <i class="fab fa-linux"></i> <span class="os">Linux</span> <span class="size">99 MB</span>
-            </a>
-            <a href="https://github.com/Charyflux/ave/releases" class="btn-download" style="background:rgba(255,255,255,0.02);">
-                <i class="fas fa-tag"></i> todas as releases
-            </a>
-        </div>
+### 🍪 Cookie Manager
+- Lista todos os cookies do domínio ativo
+- Edita nome, valor, domínio, path, flags (Secure, HttpOnly, SameSite)
+- Deleta cookies individuais ou todos
+- Importa/exporta cookies em JSON
+- Detecta cookies de sessão, CSRF tokens, JWT em cookies
 
-        <!-- FEATURES HIGHLIGHT -->
-        <div class="section-title"><i class="fas fa-bolt"></i> Funcionalidades principais</div>
-        <div class="feature-grid">
-            <div class="feature-card"><div class="emoji">🔍</div><h4>Scanner automático</h4><p>CORS, IDOR, Broken Auth, Mass Assignment em background</p></div>
-            <div class="feature-card"><div class="emoji">💉</div><h4>+70 payloads</h4><p>XSS, SQLi, LFI, SSRF, SSTI, CMDi, XXE e mais</p></div>
-            <div class="feature-card"><div class="emoji">👻</div><h4>TOR integrado</h4><p>Anonimato com um clique, rotação de IP automática</p></div>
-            <div class="feature-card"><div class="emoji">🧩</div><h4>Extensões Chrome MV2</h4><p>Carrega pastas de extensões descompactadas</p></div>
-            <div class="feature-card"><div class="emoji">🛡️</div><h4>CORS + SSL bypass</h4><p>Sem bloqueios, ideal para laboratórios e testes</p></div>
-            <div class="feature-card"><div class="emoji">📡</div><h4>Network monitor</h4><p>Feed em tempo real de requests capturados</p></div>
-        </div>
+### 🗃️ Storage Explorer
+- **localStorage** — lê, edita, deleta entradas
+- **sessionStorage** — idem
+- **IndexedDB** — lista databases e object stores
+- Detecta dados sensíveis armazenados (tokens, keys, dados de usuário)
+- Export completo em JSON
 
-        <!-- PHANTOM DEVTOOLS -->
-        <div class="section-title"><i class="fas fa-tools"></i> PHANTOM DevTools</div>
-        <div class="table-wrap">
-            <table>
-                <thead><tr><th>Ferramenta</th><th>Descrição</th></tr></thead>
-                <tbody>
-                    <tr><td><i class="fas fa-cookie-bite" style="color:#a78bfa;"></i> Cookie Manager</td><td>Ver, copiar e deletar cookies da sessão ativa</td></tr>
-                    <tr><td><i class="fas fa-database" style="color:#a78bfa;"></i> Storage Explorer</td><td>localStorage e sessionStorage do site</td></tr>
-                    <tr><td><i class="fas fa-key" style="color:#a78bfa;"></i> JWT Decoder</td><td>Decodifica JWT, analisa algoritmo e expiração</td></tr>
-                    <tr><td><i class="fas fa-exchange-alt" style="color:#a78bfa;"></i> Encoder/Decoder</td><td>Base64, URL, HTML, Hex, SHA‑1, SHA‑256</td></tr>
-                    <tr><td><i class="fas fa-syringe" style="color:#a78bfa;"></i> Payload Library</td><td>+70 payloads organizados por categoria</td></tr>
-                    <tr><td><i class="fas fa-map" style="color:#a78bfa;"></i> RECON</td><td>robots.txt, sitemap, Shodan, crt.sh, VirusTotal</td></tr>
-                </tbody>
-            </table>
-        </div>
+### 🔐 JWT Decoder & Editor
+- Cola qualquer JWT e decodifica header + payload automaticamente
+- Mostra algoritmo (HS256, RS256, ES256...) e claims (exp, iat, sub, role...)
+- Detecta JWTs com algoritmo `none` (vulnerabilidade crítica)
+- Detecta JWTs expirados
+- Edita payload e assina novamente com chave customizada
+- Testa **algorithm confusion** (RS256→HS256)
 
-        <!-- ARCHITECTURE -->
-        <div class="section-title"><i class="fas fa-cubes"></i> Arquitectura</div>
-        <div class="code-block">
-AveBrowser v1.3.6
-├── Main Process (Node.js + Electron 28)
-│   ├── TOR SOCKS5 (127.0.0.1:9050 / Control 9051)
-│   ├── SSL bypass (ignore-certificate-errors)
-│   ├── CORS bypass via electronNet.request()
-│   └── Session persistente (partition: persist:avebrowser)
-├── Renderer Process (Chromium)
-│   ├── AveOne Inspector (scanner, formatter, network)
-│   ├── API Tester &amp; CORS probe
-│   └── Payload library (+70)
-└── userData/
-    ├── ave-extensions.json
-    ├── userscripts/
-    └── plugins/
-        </div>
+### 🔄 Encoder / Decoder
+- Base64 / Base64URL (encode + decode)
+- URL Encode / Decode
+- HTML Entities encode/decode
+- Hex, Binary, ROT13
+- MD5, SHA1, SHA256 hashing
+- Detecção automática do tipo de encoding
 
-        <!-- CHANGELOG SHORT -->
-        <div class="section-title"><i class="fas fa-history"></i> Últimas melhorias</div>
-        <div class="badge-group">
-            <span class="badge-sm"><i class="fas fa-palette"></i> v1.3.6 · glassmorphism UI</span>
-            <span class="badge-sm"><i class="fas fa-star"></i> v1.3.5 · barra de favoritos + crash fix macOS</span>
-            <span class="badge-sm"><i class="fas fa-puzzle-piece"></i> v1.3.0 · Extension Manager (MV2 + Userscripts + Plugins)</span>
-            <span class="badge-sm"><i class="fas fa-terminal"></i> v1.2.2 · context menu, find-in-page, zoom</span>
-            <span class="badge-sm"><i class="fas fa-bug"></i> v1.2.0 · AveOne Inspector nativo</span>
-        </div>
-        <div style="margin-top: 0.2rem;">
-            <a href="https://github.com/Charyflux/ave/releases" style="color:#a78bfa; font-size:0.9rem;">changelog completo →</a>
-        </div>
+### 🎯 Payload Library (+70 payloads)
+Payloads prontos para copiar, organizados por categoria:
 
-        <!-- ROADMAP -->
-        <div class="section-title"><i class="fas fa-road"></i> Roadmap</div>
-        <div style="display: flex; flex-wrap: wrap; gap: 0.6rem 1.2rem; font-size:0.9rem; color:#cbd5e1;">
-            <span><i class="fas fa-file-pdf" style="color:#a78bfa;"></i> Export PDF/HTML</span>
-            <span><i class="fas fa-sync-alt" style="color:#a78bfa;"></i> Auto-update</span>
-            <span><i class="fas fa-microchip" style="color:#a78bfa;"></i> Intel Mac (x64)</span>
-            <span><i class="fas fa-brain" style="color:#a78bfa;"></i> AI attack suggestions</span>
-            <span><i class="fas fa-video" style="color:#a78bfa;"></i> Session recording</span>
-            <span><i class="fas fa-plug" style="color:#a78bfa;"></i> Burp Suite integration</span>
-        </div>
+| Categoria | Exemplos |
+|---|---|
+| **XSS** | `<script>alert(1)</script>`, SVG, img onerror, polyglots |
+| **SQLi** | `' OR 1=1--`, UNION SELECT, time-based blind, error-based |
+| **SSRF** | `http://169.254.169.254`, `http://localhost`, `file:///etc/passwd` |
+| **LFI** | `../../../etc/passwd`, null byte bypass, encoding bypass |
+| **XXE** | DOCTYPE SYSTEM, parameter entities, blind XXE |
+| **SSTI** | `{{7*7}}`, `${7*7}`, `<%= 7*7 %>` (Jinja2, Freemarker, Twig) |
+| **IDOR** | IDs numéricos, UUIDs, encoded IDs |
+| **Open Redirect** | `//evil.com`, `\evil.com`, `javascript:` |
+| **RCE** | `;id`, `|id`, `$(id)`, backtick injection |
+| **CORS** | Origin reflection patterns |
 
-        <!-- LEGAL -->
-        <div class="legal">
-            <strong><i class="fas fa-gavel"></i> Uso ético e autorizado</strong> — AveBrowser é exclusivo para <strong>bug bounty</strong>, <strong>pentesting</strong> com contrato, CTF e investigação defensiva. Nunca utilize em sistemas sem autorização explícita.
-        </div>
+### 🔍 RECON
+- Extrai todos os links da página ativa
+- Lista endpoints de API detectados (fetch, XHR, form actions)
+- Detecta comentários HTML com informações sensíveis
+- Lista arquivos JavaScript carregados
+- Extrai IPs, emails, tokens mencionados no source
 
-        <hr />
+---
 
-        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; font-size:0.9rem; color:#94a3b8;">
-            <span><i class="fas fa-code"></i> Electron 28.3.3 · Chromium</span>
-            <span><i class="fas fa-shield-alt"></i> AveOne Security</span>
-            <span><a href="https://aveone.com.br" style="color:#a78bfa;">aveone.com.br</a> · <a href="mailto:contact@aveone.com.br" style="color:#a78bfa;">contact@aveone.com.br</a></span>
-        </div>
+## 🔍 AveOne Inspector
 
-        <div class="footer">
-            <i class="fas fa-heart" style="color:#7c3aed;"></i> Feito para a comunidade de bug bounty · <a href="https://github.com/Charyflux/ave">GitHub</a>
-        </div>
+O AveOne corre em background enquanto você navega e **detecta automaticamente** vulnerabilidades:
 
-    </div>
-</body>
-</html>
+### Scanner Automático (Passivo)
+Analisa cada request/response em busca de:
+
+| Vulnerabilidade | O que detecta |
+|---|---|
+| **CORS** | `Access-Control-Allow-Origin: *`, reflexão de Origin |
+| **IDOR** | IDs previsíveis em URLs, respostas cross-user |
+| **Broken Auth** | Endpoints acessíveis sem token, tokens weak |
+| **Mass Assignment** | Campos `role`, `isAdmin`, `admin` reflectidos em respostas |
+| **HTTP Methods** | Métodos inesperados aceitos (PUT, DELETE em endpoints públicos) |
+| **Information Disclosure** | Stack traces, erros de BD, chaves expostas |
+| **JWT Issues** | `alg: none`, expirados, assinatura não verificada |
+| **GraphQL** | Introspecção activa, queries abusáveis |
+
+### API Tester (Ativo)
+Ferramenta de repetição e teste activo de requests:
+- Repita qualquer request capturado com modificações
+- Teste **Broken Auth**: envia com e sem token, compara respostas
+- Teste **IDOR**: incrementa/decrementa IDs no path (+1/-1)
+- Teste **Mass Assignment**: injeta campos sensíveis no body
+- Teste **HTTP Methods**: faz fuzzing de todos os métodos HTTP
+- Teste **CORS**: envia `Origin: https://avebrowser-cors-probe.invalid` e verifica reflexão
+- Comparação automática de tamanho e status code entre respostas
+- Verifica rate limiting (429) e avisa quando resultado é inconclusivo
+
+---
+
+## 🌐 Proxy MITM (Go)
+
+O proxy é um processo **Go** separado que intercepta todo o tráfego do webview.
+
+### Como funciona
+```
+Browser (Electron)
+       │
+       ▼ HTTP proxy → :7777
+  ┌────────────────┐
+  │   Go MITM      │  ← intercept HTTP
+  │   Proxy        │  ← generate TLS cert per-host
+  │   :7777        │  ← forward to real server
+  └────────┬───────┘
+           │ WebSocket → :7778/ws (real-time stream)
+           ▼
+    Electron Renderer
+    (PROXY tab UI)
+```
+
+### API REST (porta 7778)
+
+| Endpoint | Método | Descrição |
+|---|---|---|
+| `/ws` | WebSocket | Stream real-time de requests capturados |
+| `/api/history` | GET | Lista histórico completo (até 10.000) |
+| `/api/history?limit=100` | GET | Últimos 100 requests |
+| `/api/clear` | POST | Limpa histórico |
+| `/api/stats` | GET | Totais: requests, flagged, HTTPS, API |
+| `/api/replay` | POST | Replay de request com body JSON |
+| `/api/search?q=login` | GET | Busca full-text no histórico |
+| `/api/search?flag=SQL-Error` | GET | Filtra por flag de vulnerabilidade |
+| `/api/export/har` | GET | Export completo em formato HAR |
+| `/api/tor` | POST | Activa/desactiva TOR SOCKS5 chaining |
+| `/ca.crt` | GET | Download do CA cert MITM |
+
+### Scanner de Vulnerabilidades Embutido
+O proxy aplica **14 regras regex** em cada resposta:
+
+```
+SQL-Error · Stack-Trace · AWS-Key · Private-Key · JWT-Token
+Dir-Listing · PHP-Error · Debug-Mode · SSRF-Hit · Open-Redirect
+CORS-Wildcard · Secret-Env · GraphQL · Spring-Boot
+```
+
+---
+
+## ⚔️ Fuzzer Assíncrono (Rust)
+
+O `avefuzz` é um fuzzer HTTP construído em Rust com `tokio` — leve, rápido, sem overhead de GC.
+
+### Características
+- **500+ req/s** em modo concorrente
+- Placeholder `FUZZ` em URL, body E headers simultaneamente
+- Barra de progresso em tempo real
+- Saída colorida com status code por cor
+- Scanner de vulns automático nas respostas
+- Output JSON para integrar com outras ferramentas
+- Suporte a proxy (`--proxy http://127.0.0.1:7777`)
+
+### Exemplos de uso
+
+```bash
+# Directory fuzzing básico
+avefuzz -u "https://target.com/FUZZ" -w wordlist.txt
+
+# Fuzzing de parâmetros com filtro
+avefuzz -u "https://target.com/api/user/FUZZ" -w ids.txt \
+        -mc 200,302 --fc 404 -c 100
+
+# Fuzzing de corpo POST (SQLi)
+avefuzz -u "https://target.com/login" -X POST \
+        -d '{"username":"admin","password":"FUZZ"}' \
+        -w passwords.txt \
+        -H "Content-Type: application/json" \
+        --mr "dashboard|welcome"
+
+# Fuzzing de headers (Auth bypass)
+avefuzz -u "https://target.com/admin" \
+        --fuzz-headers "X-Original-URL: /FUZZ" \
+        -w paths.txt \
+        --mc 200
+
+# Via proxy MITM para capturar tudo
+avefuzz -u "https://target.com/FUZZ" -w dirs.txt \
+        --proxy http://127.0.0.1:7777 \
+        -o results.json
+
+# Fuzzing com detecção de vulns
+avefuzz -u "https://target.com/search?q=FUZZ" \
+        -w xss_payloads.txt \
+        --mr "alert\(|onerror="
+```
+
+### Flags disponíveis
+
+```
+-u  --url           URL alvo com FUZZ placeholder
+-w  --wordlist      Ficheiro wordlist
+-X  --method        Método HTTP [GET]
+-d  --data          Request body (FUZZ também é substituído)
+-H  --header        Header extra (repetível)
+    --fuzz-headers  Headers com FUZZ substituído
+-c  --concurrency   Requisições paralelas [50]
+-t  --timeout       Timeout por request em segundos [10]
+    --mc            Match status codes (ex: 200,301,302)
+    --fc            Filter status codes (ex: 404,400)
+    --ms            Match tamanho mínimo de resposta
+    --mr            Match regex na resposta
+    --fr            Filter regex na resposta
+    --proxy         Proxy HTTP (ex: http://127.0.0.1:7777)
+    --max-matches   Para após N matches
+    --delay         Delay aleatório entre requests (ms)
+-o  --output        Salvar resultados em JSON
+-q  --quiet         Modo silencioso
+-e  --show-errors   Mostrar erros de conexão
+```
+
+---
+
+## 🧅 TOR & Anonimato
+
+O AveBrowser integra TOR nativamente via o Go proxy — sem configuração manual.
+
+### Como funciona
+
+```
+Webview → Go Proxy (:7777) → SOCKS5 (:9050) → TOR Network → Internet
+```
+
+O routing passa pelo proxy Go que faz chaining para o TOR daemon local. Todos os requests capturados são registados mesmo quando em modo TOR.
+
+### Funcionalidades TOR
+- ✅ Activar/desactivar com 1 clique (botão **TOR** na barra)
+- ✅ **New IP** — sinaliza ao control port (9051) para nova circuit (SIGNAL NEWNYM)
+- ✅ Mostra IP actual via `api.ipify.org`
+- ✅ Não bypassa o proxy Go — traffic ainda é capturado
+- ✅ Badge visual quando TOR está activo
+
+### Instalar TOR
+```bash
+# Ubuntu/Debian
+sudo apt install tor && sudo systemctl start tor
+
+# macOS
+brew install tor && brew services start tor
+
+# Arch Linux
+sudo pacman -S tor && sudo systemctl start tor
+```
+
+---
+
+## 🧩 Sistema de Extensões
+
+O AveBrowser suporta 3 tipos de extensões:
+
+### 🔌 Chrome Extensions (MV2, Unpacked)
+Carregue extensões do Chrome desempacotadas directamente:
+
+```
+1. Clique em TOOLS → EXT → EXTENSÕES
+2. Clique em "CARREGAR EXTENSÃO"
+3. Selecione a pasta da extensão
+```
+
+**Extensões recomendadas para bug hunting:**
+| Extensão | Função |
+|---|---|
+| **Wappalyzer** | Detect tech stack |
+| **HackBar** | Encoding, hashing, XSS tools |
+| **Cookie-Editor** | Gestão avançada de cookies |
+| **FoxyProxy** | Gestão de proxies |
+| **Shodan** | Info sobre o IP do servidor |
+| **DotGit** | Detecta `.git` exposto |
+
+### 📜 Userscripts (Tampermonkey-style)
+Scripts que correm dentro da página visitada:
+
+```javascript
+// ==UserScript==
+// @name         Auto-auth header injector
+// @match        https://target.com/*
+// @version      1.0
+// ==/UserScript==
+(function() {
+  // Injeta header de autenticação automaticamente
+  const token = localStorage.getItem('token');
+  if (token) {
+    fetch('/api/check', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }).then(r => r.json()).then(console.log);
+  }
+})();
+```
+
+**Match patterns suportados:**
+- `*://target.com/*` — qualquer protocolo
+- `https://api.target.com/v*` — wildcard em path
+- `<all_urls>` — todos os sites
+
+### ⚙️ Plugins Nativos
+Plugins que correm no contexto do AveBrowser (acesso à `window.ave` API):
+
+```javascript
+// ==AvePlugin==
+// @name         Auto IDOR Tester
+// @description  Testa IDs incrementais automaticamente
+// @version      1.0
+// ==/AvePlugin==
+(function() {
+  // Acesso a: showToast, getActiveTab, newTab, navigate, window.ave
+  const tab = getActiveTab();
+  if (!tab) return;
+  
+  const url = tab.url;
+  const match = url.match(/\/(\d+)(?:\/|$|\?)/);
+  if (!match) { showToast('Nenhum ID numérico encontrado na URL'); return; }
+  
+  const id = parseInt(match[1]);
+  showToast(`🔍 Testando IDOR: IDs ${id-3} a ${id+3}`);
+  
+  // Abrir IDs vizinhos em novas abas
+  for (let i = id - 3; i <= id + 3; i++) {
+    if (i !== id && i > 0) {
+      newTab(url.replace(`/${id}`, `/${i}`));
+    }
+  }
+})();
+```
+
+---
+
+## ⌨️ Atalhos
+
+| Atalho | Acção |
+|---|---|
+| `Ctrl + T` | Nova aba |
+| `Ctrl + W` | Fechar aba actual |
+| `Ctrl + Shift + T` | Reabrir última aba fechada |
+| `Ctrl + Tab` | Próxima aba |
+| `Ctrl + Shift + Tab` | Aba anterior |
+| `Ctrl + 1-9` | Ir para aba N |
+| `Ctrl + L` | Focar barra de URL |
+| `Ctrl + R` / `F5` | Recarregar |
+| `Alt + ←` | Voltar |
+| `Alt + →` | Avançar |
+| `Ctrl + F` | Pesquisar na página |
+| `F12` | DevTools do Chromium |
+| `F11` | Fullscreen |
+| `Ctrl + +/-` | Zoom in/out |
+| `Ctrl + 0` | Reset zoom |
+| `Ctrl + D` | Bookmark página actual |
+| `Ctrl + Shift + B` | Toggle barra de bookmarks |
+| `Ctrl + U` | Ver código fonte |
+| `Ctrl + P` | Imprimir |
+
+---
+
+## 📦 Instalação
+
+### Download Pré-compilado (Recomendado)
+
+Vá até a [página de Releases](https://github.com/Charyflux/ave/releases) e baixe o instalador para o seu sistema:
+
+| Sistema | Ficheiro | Notas |
+|---|---|---|
+| **Windows 64-bit** | `AveBrowser-Setup-vX.X.X.exe` | NSIS installer |
+| **Linux x64** | `AveBrowser-vX.X.X.AppImage` | `chmod +x` depois |
+| **Linux x64 DEB** | `avebrowser_X.X.X_amd64.deb` | `sudo dpkg -i` |
+| **macOS (Intel)** | `AveBrowser-vX.X.X.dmg` | Drag & Drop |
+
+#### Windows
+```powershell
+# Baixe e execute o installer
+# Se aparecer SmartScreen: "Mais informações" → "Executar mesmo assim"
+```
+
+#### Linux (AppImage)
+```bash
+chmod +x AveBrowser-*.AppImage
+./AveBrowser-*.AppImage
+```
+
+#### Linux (DEB)
+```bash
+sudo dpkg -i avebrowser_*_amd64.deb
+avebrowser
+```
+
+#### macOS
+```bash
+# Abra o .dmg e arraste para Applications
+# Se bloqueado pelo Gatekeeper:
+sudo spctl --master-disable  # temporário
+```
+
+---
+
+## 🔧 Build do Código Fonte
+
+### Pré-requisitos
+- **Node.js** 18+ e npm
+- **Go** 1.22+
+- **Rust** 1.75+ (via rustup)
+- **TOR** (opcional, para funcionalidade TOR)
+
+### Setup automático (Linux / macOS)
+
+```bash
+git clone https://github.com/Charyflux/ave.git
+cd ave
+
+# Instala todas as dependências automaticamente
+bash scripts/setup.sh
+
+# Compila Go proxy + Rust fuzzer
+bash scripts/build.sh
+
+# Lança o browser
+bash scripts/run.sh
+```
+
+### Setup manual (Windows / passo a passo)
+
+```bash
+# 1. Clonar repositório
+git clone https://github.com/Charyflux/ave.git
+cd ave
+
+# 2. Instalar dependências Node.js
+npm install
+
+# 3. Compilar proxy Go
+cd proxy
+go mod tidy
+go build -o ../bin/ave-proxy .
+cd ..
+
+# 4. Compilar fuzzer Rust
+cd fuzzer
+cargo build --release
+cp target/release/avefuzz ../bin/
+cd ..
+
+# 5. Lançar
+npx electron .
+```
+
+### Build de distribuição (installer)
+
+```bash
+# Instalar electron-builder
+npm install --save-dev electron-builder
+
+# Windows
+npm run build:win
+
+# Linux
+npm run build:linux
+
+# macOS
+npm run build:mac
+```
+
+---
+
+## 📁 Estrutura do Projecto
+
+```
+ave/
+├── main.js                 # Electron main — spawna proxy Go, IPC
+├── preload.js              # contextBridge — window.ave API
+├── package.json
+│
+├── renderer/
+│   └── index.html          # UI completa do browser (HTML/CSS/JS)
+│
+├── proxy/                  # Go MITM proxy
+│   ├── main.go             # Proxy HTTP/HTTPS + WebSocket API
+│   └── go.mod
+│
+├── fuzzer/                 # Rust async fuzzer
+│   ├── src/main.rs         # avefuzz CLI
+│   └── Cargo.toml
+│
+├── scripts/
+│   ├── setup.sh            # Instala dependências
+│   ├── build.sh            # Compila Go + Rust
+│   └── run.sh              # Lança proxy + browser
+│
+├── bin/                    # Binários compilados (gerado pelo build)
+│   ├── ave-proxy           # Go proxy binary
+│   └── avefuzz             # Rust fuzzer binary
+│
+├── assets/
+│   └── icon.png
+│
+└── .github/
+    └── workflows/          # CI/CD para releases automáticas
+```
+
+---
+
+## ⚖️ Legal & Ética
+
+> **USE COM RESPONSABILIDADE**
+
+O AveBrowser foi criado para **testes de segurança autorizados**, **bug bounty programs** e **fins educacionais**.
+
+- ✅ **PERMITIDO:** Testar sistemas que você tem autorização explícita para testar
+- ✅ **PERMITIDO:** Bug bounty em programas públicos (HackerOne, Bugcrowd, Intigriti)
+- ✅ **PERMITIDO:** Testes em ambientes de laboratório próprios
+- ✅ **PERMITIDO:** Pesquisa académica e educação em cibersegurança
+- ❌ **PROIBIDO:** Acesso não autorizado a sistemas de terceiros
+- ❌ **PROIBIDO:** Intercepção de tráfego sem consentimento
+- ❌ **PROIBIDO:** Qualquer actividade ilegal
+
+Os autores não se responsabilizam pelo uso indevido desta ferramenta.
+
+---
+
+## 🤝 Contribuir
+
+Contribuições são bem-vindas! Veja como:
+
+```bash
+# Fork → Clone → Branch
+git checkout -b feature/minha-feature
+
+# Desenvolvimento
+# ... faça as suas mudanças ...
+
+# Commit + Push
+git commit -m "feat: descrição da feature"
+git push origin feature/minha-feature
+
+# Abra um Pull Request
+```
+
+---
+
+<div align="center">
+
+**Feito com ❤️ pela equipa AveOne**
+
+[![GitHub Stars](https://img.shields.io/github/stars/Charyflux/ave?style=social)](https://github.com/Charyflux/ave)
+[![GitHub Forks](https://img.shields.io/github/forks/Charyflux/ave?style=social)](https://github.com/Charyflux/ave/fork)
+
+*AveBrowser v1.3.6 BETA — Bug Bounty Edition*
+
+**⚠️ VERSÃO BETA — Em desenvolvimento activo. Reporta bugs em [Issues](https://github.com/Charyflux/ave/issues)**
+
+</div>
