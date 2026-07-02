@@ -45,6 +45,12 @@ contextBridge.exposeInMainWorld('ave', {
   // ── External tool launchers ─────────────────────────────────────────
   openCaido:       ()     => ipcRenderer.invoke('open-caido'),
   openAveOne:      ()     => ipcRenderer.invoke('open-aveone'),
+  sendToAveOne:    (d)    => ipcRenderer.invoke('send-to-aveone', d),
+
+  // ── Capture (delegated to Go proxy) ─────────────────────────────────────────────
+  toggleCapture:   (v)    => ipcRenderer.invoke('toggle-capture', v),
+  clearCaptures:   ()     => ipcRenderer.invoke('clear-captures'),
+  getCaptures:     ()     => Promise.resolve([]),
 
   extLoad:         (p)    => ipcRenderer.invoke('ext-load', p),
   extRemove:       (id)   => ipcRenderer.invoke('ext-remove', id),
