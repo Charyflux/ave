@@ -1,525 +1,364 @@
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AveBrowser · bug bounty browser</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<div align="center">
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #0b0b12;
-            color: #eaeef5;
-            line-height: 1.6;
-            padding: 2rem 1rem;
-            min-height: 100vh;
-            background-image: radial-gradient(ellipse at 50% 0%, #1a0e2e 0%, #0b0b12 70%);
-        }
+<img src="https://raw.githubusercontent.com/Charyflux/ave/main/assets/icon.png" width="96" height="96" alt="AveBrowser Icon"/>
 
-        .container {
-            max-width: 1280px;
-            margin: 0 auto;
-            background: rgba(15, 15, 28, 0.75);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 2.5rem;
-            padding: 2.5rem 2.8rem;
-            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(124, 58, 237, 0.15);
-            border: 1px solid rgba(124, 58, 237, 0.08);
-        }
+# AveBrowser
 
-        /* ---- header / brand ---- */
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 1.2rem;
-            flex-wrap: wrap;
-            margin-bottom: 1.8rem;
-        }
+**O browser feito para hackers éticos**
 
-        .brand-icon {
-            width: 72px;
-            height: 72px;
-            background: linear-gradient(145deg, #1e132f, #110826);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 8px 20px -6px rgba(124, 58, 237, 0.3);
-            border: 1px solid rgba(124, 58, 237, 0.2);
-            flex-shrink: 0;
-        }
+[![Version](https://img.shields.io/badge/versão-1.3.6-7c3aed?style=for-the-badge&logo=github)](https://github.com/Charyflux/ave/releases/latest)
+[![Platform](https://img.shields.io/badge/plataformas-Windows%20·%20macOS%20·%20Linux-00e5ff?style=for-the-badge&logo=electron)](https://github.com/Charyflux/ave/releases)
+[![Electron](https://img.shields.io/badge/Electron-28.3.3-47848f?style=for-the-badge&logo=electron&logoColor=white)](https://electronjs.org)
+[![License](https://img.shields.io/badge/licença-Gratuito-4ade80?style=for-the-badge)](https://github.com/Charyflux/ave/releases)
+[![AveOne](https://img.shields.io/badge/by-AveOne%20Security-a78bfa?style=for-the-badge)](https://aveone.com.br)
 
-        .brand-icon img {
-            width: 48px;
-            height: 48px;
-            filter: drop-shadow(0 0 8px rgba(167, 139, 250, 0.3));
-        }
+<br/>
 
-        .brand h1 {
-            font-size: 2.4rem;
-            font-weight: 700;
-            letter-spacing: -0.03em;
-            background: linear-gradient(135deg, #f0eaff 0%, #c4b5fd 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+> Browser especializado em **bug bounty** e **pentesting** — scanner automático de vulnerabilidades, +70 payloads, TOR integrado e suporte a extensões Chrome, tudo num único ambiente.
 
-        .brand .tag {
-            font-size: 0.9rem;
-            font-weight: 500;
-            background: rgba(124, 58, 237, 0.15);
-            padding: 0.25rem 0.9rem;
-            border-radius: 40px;
-            border: 1px solid rgba(124, 58, 237, 0.2);
-            color: #a78bfa;
-            letter-spacing: 0.01em;
-            margin-left: 0.5rem;
-        }
+<br/>
 
-        .badge-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.6rem 1.2rem;
-            margin: 1.2rem 0 1.8rem 0;
-        }
+[**⬇️ Download Windows**](https://github.com/Charyflux/ave/releases/download/v1.3.6/AveBrowser.Setup.1.3.6.exe) &nbsp;·&nbsp;
+[**⬇️ Download macOS**](https://github.com/Charyflux/ave/releases/download/v1.3.6/AveBrowser-1.3.6-arm64.dmg) &nbsp;·&nbsp;
+[**⬇️ Download Linux**](https://github.com/Charyflux/ave/releases/download/v1.3.6/AveBrowser-1.3.6.AppImage) &nbsp;·&nbsp;
+[**📄 Documentação**](https://github.com/Charyflux/ave/releases)
 
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            background: rgba(255, 255, 255, 0.04);
-            padding: 0.3rem 1rem 0.3rem 0.8rem;
-            border-radius: 40px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: #cbd5e1;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(4px);
-        }
+</div>
 
-        .badge i {
-            color: #a78bfa;
-            font-size: 0.9rem;
-        }
+---
 
-        .badge strong {
-            color: #e2e8f0;
-            font-weight: 600;
-        }
+## ✦ O que é o AveBrowser?
 
-        .lead {
-            font-size: 1.2rem;
-            color: #b9c4d9;
-            max-width: 780px;
-            margin: 0.5rem 0 2rem 0;
-            border-left: 3px solid #7c3aed;
-            padding-left: 1.2rem;
-            background: linear-gradient(90deg, rgba(124, 58, 237, 0.06), transparent);
-        }
+O **AveBrowser** é um navegador Chromium construído especificamente para profissionais de **bug bounty** e **pentesting**. Integra num único ambiente o que normalmente requer dezenas de ferramentas separadas:
 
-        /* ---- download buttons ---- */
-        .download-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin: 2rem 0 2.5rem 0;
-        }
+- 🔍 **Scanner automático** de vulnerabilidades em background (CORS, IDOR, Broken Auth, Mass Assignment)
+- 💉 **Biblioteca de +70 payloads** categorizados (XSS, SQLi, LFI, SSRF, SSTI, CMDi, XXE)
+- 👻 **TOR integrado** — anonimato com um clique, rotação de IP automática
+- 🧩 **Extensões Chrome MV2** + Userscripts (Tampermonkey-style) + Plugins nativos
+- 🔑 **Cookie Manager, JWT Decoder, Storage Explorer, Encoder/Decoder** no painel lateral
+- 🌐 **CORS bypass** via processo principal (sem bloqueio do browser)
+- 🔒 **SSL bypass** nativo — ideal para ambientes de teste e laboratórios
 
-        .btn-download {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.7rem;
-            background: rgba(124, 58, 237, 0.12);
-            padding: 0.65rem 1.5rem 0.65rem 1.3rem;
-            border-radius: 60px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: #e2e8f0;
-            border: 1px solid rgba(124, 58, 237, 0.2);
-            transition: all 0.2s ease;
-            text-decoration: none;
-            backdrop-filter: blur(4px);
-        }
+---
 
-        .btn-download i {
-            color: #a78bfa;
-            font-size: 1.1rem;
-        }
+## 📦 Download
 
-        .btn-download:hover {
-            background: rgba(124, 58, 237, 0.25);
-            border-color: #7c3aed;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px -8px rgba(124, 58, 237, 0.3);
-            color: #f1f5f9;
-        }
+| Plataforma | Ficheiro | Tamanho |
+|:---:|:---|:---:|
+| 🪟 **Windows** | [`AveBrowser.Setup.1.3.6.exe`](https://github.com/Charyflux/ave/releases/download/v1.3.6/AveBrowser.Setup.1.3.6.exe) | ~73 MB |
+| 🍎 **macOS** (Apple Silicon) | [`AveBrowser-1.3.6-arm64.dmg`](https://github.com/Charyflux/ave/releases/download/v1.3.6/AveBrowser-1.3.6-arm64.dmg) | ~90 MB |
+| 🐧 **Linux** | [`AveBrowser-1.3.6.AppImage`](https://github.com/Charyflux/ave/releases/download/v1.3.6/AveBrowser-1.3.6.AppImage) | ~99 MB |
 
-        .btn-download .size {
-            font-weight: 400;
-            font-size: 0.7rem;
-            background: rgba(0, 0, 0, 0.25);
-            padding: 0.1rem 0.6rem;
-            border-radius: 30px;
-            color: #94a3b8;
-        }
+> Todos os releases disponíveis em [**github.com/Charyflux/ave/releases**](https://github.com/Charyflux/ave/releases)
 
-        .btn-download .os {
-            font-weight: 500;
-            color: #c4b5fd;
-        }
+---
 
-        /* ---- sections ---- */
-        .section-title {
-            font-size: 1.7rem;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-            margin: 2.8rem 0 1.2rem 0;
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            color: #f1f5f9;
-        }
+## 🚀 Instalação
 
-        .section-title i {
-            color: #7c3aed;
-            font-size: 1.6rem;
-        }
+<details>
+<summary><strong>🪟 Windows</strong></summary>
 
-        .section-sub {
-            font-size: 0.95rem;
-            color: #94a3b8;
-            margin-top: -0.5rem;
-            margin-bottom: 1.8rem;
-        }
+1. Descarrega o [`AveBrowser.Setup.1.3.6.exe`](https://github.com/Charyflux/ave/releases/download/v1.3.6/AveBrowser.Setup.1.3.6.exe)
+2. Executa o instalador — sem necessidade de admin, pasta personalizável
+3. O AveBrowser aparece no menu Iniciar e no Desktop
 
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 1.2rem;
-        }
+</details>
 
-        .feature-card {
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 20px;
-            padding: 1.2rem 1.4rem;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            transition: 0.2s;
-        }
+<details>
+<summary><strong>🍎 macOS (Apple Silicon M1/M2/M3)</strong></summary>
 
-        .feature-card:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(124, 58, 237, 0.15);
-        }
+1. Descarrega o [`AveBrowser-1.3.6-arm64.dmg`](https://github.com/Charyflux/ave/releases/download/v1.3.6/AveBrowser-1.3.6-arm64.dmg)
+2. Abre o `.dmg` e arrasta para a pasta **Applications**
+3. Na primeira execução: clique direito → **Abrir** (bypass Gatekeeper)
 
-        .feature-card .emoji {
-            font-size: 1.6rem;
-            margin-bottom: 0.3rem;
-        }
+</details>
 
-        .feature-card h4 {
-            font-weight: 600;
-            font-size: 1rem;
-            color: #e2e8f0;
-            margin-bottom: 0.2rem;
-        }
+<details>
+<summary><strong>🐧 Linux</strong></summary>
 
-        .feature-card p {
-            font-size: 0.85rem;
-            color: #94a3b8;
-        }
+```bash
+chmod +x AveBrowser-1.3.6.AppImage
+./AveBrowser-1.3.6.AppImage
+```
 
-        /* ---- tables / code blocks ---- */
-        .table-wrap {
-            overflow-x: auto;
-            margin: 1.2rem 0 1.8rem 0;
-            border-radius: 18px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            background: rgba(0, 0, 0, 0.2);
-            padding: 0.2rem;
-        }
+Não requer instalação — AppImage portátil. Para integração no launcher usa o [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher).
 
-        .table-wrap table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
+</details>
 
-        .table-wrap th {
-            text-align: left;
-            padding: 0.8rem 1rem;
-            font-weight: 600;
-            color: #c4b5fd;
-            background: rgba(124, 58, 237, 0.05);
-            border-bottom: 1px solid rgba(124, 58, 237, 0.1);
-        }
+---
 
-        .table-wrap td {
-            padding: 0.7rem 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-            color: #d1d9e8;
-        }
+## 🛠️ Funcionalidades
 
-        .table-wrap tr:last-child td {
-            border-bottom: none;
-        }
+### 👻 PHANTOM DevTools
 
-        .code-block {
-            background: #0e0e1a;
-            border-radius: 16px;
-            padding: 1.2rem 1.6rem;
-            font-family: 'Fira Code', 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            border: 1px solid rgba(124, 58, 237, 0.08);
-            color: #d4dcec;
-            overflow-x: auto;
-            white-space: pre-wrap;
-            word-break: break-all;
-            margin: 1.2rem 0;
-        }
+Painel lateral com 6 ferramentas de segurança sempre disponíveis:
 
-        .badge-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.4rem 0.8rem;
-            margin: 0.8rem 0;
-        }
+| Ferramenta | Descrição |
+|:---:|:---|
+| 🍪 **Cookie Manager** | Ver, copiar e deletar cookies da sessão ativa via IPC seguro |
+| 💾 **Storage Explorer** | Lê `localStorage` e `sessionStorage` do site ativo |
+| 🔑 **JWT Decoder** | Decodifica JWT, analisa algoritmo e mostra expiração |
+| 🔄 **Encoder / Decoder** | Base64, URL, HTML entities, Hex, SHA-1, SHA-256, Reverse |
+| 💉 **Payload Library** | +70 payloads: XSS, SQLi, LFI, SSRF, SSTI, CMDi, XXE, Open Redirect |
+| 🔍 **RECON** | robots.txt, sitemap, link extractor, forms, Shodan, crt.sh, VirusTotal |
 
-        .badge-sm {
-            background: rgba(124, 58, 237, 0.08);
-            padding: 0.15rem 0.8rem;
-            border-radius: 40px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            color: #b9a9f0;
-            border: 1px solid rgba(124, 58, 237, 0.05);
-        }
+---
 
-        hr {
-            border: none;
-            border-top: 1px solid rgba(255, 255, 255, 0.04);
-            margin: 2.5rem 0;
-        }
+### 🔬 AveOne Inspector
 
-        .footer {
-            text-align: center;
-            margin-top: 2.5rem;
-            color: #64748b;
-            font-size: 0.85rem;
-        }
+Scanner automático em background — analisa cada request enquanto navegas:
 
-        .footer a {
-            color: #a78bfa;
-            text-decoration: none;
-            border-bottom: 1px dotted rgba(167, 139, 250, 0.2);
-        }
+| Teste | Descrição |
+|:---:|:---|
+| 🌐 **CORS Tester** | Origin marcada via IPC — sem falsos negativos |
+| 🪪 **IDOR Detection** | IDs sequenciais em URLs e body de requests |
+| 🔓 **Broken Auth** | Tokens previsíveis, JWT sem assinatura, refresh inseguro |
+| 📋 **Mass Assignment** | Campos não esperados aceites pela API |
+| 🌐 **HTTP Methods** | PUT, DELETE, PATCH não documentados |
+| 📡 **Network Monitor** | Feed em tempo real de todos os requests capturados |
 
-        .footer a:hover {
-            color: #c4b5fd;
-            border-bottom-color: #7c3aed;
-        }
+---
 
-        .legal {
-            background: rgba(124, 58, 237, 0.04);
-            border-radius: 20px;
-            padding: 1.2rem 1.6rem;
-            border-left: 3px solid #7c3aed;
-            font-size: 0.9rem;
-            color: #b9c4d9;
-            margin: 2rem 0 0.5rem 0;
-        }
+### 👁️ TOR & Anonimato
 
-        .legal strong {
-            color: #e2e8f0;
-        }
+```
+Toggle de um clique na toolbar → todo o tráfego vai pelo TOR (SOCKS5 127.0.0.1:9050)
+Botão de rotação → novo circuito TOR, novo IP (Control Port 9051)
+Integração Caido → proxy HTTP em localhost:8080
+SSL bypass → ignore-certificate-errors por padrão
+```
 
-        /* ---- stats row ---- */
-        .stats-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.5rem 2.5rem;
-            padding: 0.8rem 0 0.2rem 0;
-            font-size: 0.85rem;
-            color: #94a3b8;
-        }
+---
 
-        .stats-row span i {
-            color: #7c3aed;
-            margin-right: 0.4rem;
-        }
+### 🧩 Sistema de Extensões
 
-        @media (max-width: 700px) {
-            .container {
-                padding: 1.5rem 1.2rem;
-                border-radius: 1.8rem;
-            }
-            .brand h1 {
-                font-size: 1.8rem;
-            }
-            .download-grid {
-                flex-direction: column;
-            }
-            .btn-download {
-                justify-content: center;
-            }
-            .lead {
-                font-size: 1rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
+Três formas independentes de extender o browser:
 
-        <!-- BRAND -->
-        <div class="brand">
-            <div class="brand-icon">
-                <img src="https://raw.githubusercontent.com/Charyflux/ave/main/assets/icon.png" alt="AveBrowser" />
-            </div>
-            <div>
-                <h1>AveBrowser <span class="tag">v1.3.6</span></h1>
-                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.1rem;">
-                    <span class="badge"><i class="fas fa-bolt"></i> bug bounty</span>
-                    <span class="badge"><i class="fas fa-skull"></i> pentesting</span>
-                    <span class="badge"><i class="fas fa-shield-alt"></i> TOR + scanner</span>
-                </div>
-            </div>
-        </div>
+<table>
+<tr>
+<th>Tipo</th>
+<th>Como usar</th>
+<th>Contexto</th>
+</tr>
+<tr>
+<td><strong>Chrome Extensions (MV2)</strong></td>
+<td>Clica em 🧩 na toolbar → seleciona pasta</td>
+<td>Processo Chromium nativo</td>
+</tr>
+<tr>
+<td><strong>Userscripts</strong></td>
+<td>Import <code>.user.js</code> · header <code>@match</code></td>
+<td>Contexto da página</td>
+</tr>
+<tr>
+<td><strong>Native Plugins</strong></td>
+<td>API <code>window.ave</code> completa</td>
+<td>Renderer do browser</td>
+</tr>
+</table>
 
-        <div class="badge-grid">
-            <span class="badge"><i class="fas fa-check-circle" style="color:#4ade80;"></i> <strong>+70</strong> payloads</span>
-            <span class="badge"><i class="fas fa-robot"></i> scanner automático</span>
-            <span class="badge"><i class="fas fa-ghost"></i> TOR integrado</span>
-            <span class="badge"><i class="fas fa-puzzle-piece"></i> Chrome MV2</span>
-            <span class="badge"><i class="fas fa-code"></i> Userscripts</span>
-            <span class="badge"><i class="fas fa-lock-open"></i> SSL bypass</span>
-        </div>
+> ⚠️ **Nota:** `.crx` e Chrome Web Store não são suportados. Apenas extensões descompactadas (MV2).
 
-        <div class="lead">
-            <i class="fas fa-terminal" style="color:#7c3aed; margin-right: 0.6rem;"></i>
-            Browser especializado em <strong>bug bounty</strong> e <strong>pentesting</strong> — scanner de vulnerabilidades, payload library, TOR anónimo e extensões Chrome num só ambiente.
-        </div>
+---
 
-        <!-- DOWNLOAD -->
-        <div class="download-grid">
-            <a href="https://github.com/Charyflux/ave/releases/download/v1.3.6/AveBrowser.Setup.1.3.6.exe" class="btn-download">
-                <i class="fab fa-windows"></i> <span class="os">Windows</span> <span class="size">73 MB</span>
-            </a>
-            <a href="https://github.com/Charyflux/ave/releases/download/v1.3.6/AveBrowser-1.3.6-arm64.dmg" class="btn-download">
-                <i class="fab fa-apple"></i> <span class="os">macOS (arm64)</span> <span class="size">90 MB</span>
-            </a>
-            <a href="https://github.com/Charyflux/ave/releases/download/v1.3.6/AveBrowser-1.3.6.AppImage" class="btn-download">
-                <i class="fab fa-linux"></i> <span class="os">Linux</span> <span class="size">99 MB</span>
-            </a>
-            <a href="https://github.com/Charyflux/ave/releases" class="btn-download" style="background:rgba(255,255,255,0.02);">
-                <i class="fas fa-tag"></i> todas as releases
-            </a>
-        </div>
+### ⌨️ Atalhos de Teclado
 
-        <!-- STATS -->
-        <div class="stats-row">
-            <span><i class="fas fa-code"></i> HTML 59.5% · JavaScript 40.5%</span>
-            <span><i class="fas fa-users"></i> Contribuidores: AndreV · Claude · Charyflux</span>
-            <span><i class="fas fa-tag"></i> Electron 28.3.3</span>
-        </div>
+| Atalho | Ação | Atalho | Ação |
+|:---|:---|:---|:---|
+| `Ctrl + T` | Nova aba | `Ctrl + W` | Fechar aba |
+| `Ctrl + Shift + T` | Reabrir aba fechada | `Ctrl + Tab` | Próxima aba |
+| `Ctrl + 1-9` | Ir para aba nº | `Ctrl + F` | Pesquisar na página |
+| `Ctrl + +` / `-` / `0` | Zoom in / out / reset | `Ctrl + D` | Adicionar favorito |
+| `Ctrl + Shift + B` | Mostrar/esconder favoritos | `F11` | Ecrã cheio |
+| `Ctrl + P` | Imprimir | `Ctrl + U` | Ver código fonte |
 
-        <!-- FEATURES HIGHLIGHT -->
-        <div class="section-title"><i class="fas fa-bolt"></i> Funcionalidades principais</div>
-        <div class="feature-grid">
-            <div class="feature-card"><div class="emoji">🔍</div><h4>Scanner automático</h4><p>CORS, IDOR, Broken Auth, Mass Assignment em background</p></div>
-            <div class="feature-card"><div class="emoji">💉</div><h4>+70 payloads</h4><p>XSS, SQLi, LFI, SSRF, SSTI, CMDi, XXE e mais</p></div>
-            <div class="feature-card"><div class="emoji">👻</div><h4>TOR integrado</h4><p>Anonimato com um clique, rotação de IP automática</p></div>
-            <div class="feature-card"><div class="emoji">🧩</div><h4>Extensões Chrome MV2</h4><p>Carrega pastas de extensões descompactadas</p></div>
-            <div class="feature-card"><div class="emoji">🛡️</div><h4>CORS + SSL bypass</h4><p>Sem bloqueios, ideal para laboratórios e testes</p></div>
-            <div class="feature-card"><div class="emoji">📡</div><h4>Network monitor</h4><p>Feed em tempo real de requests capturados</p></div>
-        </div>
+---
 
-        <!-- PHANTOM DEVTOOLS -->
-        <div class="section-title"><i class="fas fa-tools"></i> PHANTOM DevTools</div>
-        <div class="table-wrap">
-            <table>
-                <thead><tr><th>Ferramenta</th><th>Descrição</th></tr></thead>
-                <tbody>
-                    <tr><td><i class="fas fa-cookie-bite" style="color:#a78bfa;"></i> Cookie Manager</td><td>Ver, copiar e deletar cookies da sessão ativa</td></tr>
-                    <tr><td><i class="fas fa-database" style="color:#a78bfa;"></i> Storage Explorer</td><td>localStorage e sessionStorage do site</td></tr>
-                    <tr><td><i class="fas fa-key" style="color:#a78bfa;"></i> JWT Decoder</td><td>Decodifica JWT, analisa algoritmo e expiração</td></tr>
-                    <tr><td><i class="fas fa-exchange-alt" style="color:#a78bfa;"></i> Encoder/Decoder</td><td>Base64, URL, HTML, Hex, SHA‑1, SHA‑256</td></tr>
-                    <tr><td><i class="fas fa-syringe" style="color:#a78bfa;"></i> Payload Library</td><td>+70 payloads organizados por categoria</td></tr>
-                    <tr><td><i class="fas fa-map" style="color:#a78bfa;"></i> RECON</td><td>robots.txt, sitemap, Shodan, crt.sh, VirusTotal</td></tr>
-                </tbody>
-            </table>
-        </div>
+## 🏗️ Arquitectura Técnica
 
-        <!-- ARCHITECTURE -->
-        <div class="section-title"><i class="fas fa-cubes"></i> Arquitectura</div>
-        <div class="code-block">
+```
 AveBrowser v1.3.6
 ├── Main Process (Node.js + Electron 28)
-│   ├── TOR SOCKS5 (127.0.0.1:9050 / Control 9051)
+│   ├── Gestão de janelas (frameless, titleBarStyle: hidden)
+│   ├── TOR SOCKS5 proxy (127.0.0.1:9050 / Control Port 9051)
 │   ├── SSL bypass (ignore-certificate-errors)
-│   ├── CORS bypass via electronNet.request()
+│   ├── IPC handlers: extensões, cookies, requests, CORS probe
+│   ├── CORS bypass via electronNet.request() (sem forbidden headers)
 │   └── Session persistente (partition: persist:avebrowser)
+│
 ├── Renderer Process (Chromium)
-│   ├── AveOne Inspector (scanner, formatter, network)
-│   ├── API Tester &amp; CORS probe
-│   └── Payload library (+70)
+│   ├── renderer/index.html   — UI principal do browser
+│   ├── renderer/aveone-panel.js    — AveOne Inspector
+│   ├── renderer/aveone-apitester.js — API Tester & CORS
+│   ├── renderer/aveone-scanner.js  — Scanner automático
+│   ├── renderer/aveone-formatter.js — Syntax highlighting
+│   └── renderer/payloads.js        — Biblioteca de payloads
+│
 └── userData/
-    ├── ave-extensions.json
-    ├── userscripts/
-    └── plugins/
-        </div>
+    ├── ave-extensions.json   — Extensões Chrome carregadas
+    ├── userscripts/          — Userscripts Tampermonkey-style
+    └── plugins/              — Plugins nativos AveBrowser
+```
 
-        <!-- CHANGELOG SHORT -->
-        <div class="section-title"><i class="fas fa-history"></i> Últimas melhorias</div>
-        <div class="badge-group">
-            <span class="badge-sm"><i class="fas fa-palette"></i> v1.3.6 · glassmorphism UI</span>
-            <span class="badge-sm"><i class="fas fa-star"></i> v1.3.5 · barra de favoritos + crash fix macOS</span>
-            <span class="badge-sm"><i class="fas fa-puzzle-piece"></i> v1.3.0 · Extension Manager (MV2 + Userscripts + Plugins)</span>
-            <span class="badge-sm"><i class="fas fa-terminal"></i> v1.2.2 · context menu, find-in-page, zoom</span>
-            <span class="badge-sm"><i class="fas fa-bug"></i> v1.2.0 · AveOne Inspector nativo</span>
-        </div>
-        <div style="margin-top: 0.2rem;">
-            <a href="https://github.com/Charyflux/ave/releases" style="color:#a78bfa; font-size:0.9rem;">changelog completo →</a>
-        </div>
+---
 
-        <!-- ROADMAP -->
-        <div class="section-title"><i class="fas fa-road"></i> Roadmap</div>
-        <div style="display: flex; flex-wrap: wrap; gap: 0.6rem 1.2rem; font-size:0.9rem; color:#cbd5e1;">
-            <span><i class="fas fa-file-pdf" style="color:#a78bfa;"></i> Export PDF/HTML</span>
-            <span><i class="fas fa-sync-alt" style="color:#a78bfa;"></i> Auto-update</span>
-            <span><i class="fas fa-microchip" style="color:#a78bfa;"></i> Intel Mac (x64)</span>
-            <span><i class="fas fa-brain" style="color:#a78bfa;"></i> AI attack suggestions</span>
-            <span><i class="fas fa-video" style="color:#a78bfa;"></i> Session recording</span>
-            <span><i class="fas fa-plug" style="color:#a78bfa;"></i> Burp Suite integration</span>
-        </div>
+## 📋 Especificações
 
-        <!-- LEGAL -->
-        <div class="legal">
-            <strong><i class="fas fa-gavel"></i> Uso ético e autorizado</strong> — AveBrowser é exclusivo para <strong>bug bounty</strong>, <strong>pentesting</strong> com contrato, CTF e investigação defensiva. Nunca utilize em sistemas sem autorização explícita.
-        </div>
+| Especificação | Valor |
+|:---|:---|
+| **Motor** | Chromium (via Electron 28.3.3) |
+| **User Agent** | Chrome padrão (não revela AveBrowser) |
+| **App ID** | `com.aveone.browser` |
+| **SSL** | `ignore-certificate-errors` + `allow-insecure-localhost` |
+| **TOR** | SOCKS5 `127.0.0.1:9050` · Control Port `9051` |
+| **Proxy** | Caido `localhost:8080` |
+| **Extensões** | Chrome MV2 · Userscripts · Native Plugins |
+| **Plataformas** | Windows x64 · macOS arm64 · Linux AppImage |
+| **Dependências runtime** | Nenhuma |
 
-        <hr />
+---
 
-        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; font-size:0.9rem; color:#94a3b8;">
-            <span><i class="fas fa-code"></i> Electron 28.3.3 · Chromium</span>
-            <span><i class="fas fa-shield-alt"></i> AveOne Security</span>
-            <span><a href="https://aveone.com.br" style="color:#a78bfa;">aveone.com.br</a> · <a href="mailto:contact@aveone.com.br" style="color:#a78bfa;">contact@aveone.com.br</a></span>
-        </div>
+## 📅 Changelog
 
-        <div class="footer">
-            <i class="fas fa-heart" style="color:#7c3aed;"></i> Feito para a comunidade de bug bounty · <a href="https://github.com/Charyflux/ave">GitHub</a>
-        </div>
+<details>
+<summary><strong>v1.3.6</strong> — Glassmorphism & AveOne Brand (2026-06-30)</summary>
 
-    </div>
-</body>
-</html>
+- Fundo gradiente preto (`#07070f`) → roxo escuro (`#110826`) com glow central AveOne
+- Toolbar, navbar e painel com `backdrop-filter: blur` (glassmorphism real)
+- Separadores com toque roxo sutil em vez de branco puro
+- Webview container semi-transparente para o gradiente sangrar pelas superfícies
+
+</details>
+
+<details>
+<summary><strong>v1.3.5</strong> — Barra de Favoritos + Auditoria de Segurança</summary>
+
+- **NOVA:** barra de favoritos estilo Chrome (⭐, `Ctrl+D`, `Ctrl+Shift+B`)
+- **FIX [CRASH]:** handlers IPC duplicados no macOS ao reabrir janela via dock
+- **FIX [SEGURANÇA]:** falso negativo no teste CORS → origin marcada via IPC
+- **FIX [XSS]:** favicon inserido em `innerHTML` sem escaping
+- **FIX [LEAK]:** `window.ave.off()` nunca removia listeners reais
+
+</details>
+
+<details>
+<summary><strong>v1.3.3 – v1.3.4</strong> — Ícones de Extensão na Toolbar</summary>
+
+- Ícones reais de cada extensão na toolbar entre o botão 🧩 e TOOLS
+- Popup flutuante ao clicar, fecha ao perder foco (estilo Chrome)
+- Clique direito → remover extensão
+- Fix: ícones carregados via `fs.readFileSync` como `data: URI` (bypassa `web_accessible_resources`)
+
+</details>
+
+<details>
+<summary><strong>v1.3.0</strong> — Extension Manager Completo</summary>
+
+- Nova tab **EXT** com 3 sistemas: Chrome Extensions MV2, Userscripts, Native Plugins
+- `session.loadExtension()` com auto-reload no próximo arranque
+- Userscripts: `@match` glob, `@name`, `@description`, import `.user.js`
+- Plugins nativos: `window.ave` API completa, enable/disable, botão ▶ manual
+
+</details>
+
+<details>
+<summary><strong>v1.2.2</strong> — Context Menu, Find-in-Page, Zoom, Atalhos</summary>
+
+- Menu de contexto (clique direito) com 10+ opções
+- Find in page (`Ctrl+F`) com prev/next e contador de resultados
+- Zoom por aba (`Ctrl++/-/0`) com indicador que desaparece após 1.5s
+- Todos os atalhos: `Ctrl+Shift+T`, `Ctrl+Tab`, `Ctrl+1-9`, `F11`, `Ctrl+P`
+- Indicador de áudio: ícone na aba quando media está a tocar
+- Notificações de download: toast ao iniciar e ao concluir
+
+</details>
+
+<details>
+<summary><strong>v1.2.0</strong> — AveOne Inspector como Painel Nativo</summary>
+
+- 5 sub-abas: Achados, Formatter, Network Monitor, Página Atual, API Tester
+- Scanner automático em tempo real via eventos de captura de requests
+- CORS bypass via `electronNet.request()` no processo principal
+- Feed unificado de achados com notificações
+
+</details>
+
+<details>
+<summary><strong>v1.1.0</strong> — PHANTOM DevTools (6 ferramentas)</summary>
+
+- Cookie Manager, Storage Explorer, JWT Decoder, Encoder/Decoder
+- +70 payloads: XSS, SQLi, LFI, SSRF, SSTI, CMDi, XXE, Open Redirect
+- RECON: robots.txt, sitemap, link extractor, Shodan, crt.sh, VirusTotal
+
+</details>
+
+<details>
+<summary><strong>v1.0.0</strong> — Primeira Release</summary>
+
+- Browser Electron com multi-tab, barra de URL, botão GO
+- TOR toggle + rotação de IP (SOCKS5 + Control Port)
+- Integração Caido e AveOne (`aveone.com.br/app`)
+- SSL bypass, Chrome user agent, sessão persistente
+- CI/CD: GitHub Actions para Win/Mac/Linux em paralelo
+
+</details>
+
+---
+
+## 🗺️ Roadmap
+
+O que vem a seguir:
+
+- [ ] 📄 **Export de relatórios** — PDF/HTML com achados, evidências e CVSS
+- [ ] 🔄 **Auto-update** — atualização automática via GitHub Releases
+- [ ] 🖥️ **Suporte Intel Mac (x64)** — build nativa para chips Intel
+- [ ] 🤖 **AI Analysis** — integração com LLM para sugestões de ataque
+- [ ] 🎬 **Session Recording** — gravar e reproduzir sessões de teste
+- [ ] 🔌 **Burp Suite Integration** — além do Caido, suporte a Burp (porta configurável)
+- [ ] 🌐 **User Agent Switcher** — biblioteca de UAs: móvel, tablet, browsers
+- [ ] 👥 **Colaboração em equipa** — partilhar achados em tempo real via WebSocket
+- [ ] 💼 **Workspaces** — organizar testes por projeto com favoritos e configurações independentes
+- [ ] 🏪 **Chrome Web Store (MV3)** — suporte a Manifest V3
+
+---
+
+## ⚠️ Aviso Legal
+
+O AveBrowser é desenvolvido **exclusivamente para uso ético e autorizado**:
+
+- ✅ Bug bounty em programas que autorizam testes
+- ✅ Pentesting com contrato e autorização escrita
+- ✅ Ambientes de laboratório e CTF
+- ✅ Investigação de segurança defensiva
+- ❌ Nunca em sistemas sem autorização explícita do proprietário
+
+O uso indevido desta ferramenta é da **exclusiva responsabilidade do utilizador**.
+
+---
+
+## 👥 Contribuidores
+
+<table>
+<tr>
+<td align="center">
+<a href="https://github.com/Andrevop"><img src="https://github.com/Andrevop.png" width="60px" alt="AndreV"/><br/><sub><b>AndreV</b></sub></a>
+</td>
+<td align="center">
+<a href="https://github.com/claude"><img src="https://github.com/claude.png" width="60px" alt="Claude"/><br/><sub><b>Claude</b></sub></a>
+</td>
+</tr>
+</table>
+
+---
+
+<div align="center">
+
+**Desenvolvido por [AveOne Security](https://aveone.com.br)**
+
+[aveone.com.br](https://aveone.com.br) &nbsp;·&nbsp; [contact@aveone.com.br](mailto:contact@aveone.com.br) &nbsp;·&nbsp; [Releases](https://github.com/Charyflux/ave/releases)
+
+<br/>
+
+*Feito com ❤️ para a comunidade de bug bounty*
+
+</div>
