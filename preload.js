@@ -42,10 +42,16 @@ contextBridge.exposeInMainWorld('ave', {
   showContextMenu: (params) => ipcRenderer.send('show-context-menu', params),
 
   // ── Chrome Extensions ─────────────────────────────────────────────────────
+  // ── External tool launchers ─────────────────────────────────────────
+  openCaido:       ()     => ipcRenderer.invoke('open-caido'),
+  openAveOne:      ()     => ipcRenderer.invoke('open-aveone'),
+
   extLoad:         (p)    => ipcRenderer.invoke('ext-load', p),
   extRemove:       (id)   => ipcRenderer.invoke('ext-remove', id),
   extList:         ()     => ipcRenderer.invoke('ext-list'),
   extOpenPopup:    (opts) => ipcRenderer.invoke('ext-open-popup', opts),
+  extInstallCrx:   (inp)  => ipcRenderer.invoke('ext-install-crx', inp),
+  extCwsId:        (url)  => ipcRenderer.invoke('ext-cws-id', url),
 
   // ── Userscripts ───────────────────────────────────────────────────────────
   usList:          ()     => ipcRenderer.invoke('us-list'),
