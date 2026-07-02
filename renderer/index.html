@@ -55,9 +55,10 @@ html,body{
 .tab .tab-icon{width:14px;height:14px;border-radius:3px;flex-shrink:0;font-size:10px;}
 .tab .tab-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .tab .tab-close{
-  width:16px;height:16px;border-radius:4px;border:none;
-  background:transparent;color:var(--tx3);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;font-size:9px;
+  width:18px;height:18px;border-radius:4px;border:none;
+  background:transparent;color:var(--tx2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:400;line-height:1;padding:0;flex-shrink:0;
   transition:all .15s;flex-shrink:0;padding:0;
 }
 .tab .tab-close:hover{background:rgba(255,51,85,.2);color:var(--r);}
@@ -721,9 +722,9 @@ webview.active{visibility:visible;pointer-events:auto;}
   <button id="btn-new-tab" title="Nova aba (Ctrl+T)">+</button>
   <div style="flex:1;min-width:20px;"></div>
   <div class="win-controls">
-    <button class="win-btn" onclick="window.ave.minimize()" title="Minimizar"><i class="fa-regular fa-window-minimize"></i></button>
-    <button class="win-btn" id="btn-max" onclick="toggleMax()" title="Maximizar"><i class="fa-regular fa-square" id="max-icon"></i></button>
-    <button class="win-btn close" onclick="window.ave.close()" title="Fechar"><i class="fa-solid fa-xmark"></i></button>
+    <button class="win-btn" onclick="window.ave.minimize()" title="Minimizar"><span class="ico">−</span></button>
+    <button class="win-btn" id="btn-max" onclick="toggleMax()" title="Maximizar"><span class="ico" id="max-icon"></span></button>
+    <button class="win-btn close" onclick="window.ave.close()" title="Fechar"><span class="ico"></span></button>
   </div>
 </div>
 
@@ -802,7 +803,7 @@ webview.active{visibility:visible;pointer-events:auto;}
         <div class="nt-sub" style="text-align:center;margin-top:4px;">BUG BOUNTY EDITION · POWERED BY AVEONE</div>
       </div>
       <div class="nt-search">
-        <i class="fa-solid fa-magnifying-glass" style="color:var(--tx3);"></i>
+        <span class="ico" style="color:var(--tx3);"></span>
         <input id="nt-search-input" placeholder="Pesquisar ou introduzir URL...">
         <button onclick="ntSearch()">GO</button>
       </div>
@@ -827,9 +828,9 @@ webview.active{visibility:visible;pointer-events:auto;}
       <div class="tp-pane" id="pane-intercept">
         <div id="intercept-toolbar">
           <button class="ib active" id="btn-capture" onclick="toggleCapture()">
-            <i class="fa-solid fa-circle-dot"></i> CAPTURAR
+            <span class="ico"></span> CAPTURAR
           </button>
-          <button class="ib" onclick="clearCaptures()"><i class="fa-solid fa-trash"></i></button>
+          <button class="ib" onclick="clearCaptures()"><span class="ico">🗑</span></button>
           <input id="intercept-filter" placeholder="filtrar URL..." oninput="filterRequests()">
           <span id="req-count-label">0</span>
         </div>
@@ -844,7 +845,7 @@ webview.active{visibility:visible;pointer-events:auto;}
           <div class="rd-content" id="rd-res-hdrs" style="display:none;"></div>
           <div class="rd-content" id="rd-raw"      style="display:none;"></div>
           <button class="send-ave-btn" onclick="sendSelectedToAveOne()">
-            <i class="fa-solid fa-paper-plane"></i> ENVIAR PARA AVEONE
+            <span class="ico">📤</span> ENVIAR PARA AVEONE
           </button>
         </div>
       </div>
@@ -852,14 +853,14 @@ webview.active{visibility:visible;pointer-events:auto;}
       <!-- HEADERS PANE -->
       <div class="tp-pane" id="pane-headers">
         <div style="overflow-y:auto;flex:1;" id="headers-pane">
-          <div class="empty-state"><i class="fa-solid fa-shield"></i><p>Navega para um site para ver headers</p></div>
+          <div class="empty-state"><span class="ico">🛡</span><p>Navega para um site para ver headers</p></div>
         </div>
       </div>
 
       <!-- TECH PANE -->
       <div class="tp-pane" id="pane-tech">
         <div style="overflow-y:auto;flex:1;" id="tech-pane">
-          <div class="empty-state"><i class="fa-solid fa-microchip"></i><p>Navega para um site para detectar tecnologias</p></div>
+          <div class="empty-state"><span class="ico">🔧</span><p>Navega para um site para detectar tecnologias</p></div>
         </div>
       </div>
 
@@ -867,18 +868,18 @@ webview.active{visibility:visible;pointer-events:auto;}
       <div class="tp-pane" id="pane-notes" style="padding:10px;display:none;flex-direction:column;">
         <div class="notes-domain" id="notes-domain">sem domínio activo</div>
         <textarea id="notes-textarea" placeholder="Notas para este alvo...&#10;&#10;- Findings&#10;- Paths interessantes&#10;- Credenciais testadas&#10;- Vulnerabilidades confirmadas"></textarea>
-        <button class="notes-btn" onclick="saveNote()"><i class="fa-solid fa-floppy-disk"></i> GUARDAR NOTA</button>
+        <button class="notes-btn" onclick="saveNote()"><span class="ico">💾</span> GUARDAR NOTA</button>
       </div>
 
       <!-- COOKIES PANE -->
       <div class="tp-pane" id="pane-cookies">
         <div class="tool-section" style="display:flex;gap:6px;align-items:center;">
-          <button class="tool-btn tool-btn-primary" onclick="loadCookies()"><i class="fa-solid fa-rotate-right"></i> REFRESH</button>
-          <button class="tool-btn tool-btn-secondary" onclick="copyAllCookies()"><i class="fa-regular fa-copy"></i> COPIAR TUDO</button>
+          <button class="tool-btn tool-btn-primary" onclick="loadCookies()"><span class="ico"></span> REFRESH</button>
+          <button class="tool-btn tool-btn-secondary" onclick="copyAllCookies()"><span class="ico"></span> COPIAR TUDO</button>
           <span id="cookie-count" style="font-size:9px;color:var(--tx3);font-family:'JetBrains Mono';margin-left:auto;"></span>
         </div>
         <div id="cookies-list" style="flex:1;overflow-y:auto;">
-          <div class="empty-state"><i class="fa-solid fa-cookie-bite"></i><p>Clica REFRESH para carregar cookies</p></div>
+          <div class="empty-state"><span class="ico"></span><p>Clica REFRESH para carregar cookies</p></div>
         </div>
       </div>
 
@@ -890,7 +891,7 @@ webview.active{visibility:visible;pointer-events:auto;}
           <button class="tool-btn tool-btn-secondary" onclick="loadStorage('all')">AMBOS</button>
         </div>
         <div id="storage-out" class="tool-output">
-          <div class="empty-state"><i class="fa-solid fa-database"></i><p>Escolhe o tipo de storage</p></div>
+          <div class="empty-state"><span class="ico"></span><p>Escolhe o tipo de storage</p></div>
         </div>
       </div>
 
@@ -901,11 +902,11 @@ webview.active{visibility:visible;pointer-events:auto;}
           <textarea id="jwt-input" class="tool-input" rows="3" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
           <div style="display:flex;gap:6px;margin-top:6px;">
             <button class="tool-btn tool-btn-primary" onclick="decodeJwt()">DECODE</button>
-            <button class="tool-btn tool-btn-secondary" onclick="document.getElementById('jwt-input').value='';document.getElementById('jwt-out').innerHTML='<div class=empty-state><i class=\'fa-solid fa-key\'></i><p>Cola um JWT acima</p></div>'">LIMPAR</button>
+            <button class="tool-btn tool-btn-secondary" onclick="document.getElementById('jwt-input').value='';document.getElementById('jwt-out').innerHTML='<div class=empty-state><span class=ico>🔑</span><p>Cola um JWT acima</p></div>'">LIMPAR</button>
           </div>
         </div>
         <div id="jwt-out" class="tool-output">
-          <div class="empty-state"><i class="fa-solid fa-key"></i><p>Cola um JWT acima</p></div>
+          <div class="empty-state"><span class="ico"></span><p>Cola um JWT acima</p></div>
         </div>
       </div>
 
@@ -930,7 +931,7 @@ webview.active{visibility:visible;pointer-events:auto;}
         <div class="tool-section" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
             <div class="tool-label" style="margin:0;" id="enc-mode-label">RESULTADO</div>
-            <button class="tool-btn tool-btn-secondary" style="margin-left:auto;" onclick="copyEncResult()"><i class="fa-regular fa-copy"></i></button>
+            <button class="tool-btn tool-btn-secondary" style="margin-left:auto;" onclick="copyEncResult()"><span class="ico"></span></button>
           </div>
           <textarea id="enc-output" class="tool-input" style="flex:1;resize:none;" readonly placeholder="Resultado aparece aqui..."></textarea>
         </div>
@@ -990,12 +991,12 @@ webview.active{visibility:visible;pointer-events:auto;}
         <!-- ── A: Chrome Extensions ────────────────────────────────────── -->
         <div class="ext-sub-pane active" id="ext-sub-extensions">
           <div class="tool-section" style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
-            <button class="tool-btn tool-btn-primary"   id="ext-load-btn"><i class="fa-solid fa-folder-open"></i> CARREGAR PASTA</button>
+            <button class="tool-btn tool-btn-primary"   id="ext-load-btn"><span class="ico">📂</span> CARREGAR PASTA</button>
             <button class="tool-btn tool-btn-secondary" id="ext-refresh-btn">↻</button>
           </div>
           <div class="ao-scroll" id="ext-list-container" style="flex:1;">
             <div class="empty-state" style="padding:24px;text-align:center;">
-              <i class="fa-solid fa-puzzle-piece" style="font-size:22px;margin-bottom:8px;display:block;color:var(--tx3);"></i>
+              <span class="ico" style="font-size:22px;margin-bottom:8px;display:block;color:var(--tx3);"></span>
               <span style="font-size:10px;color:var(--tx3);">Nenhuma extensão carregada</span>
             </div>
           </div>
@@ -1006,7 +1007,7 @@ webview.active{visibility:visible;pointer-events:auto;}
         <div class="ext-sub-pane" id="ext-sub-userscripts">
           <div class="tool-section" style="display:flex;gap:5px;align-items:center;flex-shrink:0;">
             <button class="tool-btn tool-btn-primary"   id="us-new-btn">+ NOVO</button>
-            <button class="tool-btn tool-btn-secondary" id="us-import-btn"><i class="fa-solid fa-file-import"></i> IMPORTAR</button>
+            <button class="tool-btn tool-btn-secondary" id="us-import-btn"><span class="ico">📥</span> IMPORTAR</button>
             <button class="tool-btn tool-btn-secondary" id="us-refresh-btn">↻</button>
           </div>
           <div id="us-list-container" style="flex-shrink:0;max-height:130px;overflow-y:auto;border-bottom:1px solid var(--bd);">
@@ -1216,12 +1217,12 @@ webview.active{visibility:visible;pointer-events:auto;}
   <span id="sb-tech-quick" style="color:var(--p);"></span>
   <div class="sep" style="height:12px;"></div>
   <!-- TOR status -->
-  <i class="fa-solid fa-user-secret" id="sb-tor-icon" style="color:var(--tx3);font-size:10px;"></i>
+  <span class="ico" id="sb-tor-icon" style="color:var(--tx3);font-size:10px;">🕵</span>
   <span id="sb-tor-status" style="color:var(--tx3);">TOR OFF</span>
   <div class="sep" style="height:12px;"></div>
   <span id="sb-ip" style="color:var(--tx3);font-family:'JetBrains Mono';">IP: —</span>
   <button onclick="refreshIp()" style="background:none;border:none;color:var(--tx3);cursor:pointer;padding:0 2px;font-size:9px;" title="Actualizar IP">
-    <i class="fa-solid fa-rotate-right"></i>
+    <span class="ico"></span>
   </button>
   <button onclick="torNewIp()" style="background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);border-radius:4px;color:var(--p);cursor:pointer;padding:1px 6px;font-size:8px;font-family:'Orbitron';font-weight:700;" title="Rodar IP (novo circuito TOR)">
     NEW IP
@@ -1352,8 +1353,8 @@ function setupListeners() {
 
   // Window state
   window.ave.on('window-state', state => {
-    document.getElementById('max-icon').className =
-      state === 'maximized' ? 'fa-regular fa-clone' : 'fa-regular fa-square';
+    document.getElementById('max-icon').textContent =
+      state === 'maximized' ? '⧉' : '□';
   });
 
   // Captures from main
@@ -1612,14 +1613,13 @@ function renderTabs() {
     const el = document.createElement('div');
     el.className = 'tab' + (tab.id === activeTabId ? ' active' : '') + (tab.loading ? ' tab-loading' : '');
     el.innerHTML = `
-      <div class="tab-icon">${tab.favicon ? `<img src="${esc(tab.favicon)}" width="14" height="14" style="border-radius:3px;" onerror="this.style.display='none'">` : '<i class="fa-solid fa-globe" style="font-size:10px;color:var(--tx3)"></i>'}</div>
+      <div class="tab-icon">${tab.favicon ? `<img src="${esc(tab.favicon)}" width="14" height="14" style="border-radius:3px;" onerror="this.style.display='none'">` : '<span style="font-size:11px;line-height:1;color:var(--tx3)">🌐</span>'}</div>
       <div class="tab-title">${esc(tab.title || 'Nova Aba')}</div>
-      ${tab.audio ? '<i class="fa-solid fa-volume-high" style="font-size:9px;color:var(--c);flex-shrink:0;"></i>' : ''}
-      <button class="tab-close" data-id="${tab.id}"><i class="fa-solid fa-xmark"></i></button>
+      ${tab.audio ? '<span style="font-size:9px;color:var(--c);flex-shrink:0;">🔊</span>' : ''}
+      <button class="tab-close" onclick="event.stopPropagation();closeTab(${tab.id})" title="Fechar aba (Ctrl+W)">×</button>
     `;
-    el.addEventListener('mousedown', e => { if (e.button === 1) { closeTab(tab.id); return; } });
-    el.addEventListener('click', e => { if (!e.target.closest('.tab-close')) activateTab(tab.id); });
-    el.querySelector('.tab-close').addEventListener('click', e => { e.stopPropagation(); closeTab(tab.id); });
+    el.addEventListener('mousedown', e => { if (e.button === 1) { e.preventDefault(); closeTab(tab.id); } });
+    el.addEventListener('click', e => { if (!e.target.classList.contains('tab-close')) activateTab(tab.id); });
     bar.appendChild(el);
   });
 }
@@ -1662,8 +1662,8 @@ function updateNavBtns() {
   const t = getActiveTab();
   document.getElementById('btn-back').disabled    = !t?.wv?.canGoBack?.();
   document.getElementById('btn-forward').disabled = !t?.wv?.canGoForward?.();
-  const icon = document.getElementById('btn-reload').querySelector('i');
-  icon.className = t?.loading ? 'fa-solid fa-xmark' : 'fa-solid fa-rotate-right';
+  const icon = document.getElementById('btn-reload').querySelector('.ico');
+  if (icon) icon.textContent = t?.loading ? '×' : '↻';
 }
 
 function openDevTools() { getActiveTab()?.wv?.openDevTools(); }
@@ -1740,7 +1740,7 @@ async function extRefreshList() {
   const c = document.getElementById('ext-list-container');
   if (!list.length) {
     c.innerHTML = `<div class="empty-state" style="padding:24px;text-align:center;">
-      <i class="fa-solid fa-puzzle-piece" style="font-size:22px;margin-bottom:8px;display:block;color:var(--tx3);"></i>
+      <span class="ico" style="font-size:22px;margin-bottom:8px;display:block;color:var(--tx3);"></span>
       <span style="font-size:10px;color:var(--tx3);">Nenhuma extensão carregada</span></div>`;
     return;
   }
@@ -2146,10 +2146,10 @@ function renderBookmarksBar() {
     if (b.icon) {
       const img = document.createElement('img');
       img.src = b.icon;
-      img.onerror = () => { img.remove(); chip.insertAdjacentHTML('afterbegin', '<i class="fa-solid fa-star bk-fallback"></i>'); };
+      img.onerror = () => { img.remove(); chip.insertAdjacentHTML('afterbegin', '<span class="ico"></span>'); };
       chip.appendChild(img);
     } else {
-      chip.innerHTML = '<i class="fa-solid fa-star bk-fallback"></i>';
+      chip.innerHTML = '<span class="ico"></span>';
     }
     const span = document.createElement('span');
     span.textContent = b.name;
@@ -2250,7 +2250,7 @@ async function toggleCapture() {
   const dot = document.getElementById('capture-dot');
   const sbdot = document.getElementById('sb-dot');
   btn.classList.toggle('active', capturingEnabled);
-  btn.innerHTML = `<i class="fa-solid fa-circle-dot"></i> ${capturingEnabled ? 'CAPTURAR' : 'PARADO'}`;
+  btn.innerHTML = `<span class="ico"></span> ${capturingEnabled ? 'CAPTURAR' : 'PARADO'}`;
   dot.classList.toggle('off', !capturingEnabled);
   sbdot.classList.toggle('on', capturingEnabled);
   sbdot.classList.toggle('off', !capturingEnabled);
@@ -2277,7 +2277,7 @@ function renderRequests() {
   document.getElementById('req-count-label').textContent = filtered.length;
 
   if (!filtered.length) {
-    list.innerHTML = '<div class="empty-state" style="padding:40px 0;"><i class="fa-solid fa-satellite-dish"></i><p>Sem requests capturados</p></div>';
+    list.innerHTML = '<div class="empty-state" style="padding:40px 0;"><span class="ico"></span><p>Sem requests capturados</p></div>';
     return;
   }
 
@@ -2457,7 +2457,7 @@ async function detectTech(tabId) {
 function renderTechPane(domain, detected) {
   const pane = document.getElementById('tech-pane');
   if (!detected.length) {
-    pane.innerHTML = `<div class="tech-domain">${esc(domain)}</div><div class="empty-state"><i class="fa-solid fa-magnifying-glass"></i><p>Nenhuma tecnologia detectada ainda<br><span style="font-size:9px">Continua a navegar para mais dados</span></p></div>`;
+    pane.innerHTML = `<div class="tech-domain">${esc(domain)}</div><div class="empty-state"><span class="ico"></span><p>Nenhuma tecnologia detectada ainda<br><span style="font-size:9px">Continua a navegar para mais dados</span></p></div>`;
     return;
   }
   const bycat = {};
@@ -2782,7 +2782,7 @@ async function loadCookies() {
   window._lastCookies = cookies;
   document.getElementById('cookie-count').textContent = cookies.length + ' cookies';
   if (!cookies.length) {
-    list.innerHTML = '<div class="empty-state"><i class="fa-solid fa-cookie-bite"></i><p>Sem cookies para este site</p></div>';
+    list.innerHTML = '<div class="empty-state"><span class="ico"></span><p>Sem cookies para este site</p></div>';
     return;
   }
   list.innerHTML = cookies.map((c,i) => `
@@ -2790,7 +2790,7 @@ async function loadCookies() {
       <span class="cookie-name" title="${esc(c.name)}">${esc(c.name)}</span>
       <span class="cookie-val" title="${esc(c.value || '')}">${esc(c.value || '—')}</span>
       <span class="tool-tag cookie-copy-btn" data-cidx="${i}" style="margin:0;font-size:8px;">COPY</span>
-      ${c.domain ? `<button class="cookie-del cookie-del-btn" data-cidx="${i}" title="Remover"><i class="fa-solid fa-xmark"></i></button>` : ''}
+      ${c.domain ? `<button class="cookie-del cookie-del-btn" data-cidx="${i}" title="Remover"><span class="ico"></span></button>` : ''}
     </div>
   `).join('');
   list.querySelectorAll('.cookie-copy-btn').forEach(btn => {
@@ -2824,7 +2824,7 @@ function copyAllCookies() {
 async function loadStorage(type) {
   const wv = getActiveTab()?.wv;
   const out = document.getElementById('storage-out');
-  if (!wv) { out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-database"></i><p>Abre um site primeiro</p></div>'; return; }
+  if (!wv) { out.innerHTML = '<div class="empty-state"><span class="ico"></span><p>Abre um site primeiro</p></div>'; return; }
   out.innerHTML = '<div class="empty-state"><span class="ico spin">↻</span><p>A ler storage...</p></div>';
   const _storeVals = {};
   try {
@@ -2848,7 +2848,7 @@ async function loadStorage(type) {
       const raw2 = await wv.executeJavaScript('(()=>{const d={};for(let i=0;i<sessionStorage.length;i++){const k=sessionStorage.key(i);d[k]=sessionStorage.getItem(k);}return JSON.stringify(d)})()');
       addRows(JSON.parse(raw2 || '{}'), 'SESSION STORAGE');
     }
-    out.innerHTML = html || '<div class="empty-state"><i class="fa-solid fa-database"></i><p>Vazio</p></div>';
+    out.innerHTML = html || '<div class="empty-state"><span class="ico"></span><p>Vazio</p></div>';
     out.querySelectorAll('.st-copy-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         navigator.clipboard.writeText(_storeVals[+btn.dataset.sidx] || '');
@@ -2856,7 +2856,7 @@ async function loadStorage(type) {
       });
     });
   } catch(e) {
-    out.innerHTML = `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><p>Erro: ${esc(e.message)}</p></div>`;
+    out.innerHTML = `<div class="empty-state"><span class="ico"></span><p>Erro: ${esc(e.message)}</p></div>`;
   }
 }
 
@@ -2864,7 +2864,7 @@ async function loadStorage(type) {
 function decodeJwt() {
   const token = document.getElementById('jwt-input').value.trim();
   const out = document.getElementById('jwt-out');
-  if (!token) { out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-key"></i><p>Cola um JWT</p></div>'; return; }
+  if (!token) { out.innerHTML = '<div class="empty-state"><span class="ico"></span><p>Cola um JWT</p></div>'; return; }
   try {
     const parts = token.split('.');
     if (parts.length < 2) throw new Error('Formato inválido — não é um JWT válido');
@@ -2970,19 +2970,19 @@ function renderPayloads(filter) {
     filtered.forEach(p => {
       const idx = _payloadStore.length;
       _payloadStore.push(p);
-      html += `<div class="payload-item" data-pidx="${idx}"><span class="payload-code">${esc(p)}</span><span class="payload-copy"><i class="fa-regular fa-copy"></i></span></div>`;
+      html += `<div class="payload-item" data-pidx="${idx}"><span class="payload-code">${esc(p)}</span><span class="payload-copy"><span class="ico"></span></span></div>`;
     });
     html += '</div>';
   });
-  list.innerHTML = html || '<div class="empty-state"><i class="fa-solid fa-ban"></i><p>Sem resultados</p></div>';
+  list.innerHTML = html || '<div class="empty-state"><span class="ico"></span><p>Sem resultados</p></div>';
   list.querySelectorAll('.payload-item').forEach(el => {
     el.addEventListener('click', () => {
       const p = _payloadStore[+el.dataset.pidx];
       if (p === undefined) return;
       navigator.clipboard.writeText(p);
       const icon = el.querySelector('.payload-copy');
-      icon.innerHTML = '<i class="fa-solid fa-check" style="color:var(--g);"></i>';
-      setTimeout(() => { icon.innerHTML = '<i class="fa-regular fa-copy"></i>'; }, 1200);
+      icon.innerHTML = '<span class="ico" style="color:var(--g);"></span>';
+      setTimeout(() => { icon.innerHTML = '<span class="ico"></span>'; }, 1200);
       showToast('Payload copiado');
     });
   });
