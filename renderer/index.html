@@ -624,18 +624,6 @@ webview.active{visibility:visible;pointer-events:auto;}
 .ext-editor-bar{display:flex;gap:5px;padding:6px 8px;background:var(--sf2);
   border-top:1px solid var(--bd);flex-shrink:0;align-items:center;}
 .ext-notice{font-size:9px;color:var(--tx3);padding:6px 8px;border-top:1px solid var(--bd);flex-shrink:0;}
-/* ── CWS INSTALL BANNER ── */
-#cws-banner{display:none;position:absolute;top:0;left:0;right:0;z-index:200;
-  background:linear-gradient(90deg,#7c3aed 0%,#0ea5e9 100%);
-  padding:7px 14px;align-items:center;gap:10px;box-shadow:0 2px 8px #0008;}
-#cws-banner.visible{display:flex;}
-#cws-banner-name{color:#fff;font-weight:700;font-size:11px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-#cws-install-btn{background:#fff;color:#7c3aed;border:none;border-radius:5px;padding:4px 12px;
-  font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .15s;}
-#cws-install-btn:hover{opacity:.85;}
-#cws-install-btn:disabled{opacity:.5;cursor:wait;}
-#cws-banner-close{background:none;border:none;color:#fff;opacity:.7;cursor:pointer;font-size:14px;padding:0 4px;line-height:1;}
-#cws-banner-close:hover{opacity:1;}
 
 /* ── FIND BAR ── */
 #find-bar{
@@ -774,13 +762,6 @@ webview.active{visibility:visible;pointer-events:auto;}
   <!-- WEBVIEWS -->
   <div id="webview-container">
     <div id="progress-bar"></div>
-    <!-- Chrome Web Store install banner -->
-    <div id="cws-banner">
-      <span style="font-size:14px;">🧩</span>
-      <span id="cws-banner-name">Extensão Chrome Web Store</span>
-      <button id="cws-install-btn" onclick="cwsInstallFromBanner()">Instalar no AveBrowser</button>
-      <button id="cws-banner-close" onclick="cwsHideBanner()" title="Fechar">✕</button>
-    </div>
     <!-- Find in page bar -->
     <div id="find-bar">
       <input id="find-input" placeholder="Pesquisar na página..." autocomplete="off">
@@ -983,20 +964,7 @@ webview.active{visibility:visible;pointer-events:auto;}
               <span style="font-size:10px;color:var(--tx3);">Nenhuma extensão carregada</span>
             </div>
           </div>
-          <!-- CWS Install section -->
-          <div style="padding:8px;border-top:1px solid var(--bd);flex-shrink:0;">
-            <div style="font-size:9px;color:var(--m);font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;">Chrome Web Store</div>
-            <div style="display:flex;gap:5px;">
-              <input id="cws-input" placeholder="URL ou ID da extensão (32 letras)"
-                style="flex:1;background:var(--sf2);border:1px solid var(--bd);border-radius:4px;
-                  color:var(--tx);font-size:10px;padding:4px 7px;outline:none;font-family:'JetBrains Mono',monospace;"
-                onkeydown="if(event.key==='Enter')cwsInstallFromInput()">
-              <button class="tool-btn tool-btn-primary" onclick="cwsInstallFromInput()" id="cws-input-btn"
-                style="font-size:10px;padding:4px 10px;white-space:nowrap;">Instalar</button>
-            </div>
-            <div id="cws-status" style="font-size:9px;color:var(--tx3);margin-top:4px;min-height:13px;"></div>
-          </div>
-          <div class="ext-notice">⚠ MV2 apenas. Extensões com Native Messaging ou Service Worker MV3 podem não funcionar.</div>
+          <div class="ext-notice">⚠ Apenas Manifest V2 descompactado (pasta). Não suporta .crx nem Chrome Web Store.</div>
         </div>
 
         <!-- ── B: Userscripts ───────────────────────────────────────────── -->
@@ -1447,7 +1415,6 @@ function newTab(url = '') {
       document.getElementById('notes-domain').textContent = getDomain(e.url);
       loadNoteForDomain(getDomain(e.url));
       detectTech(id);
-      cwsDetectPage(e.url);
     }
     updateNavBtns();
     runUserscriptsForUrl(e.url, wv); // inject matching userscripts
@@ -1470,24 +1437,13 @@ function newTab(url = '') {
     if (tab.pendingUrl) {
       const u = tab.pendingUrl;
       tab.pendingUrl = null;
-      try {
-        wv.loadURL(u).catch(() => { try { wv.src = u; } catch {} });
-      } catch { try { wv.src = u; } catch {} }
+      wv.loadURL(u).catch(() => { wv.src = u; });
     }
     if (id === activeTabId) updateNavBtns();
   });
-  // new-window (legacy Electron <28) + did-create-window (Electron 28+)
-  // In Electron 28, new-window is no longer emitted for target="_blank" or window.open().
-  // did-create-window is the only event that fires — extract the URL and open it as a new tab.
-  wv.addEventListener('new-window', e => { if (e.url) newTab(e.url); });
-  wv.addEventListener('did-create-window', (win, details) => {
-    const url = details && details.url;
-    // Open the requested URL in a new browser tab; ignore blank/devtools windows
-    if (url && url !== 'about:blank' && !url.startsWith('devtools://')) {
-      newTab(url);
-    }
-    win.close(); // always close the standalone BrowserWindow Electron would create
-  });
+  // new-window (legacy) + did-create-window (Electron 28)
+  wv.addEventListener('new-window', e => { newTab(e.url); });
+  wv.addEventListener('did-create-window', (win) => { win.close(); });
 
   // Right-click context menu
   wv.addEventListener('context-menu', (e) => {
@@ -1624,11 +1580,7 @@ function navigate(input) {
 
   if (tab.ready) {
     // Webview webContents is initialized — loadURL() is reliable
-    try {
-      tab.wv.loadURL(url).catch(() => { try { tab.wv.src = url; } catch {} });
-    } catch {
-      try { tab.wv.src = url; } catch {}
-    }
+    tab.wv.loadURL(url).catch(() => { tab.wv.src = url; });
   } else {
     // Webview still initializing about:blank — queue URL for dom-ready
     tab.pendingUrl = url;
@@ -1773,71 +1725,6 @@ document.getElementById('ext-load-btn').addEventListener('click', async () => {
   r.ok ? (showToast('Extensão carregada: ' + r.name), extRefreshList()) : showToast('Erro: ' + r.error);
 });
 document.getElementById('ext-refresh-btn').addEventListener('click', extRefreshList);
-
-// ── Chrome Web Store Integration ───────────────────────────────────────────────
-let _cwsCurrentId = null;
-let _cwsCurrentName = 'Extensão Chrome Web Store';
-
-function cwsExtractIdFromUrl(url) {
-  const m = String(url || '').match(/(?:detail\/[^/]*\/|^)([a-z]{32})(?:\/|$|\?|#)/);
-  return m ? m[1] : null;
-}
-
-function cwsDetectPage(url) {
-  const isCws = /chromewebstore\.google\.com\/detail\/|chrome\.google\.com\/webstore\/detail\//.test(url);
-  if (!isCws) { cwsHideBanner(); return; }
-  const id = cwsExtractIdFromUrl(url);
-  if (!id) { cwsHideBanner(); return; }
-  _cwsCurrentId = id;
-  // Try to extract extension name from URL path segment
-  const seg = url.match(/detail\/([^/]+)\//);
-  _cwsCurrentName = seg ? decodeURIComponent(seg[1].replace(/-/g, ' ')) : 'Extensão Chrome Web Store';
-  document.getElementById('cws-banner-name').textContent = '🧩 ' + _cwsCurrentName;
-  document.getElementById('cws-banner').classList.add('visible');
-  document.getElementById('cws-install-btn').disabled = false;
-  document.getElementById('cws-install-btn').textContent = 'Instalar no AveBrowser';
-}
-
-function cwsHideBanner() {
-  _cwsCurrentId = null;
-  document.getElementById('cws-banner').classList.remove('visible');
-}
-
-async function cwsInstallFromBanner() {
-  if (!_cwsCurrentId) return;
-  await cwsDoInstall(_cwsCurrentId, document.getElementById('cws-install-btn'));
-}
-
-async function cwsInstallFromInput() {
-  const inp = document.getElementById('cws-input').value.trim();
-  if (!inp) { document.getElementById('cws-status').textContent = 'Insere um URL ou ID da extensão.'; return; }
-  await cwsDoInstall(inp, document.getElementById('cws-input-btn'));
-}
-
-async function cwsDoInstall(input, btn) {
-  const statusEl = document.getElementById('cws-status');
-  const origText = btn ? btn.textContent : '';
-  if (btn) { btn.disabled = true; btn.textContent = 'A instalar...'; }
-  if (statusEl) statusEl.textContent = 'A descarregar e instalar...';
-  try {
-    const r = await window.ave.extInstallCrx(input);
-    if (r.ok) {
-      showToast('Extensão instalada: ' + (r.name || r.id));
-      if (statusEl) statusEl.textContent = '✓ Instalada: ' + (r.name || r.id) + ' v' + (r.version || '?');
-      extRefreshList();
-      cwsHideBanner();
-      document.getElementById('cws-input').value = '';
-    } else {
-      showToast('Erro: ' + r.error, 4000);
-      if (statusEl) statusEl.textContent = '✗ ' + r.error;
-    }
-  } catch (e) {
-    showToast('Erro ao instalar extensão', 3000);
-    if (statusEl) statusEl.textContent = '✗ ' + e.message;
-  }
-  if (btn) { btn.disabled = false; btn.textContent = origText; }
-}
-
 
 // ── B: Userscripts ─────────────────────────────────────────────────────────────
 let _usEditId = null;
@@ -3001,4 +2888,3 @@ function openReconTool(tool) {
 </script>
 </body>
 </html>
-
