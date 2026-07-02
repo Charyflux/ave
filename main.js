@@ -58,13 +58,13 @@ function proxyRunning() {
 async function startProxy() {
   if (await proxyRunning()) {
     console.log(`[main] Proxy already running on :${PROXY_PORT}`);
-    return;
+    return true;
   }
   const bin = binPath(process.platform === 'win32' ? 'ave-proxy.exe' : 'ave-proxy');
   if (!fs.existsSync(bin)) {
-    console.warn('[main] ave-proxy binary not found — traffic capture disabled.');
-    console.warn('[main] Run scripts/build.sh to compile it.');
-    return;
+    console.warn('[main] ave-proxy binary not found — running without traffic capture.');
+    console.warn('[main] Build it with: bash scripts/build.sh');
+    return false;
   }
   proxyProcess = spawn(bin, [], {
     env: { ...process.env, AVE_PROXY_PORT: String(PROXY_PORT), AVE_CONTROL_PORT: String(CONTROL_PORT) },
@@ -74,21 +74,21 @@ async function startProxy() {
   proxyProcess.stderr.on('data', d => console.error('[proxy]', d.toString().trim()));
   proxyProcess.on('exit', code => console.log('[proxy] exited', code));
 
-  // Wait up to 5s for proxy to be ready
   for (let i = 0; i < 20; i++) {
     if (await proxyRunning()) {
       console.log(`[main] Go proxy ready on :${PROXY_PORT}`);
-      return;
+      return true;
     }
     await new Promise(r => setTimeout(r, 250));
   }
-  console.warn('[main] Proxy did not start in time');
+  console.warn('[main] Proxy did not start in time — running without capture.');
+  return false;
 }
 
 // ── Window ────────────────────────────────────────────────────────────────────
 
 async function createWindow() {
-  await startProxy();
+  const proxyOk = await startProxy();
 
   mainWindow = new BrowserWindow({
     width: 1440, height: 920,
@@ -112,13 +112,15 @@ async function createWindow() {
 
   // Route ALL webview traffic through the Go MITM proxy
   // The proxy handles capture, TOR chaining, and replay.
-  await ses.setProxy({ proxyRules: PROXY_ADDR, proxyBypassRules: '<local>' });
+  if (proxyOk) {
+    await ses.setProxy({ proxyRules: PROXY_ADDR, proxyBypassRules: '<local>' });
+    ses.setCertificateVerifyProc((req, cb) => cb(0));
+    console.log(`[main] Webview proxy → ${PROXY_ADDR} (MITM capture active)`);
+  } else {
+    await ses.setProxy({ mode: 'direct' });
+    console.log('[main] Direct connection (no proxy binary — install Go and run scripts/build.sh)');
+  }
   torEnabled = false;
-  console.log(`[main] Webview proxy → ${PROXY_ADDR}`);
-
-  // Trust our proxy's dynamically generated MITM certs
-  // (ignore-certificate-errors CLI switch already handles this, but belt+suspenders)
-  ses.setCertificateVerifyProc((req, cb) => cb(0));
 
   if (appInitialized) return;
   appInitialized = true;
@@ -553,8 +555,7 @@ async function createWindow() {
 // ── App lifecycle ─────────────────────────────────────────────────────────────
 app.commandLine.appendSwitch('ignore-certificate-errors');
 app.commandLine.appendSwitch('allow-insecure-localhost');
-// Ensure the webview proxy is NOT bypassed for HTTPS
-app.commandLine.appendSwitch('proxy-server', `127.0.0.1:${PROXY_PORT}`);
+// proxy-server is set per-session in createWindow() only when ave-proxy is running
 
 app.whenReady().then(createWindow);
 
