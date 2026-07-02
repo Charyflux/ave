@@ -69,12 +69,12 @@ html,body{
 @keyframes tabLoad{0%{width:0;left:0}50%{width:60%;left:20%}100%{width:0;left:100%}}
 
 #btn-new-tab{
-  width:26px;height:26px;border-radius:7px;border:1px dashed var(--bd2);
+  width:30px;height:30px;border-radius:8px;border:1.5px dashed var(--bd2);
   background:transparent;color:var(--tx3);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;font-size:13px;
-  transition:all .15s;flex-shrink:0;align-self:center;
+  display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:300;
+  transition:all .15s;flex-shrink:0;align-self:center;line-height:1;padding:0 0 1px 0;
 }
-#btn-new-tab:hover{border-color:var(--c);color:var(--c);background:rgba(0,229,255,.05);}
+#btn-new-tab:hover{border-color:var(--c);color:var(--c);background:rgba(0,229,255,.05);border-style:solid;}
 
 .win-controls{
   display:flex;align-items:center;gap:0;flex-shrink:0;
@@ -720,7 +720,7 @@ webview.active{visibility:visible;pointer-events:auto;}
     </div>
   </div>
   <div id="tabs-bar"></div>
-  <button id="btn-new-tab" title="Nova aba (Ctrl+T)"><i class="fa-solid fa-plus"></i></button>
+  <button id="btn-new-tab" title="Nova aba (Ctrl+T)">+</button>
   <div style="flex:1;min-width:20px;"></div>
   <div class="win-controls">
     <button class="win-btn" onclick="window.ave.minimize()" title="Minimizar"><i class="fa-regular fa-window-minimize"></i></button>
@@ -1586,7 +1586,15 @@ function getActiveTab() { return tabs.find(t => t.id === activeTabId); }
 
 function showNewTabPage() {
   document.getElementById('newtab-page').style.display = 'flex';
-  document.getElementById('nt-search-input').focus();
+  // Focus the URL bar so the user can immediately type an address or search query
+  const urlInput = document.getElementById('url-input');
+  if (urlInput) {
+    urlInput.value = '';
+    urlInput.focus();
+    urlInput.select();
+  } else {
+    document.getElementById('nt-search-input').focus();
+  }
 }
 
 function renderTabs() {
