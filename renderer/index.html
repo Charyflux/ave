@@ -1469,13 +1469,21 @@ function newTab(url = '') {
     }
     if (id === activeTabId) updateNavBtns();
   });
-  // new-window (legacy) + did-create-window (Electron 28)
-  wv.addEventListener('new-window', e => { newTab(e.url); });
-  wv.addEventListener('did-create-window', (win) => { win.close(); });
+  // Open new windows/tabs instead of letting Electron spawn a separate window.
+  // In Electron 28, 'new-window' on <webview> is a compatibility shim; the real
+  // event is 'did-create-window' which provides {window, details} on the event object.
+  wv.addEventListener('new-window', e => { if (e.url) newTab(e.url); });
+  wv.addEventListener('did-create-window', (e) => {
+    const url = (e.details || {}).url || '';
+    if (e.window && typeof e.window.close === 'function') e.window.close();
+    if (url && url !== 'about:blank') newTab(url);
+  });
 
   // Right-click context menu — custom HTML popup
   wv.addEventListener('context-menu', (e) => {
     const p = e.params || {};
+    // Fall back to last-known mouse position when webview coords are missing
+    if (!p.x && !p.y) { p.x = _lastCtxX; p.y = _lastCtxY; }
     p.canGoBack    = wv.canGoBack?.()    ?? false;
     p.canGoForward = wv.canGoForward?.() ?? false;
     showCtxMenu(p, wv);
@@ -2561,6 +2569,9 @@ function showCtxToast(title, body, ms = 5000) {
 
 // ── CUSTOM CONTEXT MENU ───────────────────────────────────────────────────────
 let _ctxWv = null;
+let _lastCtxX = 0, _lastCtxY = 0;
+// Track pointer so we always have fallback coords for the context menu
+window.addEventListener('mousemove', ev => { _lastCtxX = ev.clientX; _lastCtxY = ev.clientY; }, true);
 
 function showCtxMenu(p, wv) {
   _ctxWv = wv;
@@ -2635,10 +2646,16 @@ function showCtxMenu(p, wv) {
     });
   });
 
-  // Position
+  // Position: prefer event coords (relative to webview), fall back to tracked mouse pos
   const wvRect = wv.getBoundingClientRect();
-  let x = wvRect.left + (p.x || 0);
-  let y = wvRect.top  + (p.y || 0);
+  let x, y;
+  if (p.x || p.y) {
+    x = wvRect.left + p.x;
+    y = wvRect.top  + p.y;
+  } else {
+    x = _lastCtxX;
+    y = _lastCtxY;
+  }
   popup.style.display = 'block';
   popup.style.left = x + 'px';
   popup.style.top  = y + 'px';
