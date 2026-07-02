@@ -69,15 +69,18 @@ html,body{
 @keyframes tabLoad{0%{width:0;left:0}50%{width:60%;left:20%}100%{width:0;left:100%}}
 
 #btn-new-tab{
-  display:flex;align-items:center;justify-content:center;gap:5px;
-  height:30px;padding:0 14px;border-radius:8px 8px 0 0;
-  border:1px solid var(--bd);border-bottom:none;
-  background:var(--sf);color:var(--tx3);cursor:pointer;
-  font-size:18px;font-weight:300;line-height:1;
-  transition:all .15s;flex-shrink:0;align-self:flex-end;
-  margin-left:2px;
+  width:28px;height:28px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.8);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;font-weight:300;line-height:1;padding:0 0 1px 0;
+  transition:all .15s;flex-shrink:0;align-self:center;margin-left:6px;
 }
-#btn-new-tab:hover{background:var(--sf2);color:var(--c);border-color:var(--c);}
+#btn-new-tab:hover{background:rgba(0,229,255,.18);border-color:var(--c);color:var(--c);}
+.ico{font-style:normal;font-size:13px;line-height:1;user-select:none;}
+.spin{display:inline-block;animation:_spin .8s linear infinite;}
+@keyframes _spin{to{transform:rotate(360deg);}}
 
 .win-controls{
   display:flex;align-items:center;gap:0;flex-shrink:0;
@@ -726,25 +729,26 @@ webview.active{visibility:visible;pointer-events:auto;}
 
 <!-- NAV BAR -->
 <div id="navbar">
-  <button class="nav-btn" id="btn-back"    onclick="navBack()"    title="Voltar (Alt+Esq)" disabled><i class="fa-solid fa-arrow-left"></i></button>
-  <button class="nav-btn" id="btn-forward" onclick="navForward()" title="Avançar (Alt+Dir)" disabled><i class="fa-solid fa-arrow-right"></i></button>
-  <button class="nav-btn" id="btn-reload"  onclick="navReload()"  title="Recarregar (F5)"><i class="fa-solid fa-rotate-right"></i></button>
-  <button class="nav-btn" id="btn-home"    onclick="navHome()"    title="Nova aba"><i class="fa-solid fa-house"></i></button>
+  <button class="nav-btn" id="btn-back"    onclick="navBack()"    title="Voltar (Alt+Esq)" disabled><span class="ico">←</span></button>
+  <button class="nav-btn" id="btn-forward" onclick="navForward()" title="Avançar (Alt+Dir)" disabled><span class="ico">→</span></button>
+  <button class="nav-btn" id="btn-reload"  onclick="navReload()"  title="Recarregar (F5)"><span class="ico">↻</span></button>
+  <button class="nav-btn" id="btn-home"    onclick="navHome()"    title="Nova aba"><span class="ico">⌂</span></button>
 
   <div id="url-bar-wrap">
-    <i class="fa-solid fa-lock" id="sec-icon"></i>
+    <span class="ico" id="sec-icon" style="font-size:11px;">🔒</span>
     <input id="url-input" placeholder="Pesquisar no Google ou introduzir URL..." autocomplete="off" spellcheck="false">
-    <button class="nav-btn" id="btn-star" onclick="toggleBookmark()" title="Adicionar à barra de favoritos (Ctrl+D)" style="width:22px;height:22px;flex-shrink:0;"><i class="fa-regular fa-star"></i></button>
+    <button class="nav-btn" id="btn-star" onclick="toggleBookmark()" title="Adicionar à barra de favoritos (Ctrl+D)" style="width:22px;height:22px;flex-shrink:0;"><span class="ico" id="star-icon">☆</span></button>
     <button id="btn-go" onclick="navigate(document.getElementById('url-input').value)" title="Ir (Enter)">GO</button>
   </div>
 
   <div class="sep"></div>
 
   <!-- Quick tools -->
-  <button class="nav-btn" onclick="openDevTools()" title="DevTools (F12)"><i class="fa-solid fa-terminal"></i></button>
-  <button class="nav-btn" onclick="copyCurrentUrl()" title="Copiar URL"><i class="fa-regular fa-copy"></i></button>
-  <button class="nav-btn" id="btn-scope" onclick="toggleScope()" title="Verificar scope" style="color:var(--tx3)"><i class="fa-solid fa-crosshairs"></i></button>
-  <button class="nav-btn" id="btn-ext-quick" onclick="quickLoadExt()" title="Adicionar extensão Chrome (MV2)" style="color:var(--m);"><i class="fa-solid fa-puzzle-piece"></i></button>
+  <button class="nav-btn" onclick="openDevTools()" title="DevTools (F12)"><span class="ico">&gt;_</span></button>
+  <button class="nav-btn" onclick="copyCurrentUrl()" title="Copiar URL"><span class="ico">⎘</span></button>
+  <button class="nav-btn" onclick="takeScreenshot()" title="Screenshot da página (Ctrl+Shift+S)"><span class="ico">📷</span></button>
+  <button class="nav-btn" id="btn-scope" onclick="toggleScope()" title="Verificar scope" style="color:var(--tx3)"><span class="ico">⊙</span></button>
+  <button class="nav-btn" id="btn-ext-quick" onclick="quickLoadExt()" title="Adicionar extensão Chrome (MV2)" style="color:var(--m);"><span class="ico">⚙</span></button>
 
   <!-- Extension icons bar — preenchido dinamicamente -->
   <div id="ext-icons-bar" style="display:flex;align-items:center;gap:2px;"></div>
@@ -754,18 +758,18 @@ webview.active{visibility:visible;pointer-events:auto;}
   <button id="btn-tools" onclick="toggleTools()">
     <div class="dot" id="capture-dot"></div>
     TOOLS
-    <i class="fa-solid fa-chevron-right" id="tools-arrow" style="font-size:9px;transition:transform .2s;"></i>
+    <span class="ico" id="tools-arrow" style="font-size:9px;transition:transform .2s;display:inline-block;">›</span>
   </button>
 
   <!-- TOR toggle -->
   <button id="btn-tor" onclick="torToggle()" title="Activar/desactivar anonimato TOR">
-    <i class="fa-solid fa-user-secret"></i>
+    <span class="ico">🧅</span>
     <span id="tor-label">TOR</span>
   </button>
 
   <!-- AveOne web app -->
   <button id="btn-aveone" onclick="window.ave.openAveOne()" title="Abrir AveOne">
-    <i class="fa-solid fa-shield-halved"></i> AVEONE
+    <span class="ico">🛡</span> AVEONE
   </button>
 </div>
 
@@ -942,20 +946,33 @@ webview.active{visibility:visible;pointer-events:auto;}
 
       <!-- RECON PANE -->
       <div class="tp-pane" id="pane-recon">
+        <!-- Inline analysis (runs JS in the active tab) -->
         <div class="tool-section" style="display:flex;gap:6px;flex-wrap:wrap;">
-          <button class="tool-btn tool-btn-primary" onclick="reconRobots()">robots.txt</button>
-          <button class="tool-btn tool-btn-primary" onclick="reconSitemap()">sitemap.xml</button>
-          <button class="tool-btn tool-btn-secondary" onclick="reconLinks()">LINKS EXTERNOS</button>
-          <button class="tool-btn tool-btn-secondary" onclick="reconForms()">FORMS</button>
+          <button class="tool-btn tool-btn-primary" onclick="reconRobots()" title="robots.txt">🤖 robots.txt</button>
+          <button class="tool-btn tool-btn-primary" onclick="reconSitemap()" title="sitemap.xml">🗺 sitemap</button>
+          <button class="tool-btn tool-btn-secondary" onclick="reconLinks()">🔗 LINKS</button>
+          <button class="tool-btn tool-btn-secondary" onclick="reconForms()">📝 FORMS</button>
+          <button class="tool-btn tool-btn-secondary" onclick="reconJsFiles()">📜 JS FILES</button>
+          <button class="tool-btn tool-btn-secondary" onclick="reconSecrets()">🔑 SECRETS</button>
+          <button class="tool-btn tool-btn-secondary" onclick="reconComments()">💬 COMMENTS</button>
+          <button class="tool-btn tool-btn-secondary" onclick="reconHeaders()">📡 HEADERS</button>
         </div>
-        <div class="tool-section" style="display:flex;gap:6px;flex-wrap:wrap;">
-          <button class="tool-btn tool-btn-secondary" onclick="openReconTool('shodan')"><i class="fa-solid fa-radar"></i> Shodan</button>
-          <button class="tool-btn tool-btn-secondary" onclick="openReconTool('crtsh')"><i class="fa-solid fa-certificate"></i> crt.sh</button>
-          <button class="tool-btn tool-btn-secondary" onclick="openReconTool('wayback')"><i class="fa-solid fa-clock-rotate-left"></i> Archive</button>
-          <button class="tool-btn tool-btn-secondary" onclick="openReconTool('virustotal')"><i class="fa-solid fa-virus"></i> VT</button>
+        <!-- External tools (open in new tab / system browser) -->
+        <div class="tool-section" style="display:flex;gap:6px;flex-wrap:wrap;padding-top:4px;">
+          <span style="font-size:8px;color:var(--tx3);width:100%;padding-bottom:2px;letter-spacing:.5px;">EXTERNAL TOOLS</span>
+          <button class="tool-btn tool-btn-secondary" onclick="openReconTool('shodan')" title="Shodan — portas abertas, banners, CVEs">⚡ Shodan</button>
+          <button class="tool-btn tool-btn-secondary" onclick="openReconTool('crtsh')" title="crt.sh — certificados SSL, subdomínios">📜 crt.sh</button>
+          <button class="tool-btn tool-btn-secondary" onclick="openReconTool('wayback')" title="Wayback Machine — versões antigas">⏰ Archive</button>
+          <button class="tool-btn tool-btn-secondary" onclick="openReconTool('virustotal')" title="VirusTotal — reputação do domínio">🦠 VT</button>
+          <button class="tool-btn tool-btn-secondary" onclick="openReconTool('whois')" title="WHOIS — registo do domínio">📋 WHOIS</button>
+          <button class="tool-btn tool-btn-secondary" onclick="openReconTool('dns')" title="DNS — registos MX, A, AAAA, TXT, NS">🌐 DNS</button>
+          <button class="tool-btn tool-btn-secondary" onclick="openReconTool('sechdrs')" title="SecurityHeaders — análise de HTTP Security Headers">🛡 Sec-Headers</button>
+          <button class="tool-btn tool-btn-secondary" onclick="openReconTool('hackertarget')" title="HackerTarget — subdomínios">🎯 Subdomain</button>
+          <button class="tool-btn tool-btn-secondary" onclick="openReconTool('leakix')" title="LeakIX — leaks e índices públicos">💀 LeakIX</button>
+          <button class="tool-btn tool-btn-secondary" onclick="reconDorks()" title="Google Dorks para o domínio atual">🕵 Dorks</button>
         </div>
         <div id="recon-out" class="tool-output" style="flex:1;">
-          <div class="empty-state"><i class="fa-solid fa-crosshairs"></i><p>Escolhe uma opção de reconhecimento</p></div>
+          <div class="empty-state"><span class="ico" style="font-size:22px;">⊙</span><p>Escolhe uma opção de reconhecimento</p></div>
         </div>
       </div>
 
@@ -1316,6 +1333,7 @@ function setupListeners() {
     if (e.ctrlKey && e.key === 'r')         { e.preventDefault(); navReload(); }
     if (e.key === 'F5')                     navReload();
     if (e.key === 'F12')                    openDevTools();
+    if (e.shiftKey && e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); takeScreenshot(); }
     if (e.key === 'F11')                    { e.preventDefault(); toggleFullscreen(); }
     if (e.altKey && e.key === 'ArrowLeft')  navBack();
     if (e.altKey && e.key === 'ArrowRight') navForward();
@@ -2159,10 +2177,10 @@ function toggleBookmarksBar() {
 function updateStarIcon(url) {
   const btn = document.getElementById('btn-star');
   if (!btn) return;
-  const icon = btn.querySelector('i');
+  const icon = btn.querySelector('.ico') || btn.querySelector('i');
   const active = isBookmarked(url);
   btn.classList.toggle('active', active);
-  icon.className = active ? 'fa-solid fa-star' : 'fa-regular fa-star';
+  if (icon) icon.textContent = active ? '★' : '☆';
   btn.title = active ? 'Remover dos favoritos (Ctrl+D)' : 'Adicionar à barra de favoritos (Ctrl+D)';
 }
 
@@ -2184,13 +2202,14 @@ function toggleMax() { window.ave.maximize(); }
 // ── SECURITY ICON ─────────────────────────────────────────────────────────────
 function updateSecIcon(url) {
   const icon = document.getElementById('sec-icon');
+  if (!icon) return;
   if (!url || url.startsWith('about:') || url === 'new-tab') {
-    icon.className = 'fa-solid fa-globe'; icon.style.color = 'var(--tx3)'; return;
+    icon.textContent = '🌐'; icon.style.color = 'var(--tx3)'; return;
   }
   if (url.startsWith('https://')) {
-    icon.className = 'fa-solid fa-lock https'; icon.style.color = 'var(--g)';
+    icon.textContent = '🔒'; icon.style.color = 'var(--g)';
   } else {
-    icon.className = 'fa-solid fa-lock-open http'; icon.style.color = 'var(--w)';
+    icon.textContent = '🔓'; icon.style.color = 'var(--w)';
   }
 }
 
@@ -2756,7 +2775,7 @@ async function loadCookies() {
   const tab = getActiveTab();
   const url = tab?.url || null;
   const list = document.getElementById('cookies-list');
-  list.innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>A carregar...</p></div>';
+  list.innerHTML = '<div class="empty-state"><span class="ico spin">↻</span><p>A carregar...</p></div>';
   const cookies = url
     ? await window.ave.getCookies(url)
     : await window.ave.getAllCookies();
@@ -2806,7 +2825,7 @@ async function loadStorage(type) {
   const wv = getActiveTab()?.wv;
   const out = document.getElementById('storage-out');
   if (!wv) { out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-database"></i><p>Abre um site primeiro</p></div>'; return; }
-  out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>A ler storage...</p></div>';
+  out.innerHTML = '<div class="empty-state"><span class="ico spin">↻</span><p>A ler storage...</p></div>';
   const _storeVals = {};
   try {
     let html = '';
@@ -2997,8 +3016,8 @@ async function reconFetch(url) {
 async function reconRobots() {
   const tab = getActiveTab();
   const out = document.getElementById('recon-out');
-  if (!tab?.url) { out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-crosshairs"></i><p>Navega para um site primeiro</p></div>'; return; }
-  out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>A buscar robots.txt...</p></div>';
+  if (!tab?.url) { out.innerHTML = '<div class="empty-state"><span class="ico">⊙</span><p>Navega para um site primeiro</p></div>'; return; }
+  out.innerHTML = '<div class="empty-state"><span class="ico spin">↻</span><p>A buscar robots.txt...</p></div>';
   try {
     const base = new URL(tab.url).origin;
     const txt = await reconFetch(base + '/robots.txt');
@@ -3017,8 +3036,8 @@ async function reconRobots() {
 async function reconSitemap() {
   const tab = getActiveTab();
   const out = document.getElementById('recon-out');
-  if (!tab?.url) { out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-crosshairs"></i><p>Navega para um site primeiro</p></div>'; return; }
-  out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>A buscar sitemap.xml...</p></div>';
+  if (!tab?.url) { out.innerHTML = '<div class="empty-state"><span class="ico">⊙</span><p>Navega para um site primeiro</p></div>'; return; }
+  out.innerHTML = '<div class="empty-state"><span class="ico spin">↻</span><p>A buscar sitemap.xml...</p></div>';
   try {
     const base = new URL(tab.url).origin;
     const txt = await reconFetch(base + '/sitemap.xml');
@@ -3034,8 +3053,8 @@ async function reconSitemap() {
 async function reconLinks() {
   const tab = getActiveTab();
   const out = document.getElementById('recon-out');
-  if (!tab?.wv) { out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-crosshairs"></i><p>Navega para um site primeiro</p></div>'; return; }
-  out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>A analisar links...</p></div>';
+  if (!tab?.wv) { out.innerHTML = '<div class="empty-state"><span class="ico">⊙</span><p>Navega para um site primeiro</p></div>'; return; }
+  out.innerHTML = '<div class="empty-state"><span class="ico spin">↻</span><p>A analisar links...</p></div>';
   try {
     const domain = getDomain(tab.url);
     const res = await tab.wv.executeJavaScript(`(()=>{const a=[...document.querySelectorAll('a[href]')].map(e=>e.href).filter(h=>h.startsWith('http'));return JSON.stringify({ext:[...new Set(a.filter(h=>!h.includes(${JSON.stringify(domain)})))],int:[...new Set(a.filter(h=>h.includes(${JSON.stringify(domain)})))]});})()`);
@@ -3052,7 +3071,7 @@ async function reconLinks() {
 async function reconForms() {
   const tab = getActiveTab();
   const out = document.getElementById('recon-out');
-  if (!tab?.wv) { out.innerHTML = '<div class="empty-state"><i class="fa-solid fa-crosshairs"></i><p>Navega para um site primeiro</p></div>'; return; }
+  if (!tab?.wv) { out.innerHTML = '<div class="empty-state"><span class="ico">⊙</span><p>Navega para um site primeiro</p></div>'; return; }
   try {
     const res = await tab.wv.executeJavaScript(`(()=>{const forms=[...document.querySelectorAll('form')].map(f=>({action:f.action,method:(f.method||'GET').toUpperCase(),fields:[...f.querySelectorAll('input,textarea,select')].map(i=>({name:i.name,type:i.type,value:i.value.substring(0,60)}))}));return JSON.stringify(forms)})()`);
     const forms = JSON.parse(res);
@@ -3069,14 +3088,163 @@ async function reconForms() {
 function openReconTool(tool) {
   const tab = getActiveTab();
   const domain = getDomain(tab?.url || '');
+  const url = tab?.url || '';
   const ip = document.getElementById('sb-ip')?.textContent?.replace('IP: ','') || '';
   const urls = {
-    shodan:    `https://www.shodan.io/search?query=${encodeURIComponent(domain || ip)}`,
-    crtsh:     `https://crt.sh/?q=${encodeURIComponent(domain)}`,
-    wayback:   `https://web.archive.org/web/*/${encodeURIComponent(tab?.url || domain)}`,
-    virustotal:`https://www.virustotal.com/gui/domain/${encodeURIComponent(domain)}`,
+    shodan:       `https://www.shodan.io/search?query=${encodeURIComponent(domain || ip)}`,
+    crtsh:        `https://crt.sh/?q=${encodeURIComponent(domain)}`,
+    wayback:      `https://web.archive.org/web/*/${encodeURIComponent(url || domain)}`,
+    virustotal:   `https://www.virustotal.com/gui/domain/${encodeURIComponent(domain)}`,
+    whois:        `https://who.is/whois/${encodeURIComponent(domain)}`,
+    dns:          `https://mxtoolbox.com/SuperTool.aspx?action=dns%3a${encodeURIComponent(domain)}&run=toolpage`,
+    sechdrs:      `https://securityheaders.com/?q=${encodeURIComponent(url || domain)}&hide=on&followRedirects=on`,
+    hackertarget: `https://hackertarget.com/find-dns-host-records/?q=${encodeURIComponent(domain)}`,
+    leakix:       `https://leakix.net/domain/${encodeURIComponent(domain)}`,
   };
-  if (urls[tool]) window.ave.openExternal(urls[tool]);
+  if (urls[tool]) newTab(urls[tool]);
+}
+
+async function reconDorks() {
+  const tab = getActiveTab();
+  const out = document.getElementById('recon-out');
+  const domain = getDomain(tab?.url || '');
+  if (!domain) { out.innerHTML = '<div class="empty-state"><span class="ico" style="font-size:22px;">⊙</span><p>Navega para um site primeiro</p></div>'; return; }
+  const dorks = [
+    { label: 'site: (todas as páginas indexadas)',    q: `site:${domain}` },
+    { label: 'subdomains',                            q: `site:*.${domain}` },
+    { label: 'login / admin pages',                  q: `site:${domain} inurl:login OR inurl:admin OR inurl:dashboard` },
+    { label: 'ficheiros sensíveis (pdf,doc,xls)',    q: `site:${domain} ext:pdf OR ext:doc OR ext:xls OR ext:xlsx` },
+    { label: 'config / backup files',               q: `site:${domain} ext:env OR ext:bak OR ext:backup OR ext:sql OR ext:json` },
+    { label: 'câmeras / painéis expostos',          q: `site:${domain} inurl:camera OR inurl:webcam OR inurl:panel` },
+    { label: 'GitHub: API keys / tokens',            q: `site:github.com "${domain}" api_key OR secret OR password OR token` },
+    { label: 'Pastebin leaks',                       q: `site:pastebin.com "${domain}"` },
+    { label: 'erros / stack traces',                 q: `site:${domain} "error" OR "exception" OR "stack trace" OR "SQL syntax"` },
+    { label: 'swagger / API docs',                   q: `site:${domain} inurl:swagger OR inurl:api-docs OR inurl:openapi` },
+  ];
+  out.innerHTML = `<div class="recon-item"><div class="recon-key">🕵 Google Dorks — ${esc(domain)}</div>
+    <div>${dorks.map(d => `
+      <div style="display:flex;align-items:center;gap:6px;margin:4px 0;">
+        <button class="tool-btn tool-btn-secondary" style="flex-shrink:0;font-size:8px;" onclick="newTab('https://www.google.com/search?q=${encodeURIComponent(d.q)}')">PESQUISAR</button>
+        <div>
+          <div style="font-size:9px;color:var(--tx)">${esc(d.label)}</div>
+          <div style="font-size:8px;color:var(--c);font-family:monospace;">${esc(d.q)}</div>
+        </div>
+      </div>`).join('')}
+    </div></div>`;
+}
+
+async function reconJsFiles() {
+  const tab = getActiveTab();
+  const out = document.getElementById('recon-out');
+  if (!tab?.wv) { out.innerHTML = '<div class="empty-state"><span class="ico" style="font-size:22px;">⊙</span><p>Navega para um site primeiro</p></div>'; return; }
+  out.innerHTML = '<div class="empty-state"><span class="ico spin">↻</span><p>A extrair ficheiros JS...</p></div>';
+  try {
+    const res = await tab.wv.executeJavaScript(`(()=>{
+      const scripts = [...document.querySelectorAll('script[src]')].map(s=>s.src);
+      const inline = [...document.querySelectorAll('script:not([src])')].length;
+      return JSON.stringify({scripts: [...new Set(scripts)], inline});
+    })()`);
+    const {scripts, inline} = JSON.parse(res);
+    out.innerHTML = `<div class="recon-item">
+      <div class="recon-key">📜 JS FILES (${scripts.length} externos + ${inline} inline)</div>
+      <div>${scripts.map(u=>`<div class="tool-tag" data-url="${esc(u)}" style="margin:2px;cursor:pointer;display:block;overflow:hidden;text-overflow:ellipsis;font-size:8px;">${esc(u)}</div>`).join('')}</div>
+    </div>`;
+    reconAttachNav(out);
+  } catch(e) { out.innerHTML = `<div class="recon-item"><div class="recon-key">ERRO</div><div class="recon-val" style="color:var(--r);">${esc(e.message)}</div></div>`; }
+}
+
+async function reconSecrets() {
+  const tab = getActiveTab();
+  const out = document.getElementById('recon-out');
+  if (!tab?.wv) { out.innerHTML = '<div class="empty-state"><span class="ico" style="font-size:22px;">⊙</span><p>Navega para um site primeiro</p></div>'; return; }
+  out.innerHTML = '<div class="empty-state"><span class="ico spin">↻</span><p>A procurar segredos...</p></div>';
+  try {
+    const src = await tab.wv.executeJavaScript('document.documentElement.outerHTML');
+    const pats = [
+      { name:'AWS Access Key',  re:/AKIA[0-9A-Z]{16}/g },
+      { name:'AWS Secret',      re:/[0-9a-zA-Z+/]{40}(?=[^a-zA-Z0-9+/]|$)/g },
+      { name:'Bearer Token',    re:/[Bb]earer\s+([A-Za-z0-9\-._~+/]+=*)/g },
+      { name:'API Key (gen.)',  re:/api[_\-]?key['":\s=]+['"]?([A-Za-z0-9_\-]{16,64})/gi },
+      { name:'Password field',  re:/password['":\s=]+['"]([^'"]{4,32})['"]/gi },
+      { name:'Private Key',     re:/-----BEGIN [A-Z ]+ PRIVATE KEY-----/g },
+      { name:'JWT Token',       re:/ey[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/g },
+      { name:'GitHub Token',    re:/gh[pousr]_[A-Za-z0-9]{36}/g },
+      { name:'Google API Key',  re:/AIza[0-9A-Za-z\-_]{35}/g },
+      { name:'Stripe Key',      re:/sk_(live|test)_[A-Za-z0-9]{24}/g },
+      { name:'Slack Token',     re:/xox[baprs]-[0-9A-Za-z\-]{10,}/g },
+      { name:'IP Address',      re:/\b(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\b/g },
+    ];
+    const found = [];
+    pats.forEach(p => { const m = src.match(p.re); if(m) found.push({name:p.name, matches:[...new Set(m)].slice(0,5)}); });
+    if (!found.length) {
+      out.innerHTML = '<div class="recon-item"><div class="recon-key">🔑 SECRETS</div><div class="recon-val" style="color:var(--g);">✓ Nenhum padrão sensível encontrado</div></div>';
+    } else {
+      out.innerHTML = `<div class="recon-item"><div class="recon-key">🔑 POSSÍVEIS SECRETS (${found.length} tipos)</div><div>${
+        found.map(f=>`<div style="margin:6px 0;"><div style="color:var(--r);font-size:9px;font-weight:700;">${esc(f.name)}</div>${
+          f.matches.map(m=>`<div style="font-family:monospace;font-size:8px;color:var(--w);padding:2px 0;word-break:break-all;">${esc(m.substring(0,80))}</div>`).join('')
+        }</div>`).join('')
+      }</div></div>`;
+    }
+  } catch(e) { out.innerHTML = `<div class="recon-item"><div class="recon-key">ERRO</div><div class="recon-val" style="color:var(--r);">${esc(e.message)}</div></div>`; }
+}
+
+async function reconComments() {
+  const tab = getActiveTab();
+  const out = document.getElementById('recon-out');
+  if (!tab?.wv) { out.innerHTML = '<div class="empty-state"><span class="ico" style="font-size:22px;">⊙</span><p>Navega para um site primeiro</p></div>'; return; }
+  out.innerHTML = '<div class="empty-state"><span class="ico spin">↻</span><p>A extrair comentários HTML...</p></div>';
+  try {
+    const src = await tab.wv.executeJavaScript('document.documentElement.outerHTML');
+    const comments = [...src.matchAll(/<!--([\s\S]*?)-->/g)]
+      .map(m => m[1].trim())
+      .filter(c => c.length > 2 && !/^\[if/.test(c))
+      .slice(0, 30);
+    if (!comments.length) {
+      out.innerHTML = '<div class="recon-item"><div class="recon-key">💬 COMENTÁRIOS HTML</div><div class="recon-val" style="color:var(--tx3);">Nenhum comentário encontrado</div></div>';
+    } else {
+      out.innerHTML = `<div class="recon-item"><div class="recon-key">💬 COMENTÁRIOS HTML (${comments.length})</div>
+        <div>${comments.map(c=>`<div style="font-family:monospace;font-size:8px;padding:4px;margin:2px 0;background:var(--sf2);border-radius:4px;color:var(--tx2);word-break:break-all;">${esc(c.substring(0,200))}</div>`).join('')}</div></div>`;
+    }
+  } catch(e) { out.innerHTML = `<div class="recon-item"><div class="recon-key">ERRO</div><div class="recon-val" style="color:var(--r);">${esc(e.message)}</div></div>`; }
+}
+
+function reconHeaders() {
+  const out = document.getElementById('recon-out');
+  const tab = getActiveTab();
+  if (!tab?.url) { out.innerHTML = '<div class="empty-state"><span class="ico" style="font-size:22px;">⊙</span><p>Navega para um site primeiro</p></div>'; return; }
+  // Show captured request/response from the capture panel
+  const captured = window._capturedReqs || [];
+  const forUrl = captured.filter(r => r.url && tab.url && r.url.startsWith(getDomain(tab.url) ? new URL(tab.url).origin : tab.url));
+  const req = forUrl.length ? forUrl[forUrl.length-1] : captured[captured.length-1];
+  if (!req) {
+    out.innerHTML = '<div class="recon-item"><div class="recon-key">📡 HEADERS</div><div class="recon-val" style="color:var(--tx3);">Activa o CAPTURAR e recarrega a página para ver os headers.</div></div>';
+    return;
+  }
+  const hdrs = (req.requestHeaders || req.headers || {});
+  out.innerHTML = `<div class="recon-item"><div class="recon-key">📡 REQUEST HEADERS — ${esc(req.url||'').substring(0,60)}</div>
+    <div>${Object.entries(hdrs).map(([k,v])=>`<div style="display:flex;gap:4px;font-size:8px;padding:2px 0;border-bottom:1px solid var(--bd);">
+      <span style="color:var(--c);min-width:120px;flex-shrink:0;">${esc(k)}</span>
+      <span style="color:var(--tx2);word-break:break-all;">${esc(String(v).substring(0,100))}</span>
+    </div>`).join('')}</div>
+  </div>`;
+}
+
+async function takeScreenshot() {
+  const tab = getActiveTab();
+  if (!tab?.wv) { showToast('Sem aba ativa para capturar'); return; }
+  try {
+    showToast('📷 A capturar screenshot...');
+    const img = await tab.wv.capturePage();
+    const dataUrl = img.toDataURL();
+    const a = document.createElement('a');
+    const ts = new Date().toISOString().replace(/[:.]/g,'-').substring(0,19);
+    a.download = `screenshot-${getDomain(tab.url)||'page'}-${ts}.png`;
+    a.href = dataUrl;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast('📷 Screenshot guardado!');
+  } catch(e) { showToast('Erro ao capturar: ' + e.message); }
 }
 </script>
 </body>
