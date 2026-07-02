@@ -1437,13 +1437,24 @@ function newTab(url = '') {
     if (tab.pendingUrl) {
       const u = tab.pendingUrl;
       tab.pendingUrl = null;
-      wv.loadURL(u).catch(() => { wv.src = u; });
+      try {
+        wv.loadURL(u).catch(() => { try { wv.src = u; } catch {} });
+      } catch { try { wv.src = u; } catch {} }
     }
     if (id === activeTabId) updateNavBtns();
   });
-  // new-window (legacy) + did-create-window (Electron 28)
-  wv.addEventListener('new-window', e => { newTab(e.url); });
-  wv.addEventListener('did-create-window', (win) => { win.close(); });
+  // new-window (legacy Electron <28) + did-create-window (Electron 28+)
+  // In Electron 28, new-window is no longer emitted for target="_blank" or window.open().
+  // did-create-window is the only event that fires — extract the URL and open it as a new tab.
+  wv.addEventListener('new-window', e => { if (e.url) newTab(e.url); });
+  wv.addEventListener('did-create-window', (win, details) => {
+    const url = details && details.url;
+    // Open the requested URL in a new browser tab; ignore blank/devtools windows
+    if (url && url !== 'about:blank' && !url.startsWith('devtools://')) {
+      newTab(url);
+    }
+    win.close(); // always close the standalone BrowserWindow Electron would create
+  });
 
   // Right-click context menu
   wv.addEventListener('context-menu', (e) => {
@@ -1580,7 +1591,11 @@ function navigate(input) {
 
   if (tab.ready) {
     // Webview webContents is initialized — loadURL() is reliable
-    tab.wv.loadURL(url).catch(() => { tab.wv.src = url; });
+    try {
+      tab.wv.loadURL(url).catch(() => { try { tab.wv.src = url; } catch {} });
+    } catch {
+      try { tab.wv.src = url; } catch {}
+    }
   } else {
     // Webview still initializing about:blank — queue URL for dom-ready
     tab.pendingUrl = url;
@@ -2888,3 +2903,4 @@ function openReconTool(tool) {
 </script>
 </body>
 </html>
+
