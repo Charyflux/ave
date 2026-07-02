@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, session, shell, Menu, dialog, net: electronNet, clipboard } = require('electron');
 const path = require('path');
 const fs   = require('fs');
+const http = require('http');
 const netModule = require('net');
 
 // Match a URL against a glob pattern (e.g. *://example.com/*)
@@ -250,7 +251,15 @@ function createWindow() {
   ipcMain.handle('toggle-capture',  (_, v) => { captureEnabled = v; return captureEnabled; });
 
   // ── IPC: Navigation ────────────────────────────────────────────────────────
-  ipcMain.handle('open-caido',      () => shell.openExternal(CAIDO_URL));
+  ipcMain.handle('open-caido', async () => {
+    const running = await new Promise(resolve => {
+      const req = http.get(CAIDO_URL, res => { res.destroy(); resolve(true); });
+      req.on('error', () => resolve(false));
+      req.setTimeout(2000, () => { req.destroy(); resolve(false); });
+    });
+    if (running) shell.openExternal(CAIDO_URL);
+    return { running };
+  });
   ipcMain.handle('open-aveone',     () => shell.openExternal(AVEONE_URL));
   ipcMain.handle('open-external',   (_, url) => shell.openExternal(url));
   ipcMain.handle('send-to-aveone',  (_, data) => {
