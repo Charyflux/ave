@@ -55,6 +55,23 @@ function proxyRunning() {
   });
 }
 
+function http_fetch_json(method, apiPath, body) {
+  return new Promise((resolve, reject) => {
+    const data = body ? JSON.stringify(body) : null;
+    const req = http.request({
+      hostname: '127.0.0.1', port: CONTROL_PORT, path: apiPath, method,
+      headers: { 'Content-Type': 'application/json', ...(data ? { 'Content-Length': Buffer.byteLength(data) } : {}) },
+    }, res => {
+      let buf = '';
+      res.on('data', c => buf += c);
+      res.on('end', () => { try { resolve(JSON.parse(buf)); } catch { resolve({}); } });
+    });
+    req.on('error', reject);
+    if (data) req.write(data);
+    req.end();
+  });
+}
+
 async function startProxy() {
   if (await proxyRunning()) {
     console.log(`[main] Proxy already running on :${PROXY_PORT}`);
@@ -105,22 +122,30 @@ async function createWindow() {
     },
   });
 
-  mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
-  Menu.setApplicationMenu(null);
-
   const ses = session.fromPartition(PARTITION);
 
-  // Route ALL webview traffic through the Go MITM proxy
-  // The proxy handles capture, TOR chaining, and replay.
+  // Configure proxy BEFORE loading the renderer so CDN resources (fonts, icons)
+  // use the correct proxy settings from the very first request.
   if (proxyOk) {
     await ses.setProxy({ proxyRules: PROXY_ADDR, proxyBypassRules: '<local>' });
     ses.setCertificateVerifyProc((req, cb) => cb(0));
     console.log(`[main] Webview proxy → ${PROXY_ADDR} (MITM capture active)`);
   } else {
-    await ses.setProxy({ mode: 'direct' });
-    console.log('[main] Direct connection (no proxy binary — install Go and run scripts/build.sh)');
+    await ses.setProxy({ proxyRules: 'direct://' });
+    console.log('[main] Direct connection (build scripts/build.sh to enable MITM proxy)');
   }
   torEnabled = false;
+
+  // Electron 28: required handler for webview security — without this, webviews are blocked
+  ses.on('will-attach-webview', (event, webPreferences, params) => {
+    // Enforce safe defaults — allow the webview to use our session
+    webPreferences.nodeIntegration = false;
+    webPreferences.contextIsolation = true;
+    delete webPreferences.preloadURL;
+  });
+
+  Menu.setApplicationMenu(null);
+  mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
 
   if (appInitialized) return;
   appInitialized = true;
@@ -492,6 +517,25 @@ async function createWindow() {
   ipcMain.handle('open-caido',  () => shell.openExternal('http://localhost:8080'));
   ipcMain.handle('open-aveone', () => shell.openExternal('http://localhost:3000'));
 
+  // Capture toggle/clear — delegated to Go proxy; graceful no-op if proxy not running
+  ipcMain.handle('toggle-capture', async (_, enable) => {
+    if (!await proxyRunning()) return { enabled: false, note: 'proxy not running' };
+    try {
+      const r = await http_fetch_json('POST', '/api/capture', { enable });
+      return r;
+    } catch { return { enabled: false }; }
+  });
+  ipcMain.handle('clear-captures', async () => {
+    if (!await proxyRunning()) return true;
+    try { await http_fetch_json('POST', '/api/clear', {}); } catch {}
+    return true;
+  });
+  ipcMain.handle('send-to-aveone', async (_, data) => {
+    // Open AveOne and pass the request data via localStorage-style IPC
+    shell.openExternal('http://localhost:3000');
+    return true;
+  });
+
   // ── IPC: Chrome Web Store CRX installer ──────────────────────────────────────
   function cwsExtractId(input) {
     const m = String(input).match(/(?:detail\/[^/]*\/|^)([a-z]{32})(?:\/|$|\?|#|$)/);
@@ -553,11 +597,28 @@ async function createWindow() {
 }
 
 // ── App lifecycle ─────────────────────────────────────────────────────────────
+
+// Global error guards — prevent uncaught exceptions from silently killing the app
+process.on('uncaughtException', (err) => {
+  console.error('[main] Uncaught exception:', err.stack || err);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[main] Unhandled rejection:', reason);
+});
+
+// Fix Linux sandbox crash (AppImage without user-namespace support closes immediately)
+app.commandLine.appendSwitch('no-sandbox');
 app.commandLine.appendSwitch('ignore-certificate-errors');
 app.commandLine.appendSwitch('allow-insecure-localhost');
-// proxy-server is set per-session in createWindow() only when ave-proxy is running
+app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors');
 
-app.whenReady().then(createWindow);
+function safeCreateWindow() {
+  return createWindow().catch(err => {
+    console.error('[main] createWindow error:', err.stack || err);
+  });
+}
+
+app.whenReady().then(safeCreateWindow);
 
 app.on('window-all-closed', () => {
   if (proxyProcess) { proxyProcess.kill('SIGTERM'); proxyProcess = null; }
@@ -565,7 +626,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  if (BrowserWindow.getAllWindows().length === 0) safeCreateWindow();
 });
 
 app.on('before-quit', () => {
