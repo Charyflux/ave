@@ -206,14 +206,21 @@ webview.active{visibility:visible;pointer-events:auto;}
   gap:28px;overflow:hidden;
 }
 #nt-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
-#nt-content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:28px;}
-.nt-logo-img{width:200px;height:200px;object-fit:contain;
-  filter:drop-shadow(0 0 24px rgba(0,229,255,.5)) drop-shadow(0 0 48px rgba(255,20,147,.3));
-  animation:ntLogoPulse 3s ease-in-out infinite;}
+#nt-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:28px;}
+.nt-logo-img{width:280px;height:280px;object-fit:contain;
+  filter:drop-shadow(0 0 32px rgba(0,229,255,.6)) drop-shadow(0 0 64px rgba(124,58,237,.4));
+  animation:ntLogoPulse 2.5s ease-in-out infinite;}
 @keyframes ntLogoPulse{
-  0%,100%{filter:drop-shadow(0 0 18px rgba(0,229,255,.5)) drop-shadow(0 0 36px rgba(255,20,147,.25));}
-  50%{filter:drop-shadow(0 0 32px rgba(0,229,255,.8)) drop-shadow(0 0 64px rgba(255,20,147,.5));}
+  0%,100%{filter:drop-shadow(0 0 24px rgba(0,229,255,.5)) drop-shadow(0 0 48px rgba(124,58,237,.3));}
+  50%{filter:drop-shadow(0 0 48px rgba(0,229,255,.9)) drop-shadow(0 0 96px rgba(124,58,237,.6));}
 }
+.nt-aurora{position:absolute;border-radius:50%;pointer-events:none;}
+.nt-aurora.a1{width:700px;height:700px;background:radial-gradient(circle,rgba(0,255,255,.18),transparent 70%);top:-200px;left:-150px;animation:ntA1 14s ease-in-out infinite;}
+.nt-aurora.a2{width:600px;height:600px;background:radial-gradient(circle,rgba(124,58,237,.14),transparent 70%);bottom:-150px;right:-100px;animation:ntA2 17s ease-in-out infinite;}
+.nt-aurora.a3{width:500px;height:500px;background:radial-gradient(circle,rgba(6,182,212,.1),transparent 70%);top:40%;left:40%;transform:translate(-50%,-50%);animation:ntA3 11s ease-in-out infinite;}
+@keyframes ntA1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(80px,60px) scale(1.12)}}
+@keyframes ntA2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-60px,-80px) scale(1.08)}}
+@keyframes ntA3{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.2)}}
 .nt-logo{font-family:'Orbitron';font-size:36px;font-weight:900;
   background:linear-gradient(135deg,var(--c),var(--m));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .nt-sub{font-size:12px;color:var(--tx3);font-family:'JetBrains Mono';letter-spacing:2px;}
@@ -809,6 +816,9 @@ webview.active{visibility:visible;pointer-events:auto;}
     <!-- webviews created dynamically -->
     <!-- new tab page -->
     <div id="newtab-page" style="display:none;">
+      <div class="nt-aurora a1"></div>
+      <div class="nt-aurora a2"></div>
+      <div class="nt-aurora a3"></div>
       <canvas id="nt-canvas"></canvas>
       <div id="nt-content">
         <img id="nt-logo-img" class="nt-logo-img" src="" alt="AveOne">
@@ -1627,66 +1637,98 @@ function showNewTabPage() {
   const img = document.getElementById('nt-logo-img');
   if (img) img.src = LOGO_SRC;
 
-  // Particle canvas animation
+  // Particle network — same system as aveone.com.br
   const canvas = document.getElementById('nt-canvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
+  const N = 90, DIST = 150, MOUSE_R = 180;
   let W, H, particles = [], animId;
+  let mouse = { x: -999, y: -999 };
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
 
   function resize() {
     W = canvas.width  = canvas.offsetWidth;
     H = canvas.height = canvas.offsetHeight;
   }
 
-  function mkParticle() {
-    const cyan = Math.random() > 0.5;
+  function mkParticle(rand) {
     return {
-      x: Math.random() * W,
-      y: Math.random() * H,
-      r: Math.random() * 1.6 + 0.4,
-      dx: (Math.random() - 0.5) * 0.3,
-      dy: (Math.random() - 0.5) * 0.3,
-      alpha: Math.random() * 0.6 + 0.1,
-      dalpha: (Math.random() - 0.5) * 0.004,
-      color: cyan ? '0,229,255' : '255,20,147',
+      x:    rand ? Math.random() * W : (Math.random() < .5 ? 0 : W),
+      y:    rand ? Math.random() * H : Math.random() * H,
+      vx:   (Math.random() - .5) * .5,
+      vy:   (Math.random() - .5) * .5,
+      r:    Math.random() * 1.5 + .5,
+      a:    Math.random() * .4 + .05,
+      life: Math.random() * 0.3 + 0.7,
     };
   }
 
   function initParticles() {
-    particles = Array.from({ length: 120 }, mkParticle);
+    particles = Array.from({ length: N }, () => mkParticle(true));
   }
 
   function draw() {
     ctx.clearRect(0, 0, W, H);
-    // Radial glow at center bottom
-    const grd = ctx.createRadialGradient(W/2, H, 0, W/2, H, H*0.9);
-    grd.addColorStop(0, 'rgba(124,58,237,.35)');
-    grd.addColorStop(1, 'rgba(7,7,15,0)');
-    ctx.fillStyle = grd;
-    ctx.fillRect(0, 0, W, H);
 
+    // Draw connections between nearby particles
+    for (let i = 0; i < particles.length; i++) {
+      const pi = particles[i];
+      for (let j = i + 1; j < particles.length; j++) {
+        const pj = particles[j];
+        const dx = pi.x - pj.x, dy = pi.y - pj.y;
+        const d  = Math.sqrt(dx*dx + dy*dy);
+        if (d < DIST) {
+          const a = (1 - d / DIST) * 0.12;
+          ctx.beginPath();
+          ctx.moveTo(pi.x, pi.y);
+          ctx.lineTo(pj.x, pj.y);
+          ctx.strokeStyle = 'rgba(0,255,255,' + a + ')';
+          ctx.lineWidth = .5;
+          ctx.stroke();
+        }
+      }
+      // Lines to mouse
+      const dx = pi.x - mouse.x, dy = pi.y - mouse.y;
+      const d  = Math.sqrt(dx*dx + dy*dy);
+      if (d < MOUSE_R * 1.5) {
+        const a = (1 - d / (MOUSE_R * 1.5)) * 0.5;
+        ctx.beginPath();
+        ctx.moveTo(pi.x, pi.y);
+        ctx.lineTo(mouse.x, mouse.y);
+        ctx.strokeStyle = 'rgba(0,255,255,' + a + ')';
+        ctx.lineWidth = .7;
+        ctx.stroke();
+      }
+    }
+
+    // Draw + update particles
     particles.forEach(p => {
-      p.x += p.dx; p.y += p.dy;
-      p.alpha += p.dalpha;
-      if (p.alpha <= 0.05 || p.alpha >= 0.75) p.dalpha *= -1;
-      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
-      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+      // Mouse repulsion
+      const dx = p.x - mouse.x, dy = p.y - mouse.y;
+      const d  = Math.sqrt(dx*dx + dy*dy);
+      if (d < MOUSE_R) {
+        const f = (MOUSE_R - d) / MOUSE_R * .6;
+        p.vx += dx / d * f;
+        p.vy += dy / d * f;
+      }
+      p.vx *= 0.985; p.vy *= 0.985;
+      p.x += p.vx;  p.y += p.vy;
+      if (p.x < -10) p.x = W + 10;
+      if (p.x > W+10) p.x = -10;
+      if (p.y < -10) p.y = H + 10;
+      if (p.y > H+10) p.y = -10;
 
-      // Glow
-      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 6);
-      g.addColorStop(0, );
-      g.addColorStop(1, );
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r * 6, 0, Math.PI * 2);
-      ctx.fillStyle = g;
-      ctx.fill();
-
-      // Core dot
+      // Color cycle cyan ↔ magenta (same as aveone.com.br)
+      const g = Math.sin(Date.now() * 0.001 + p.life * 6);
+      const r = Math.floor(lerp(0, 180, (g+1)/2));
+      const gb = Math.floor(lerp(255, 80, (g+1)/2));
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = ;
+      ctx.fillStyle = 'rgba(' + r + ',' + gb + ',255,' + p.a + ')';
       ctx.fill();
     });
+
     animId = requestAnimationFrame(draw);
   }
 
@@ -1696,6 +1738,14 @@ function showNewTabPage() {
     if (animId) cancelAnimationFrame(animId);
     draw();
   }
+
+  // Mouse tracking for particle interaction
+  document.getElementById('newtab-page').addEventListener('mousemove', e => {
+    mouse.x = e.clientX; mouse.y = e.clientY;
+  });
+  document.getElementById('newtab-page').addEventListener('mouseleave', () => {
+    mouse.x = -999; mouse.y = -999;
+  });
 
   // Start when new tab page is shown, pause when hidden
   const observer = new MutationObserver(() => {
