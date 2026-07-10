@@ -103,12 +103,15 @@ html,body{
 }
 .nav-btn{
   width:28px;height:28px;border-radius:7px;border:none;
-  background:transparent;color:var(--tx3);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;font-size:12px;
+  background:transparent;color:var(--tx2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:13px;
   transition:all .15s;flex-shrink:0;
 }
-.nav-btn:hover:not(:disabled){background:rgba(255,255,255,.06);color:var(--tx);}
-.nav-btn:disabled{opacity:.25;cursor:not-allowed;}
+.nav-btn:hover:not(:disabled){background:rgba(255,255,255,.09);color:var(--tx);transform:scale(1.08);}
+.nav-btn:active:not(:disabled){transform:scale(.93);}
+.nav-btn:disabled{opacity:.2;cursor:not-allowed;}
+.nav-btn.tool{color:var(--c);font-size:12px;}
+.nav-btn.tool:hover:not(:disabled){color:#fff;background:rgba(0,229,255,.12);}
 
 #url-bar-wrap{
   flex:1;display:flex;align-items:center;gap:7px;
@@ -731,8 +734,8 @@ webview.active{visibility:visible;pointer-events:auto;}
   <div style="flex:1;min-width:20px;"></div>
   <div class="win-controls">
     <button class="win-btn" onclick="window.ave.minimize()" title="Minimizar"><span class="ico">−</span></button>
-    <button class="win-btn" id="btn-max" onclick="toggleMax()" title="Maximizar"><span class="ico" id="max-icon"></span></button>
-    <button class="win-btn close" onclick="window.ave.close()" title="Fechar"><span class="ico"></span></button>
+    <button class="win-btn" id="btn-max" onclick="toggleMax()" title="Maximizar"><span class="ico" id="max-icon">□</span></button>
+    <button class="win-btn close" onclick="window.ave.close()" title="Fechar"><span class="ico">✕</span></button>
   </div>
 </div>
 
@@ -753,11 +756,11 @@ webview.active{visibility:visible;pointer-events:auto;}
   <div class="sep"></div>
 
   <!-- Quick tools -->
-  <button class="nav-btn" onclick="openDevTools()" title="DevTools (F12)"><span class="ico">&gt;_</span></button>
-  <button class="nav-btn" onclick="copyCurrentUrl()" title="Copiar URL"><span class="ico">⎘</span></button>
-  <button class="nav-btn" onclick="takeScreenshot()" title="Screenshot da página (Ctrl+Shift+S)"><span class="ico">📷</span></button>
-  <button class="nav-btn" id="btn-scope" onclick="toggleScope()" title="Verificar scope" style="color:var(--tx3)"><span class="ico">⊙</span></button>
-  <button class="nav-btn" id="btn-ext-quick" onclick="quickLoadExt()" title="Adicionar extensão Chrome (MV2)" style="color:var(--m);"><span class="ico">⚙</span></button>
+  <button class="nav-btn tool" onclick="openDevTools()" title="DevTools (F12)"><span class="ico">&gt;_</span></button>
+  <button class="nav-btn tool" onclick="copyCurrentUrl()" title="Copiar URL"><span class="ico">⎘</span></button>
+  <button class="nav-btn tool" onclick="takeScreenshot()" title="Screenshot (Ctrl+Shift+S)"><span class="ico">📷</span></button>
+  <button class="nav-btn tool" id="btn-scope" onclick="toggleScope()" title="Scope"><span class="ico">⊙</span></button>
+  <button class="nav-btn tool" id="btn-ext-quick" onclick="quickLoadExt()" title="Adicionar extensão"><span class="ico" style="color:var(--m);">⚙</span></button>
 
   <!-- Extension icons bar — preenchido dinamicamente -->
   <div id="ext-icons-bar" style="display:flex;align-items:center;gap:2px;"></div>
@@ -2312,7 +2315,13 @@ function showDownloadToast(msg) {
 
 function copyCurrentUrl() {
   const url = getActiveTab()?.url;
-  if (url) navigator.clipboard.writeText(url);
+  if (!url) return;
+  navigator.clipboard.writeText(url).then(() => showToast('URL copiado!')).catch(() => {
+    const inp = document.createElement('input');
+    inp.value = url; document.body.appendChild(inp);
+    inp.select(); document.execCommand('copy'); inp.remove();
+    showToast('URL copiado!');
+  });
 }
 
 function toggleMax() { window.ave.maximize(); }
