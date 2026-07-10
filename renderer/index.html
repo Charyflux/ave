@@ -238,15 +238,50 @@ webview.active{visibility:visible;pointer-events:auto;}
   border-radius:8px;color:#07070f;padding:6px 14px;cursor:pointer;
   font-family:'Orbitron';font-size:9px;font-weight:700;
 }
-.nt-bookmarks{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;max-width:600px;}
+.nt-bookmarks{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:680px;}
 .nt-bk{
-  display:flex;flex-direction:column;align-items:center;gap:6px;
-  padding:16px 20px;background:var(--sf2);border:1px solid var(--bd);
-  border-radius:14px;cursor:pointer;transition:all .2s;min-width:90px;
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+  padding:18px 22px;min-width:88px;
+  background:rgba(255,255,255,.035);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:16px;cursor:pointer;
+  transition:all .22s cubic-bezier(.34,1.56,.64,1);
+  position:relative;overflow:hidden;
 }
-.nt-bk:hover{border-color:var(--c);transform:translateY(-2px);}
-.nt-bk .icon{font-size:22px;}
-.nt-bk .name{font-size:10px;color:var(--tx2);}
+.nt-bk::before{
+  content:'';position:absolute;inset:0;border-radius:16px;
+  background:color-mix(in srgb,var(--bk-c,var(--c)) 0%,transparent);
+  transition:background .22s;
+}
+.nt-bk:hover{
+  border-color:var(--bk-c,var(--c));
+  transform:translateY(-4px) scale(1.04);
+  box-shadow:0 10px 30px color-mix(in srgb,var(--bk-c,var(--c)) 22%,transparent),
+             0 0 0 1px color-mix(in srgb,var(--bk-c,var(--c)) 30%,transparent);
+}
+.nt-bk:hover::before{background:color-mix(in srgb,var(--bk-c,var(--c)) 9%,transparent);}
+.nt-bk:active{transform:translateY(-2px) scale(.98);}
+.nt-bk .icon{font-size:26px;position:relative;z-index:1;transition:transform .2s;}
+.nt-bk:hover .icon{transform:scale(1.15);}
+.nt-bk .name{
+  font-size:9px;color:var(--tx3);
+  font-family:'Orbitron';font-weight:700;letter-spacing:.8px;
+  position:relative;z-index:1;
+  transition:color .2s;
+}
+.nt-bk:hover .name{color:var(--bk-c,var(--c));}
+.nt-bk .bk-sub{
+  font-size:7.5px;font-family:'JetBrains Mono';letter-spacing:1px;
+  color:var(--tx3);opacity:.6;position:relative;z-index:1;
+  transition:color .2s,opacity .2s;
+}
+.nt-bk.bk-tor-on{
+  border-color:var(--bk-c,#22c55e);
+  background:rgba(34,197,94,.08);
+  box-shadow:0 0 20px rgba(34,197,94,.2);
+}
+.nt-bk.bk-tor-on .name,.nt-bk.bk-tor-on .bk-sub{color:var(--bk-c,#22c55e);opacity:1;}
+.nt-bk.bk-tor-on .icon{filter:drop-shadow(0 0 8px #22c55e);}
 
 /* ── TOOLS PANEL ── */
 #tools-panel{
@@ -1275,14 +1310,14 @@ let scopeDomains = [];
 
 // Default bookmarks
 const BOOKMARKS = [
-  { name:'HackerOne',  url:'https://hackerone.com',         icon:'🏆' },
-  { name:'Bugcrowd',   url:'https://bugcrowd.com',          icon:'🐛' },
-  { name:'OWASP',      url:'https://owasp.org',             icon:'🛡️' },
-  { name:'AveBounty',  url:'https://aveone.com.br/avebounty/', icon:'⚡' },
-  { name:'CVE',        url:'https://cve.mitre.org',         icon:'🔍' },
-  { name:'Shodan',     url:'https://shodan.io',             icon:'📡' },
-  { name:'GTFOBins',   url:'https://gtfobins.github.io',    icon:'💀' },
-  { name:'PayloadAll', url:'https://payloadallthethings.com',icon:'🎯'},
+  { name:'AVEONE',    url:'https://www.aveone.com.br',           icon:'🐞', bkc:'#00e5ff' },
+  { name:'ProtonVPN', url:'https://protonvpn.com/pt',            icon:'🔐', bkc:'#6d4aff' },
+  { name:'OWASP',     url:'https://owasp.org',                   icon:'🛡️' },
+  { name:'AveBounty', url:'https://aveone.com.br/avebounty/',    icon:'⚡', bkc:'#00e5ff' },
+  { name:'CVE',       url:'https://cve.mitre.org',               icon:'🔍' },
+  { name:'Shodan',    url:'https://shodan.io',                   icon:'📡' },
+  { name:'GTFOBins',  url:'https://gtfobins.github.io',          icon:'💀' },
+  { name:'TOR',       action:'tor',                              icon:'🧅', bkc:'#22c55e' },
 ];
 
 // ── Webview size sync ────────────────────────────────────────────────────────
@@ -2725,12 +2760,34 @@ function saveNote() {
 // ── BOOKMARKS ─────────────────────────────────────────────────────────────────
 function renderBookmarks() {
   const wrap = document.getElementById('nt-bookmarks');
-  wrap.innerHTML = BOOKMARKS.map(b => `
-    <div class="nt-bk" onclick="navigate('${b.url}')">
+  wrap.innerHTML = BOOKMARKS.map(b => {
+    const cs = b.bkc ? ` style="--bk-c:${b.bkc}"` : '';
+    if (b.action === 'tor') {
+      return `<div class="nt-bk" id="nt-bk-tor" onclick="ntTorToggle()"${cs}>
+        <div class="icon">${b.icon}</div>
+        <div class="name">${b.name}</div>
+        <div class="bk-sub" id="nt-tor-sub">INATIVO</div>
+      </div>`;
+    }
+    return `<div class="nt-bk" onclick="navigate('${b.url}')"${cs}>
       <div class="icon">${b.icon}</div>
       <div class="name">${b.name}</div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
+  _syncNtTorBtn();
+}
+
+function _syncNtTorBtn() {
+  const el  = document.getElementById('nt-bk-tor');
+  const sub = document.getElementById('nt-tor-sub');
+  if (!el || !sub) return;
+  el.classList.toggle('bk-tor-on', torActive);
+  sub.textContent = torActive ? 'ATIVO' : 'INATIVO';
+}
+
+async function ntTorToggle() {
+  await torToggle();  // existing function handles everything
+  _syncNtTorBtn();
 }
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
@@ -2950,6 +3007,8 @@ async function torToggle() {
     showToast('TOR desactivado — conexão directa', 'warn');
     refreshIp();
   }
+  // Keep new-tab TOR card in sync when toggled from toolbar
+  _syncNtTorBtn();
 }
 
 async function torNewIp() {
