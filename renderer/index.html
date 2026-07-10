@@ -2123,15 +2123,38 @@ function removeBookmark(url) {
   updateStarIcon(getActiveTab()?.url);
 }
 
-function renameBookmark(url) {
+function renameBookmark(url, newName) {
   const bk = getBookmarks();
   const b = bk.find(x => x.url === url); if (!b) return;
-  const name = prompt('Nome do favorito:', b.name);
-  if (name === null) return;
-  b.name = name.trim() || getDomain(url);
+  b.name = (newName || '').trim() || getDomain(url);
   setBookmarks(bk);
   renderBookmarksBar();
 }
+
+function startInlineRename(chip, url, currentName) {
+  const span = chip.querySelector('span');
+  const inp = document.createElement('input');
+  inp.value = currentName;
+  inp.style.cssText = 'width:90px;background:var(--sf3);border:1px solid var(--c);border-radius:4px;color:var(--tx);font-size:11px;padding:0 4px;outline:none;';
+  span.replaceWith(inp);
+  inp.focus(); inp.select();
+  const commit = () => renameBookmark(url, inp.value);
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  { e.preventDefault(); commit(); }
+    if (e.key === 'Escape') { inp.replaceWith(span); }
+  });
+  inp.addEventListener('blur', commit);
+}
+
+window.ave.on('bookmark-action', (action, data) => {
+  if (action === 'remove') removeBookmark(data.url);
+  if (action === 'rename') {
+    const chips = document.querySelectorAll('#bookmarks-bar-items .bk-chip');
+    chips.forEach(chip => {
+      if (chip.title.includes(data.url)) startInlineRename(chip, data.url, data.name);
+    });
+  }
+});
 
 function renderBookmarksBar() {
   const bar   = document.getElementById('bookmarks-bar');
@@ -2158,10 +2181,7 @@ function renderBookmarksBar() {
     chip.addEventListener('click', () => navigate(b.url));
     chip.addEventListener('contextmenu', (e) => {
       e.preventDefault();
-      const action = prompt('Editar "' + b.name + '":\nEscreve "remover" para apagar, ou um novo nome para renomear.', b.name);
-      if (action === null) return;
-      if (action.trim().toLowerCase() === 'remover') removeBookmark(b.url);
-      else { renameBookmark(b.url); }
+      window.ave.showBookmarkMenu({ url: b.url, name: b.name });
     });
     items.appendChild(chip);
   });

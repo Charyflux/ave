@@ -35,7 +35,8 @@ contextBridge.exposeInMainWorld('ave', {
   removeCookie:    (url, name) => ipcRenderer.invoke('remove-cookie', url, name),
 
   // Context menu
-  showContextMenu: (params) => ipcRenderer.send('show-context-menu', params),
+  showContextMenu:  (params) => ipcRenderer.send('show-context-menu', params),
+  showBookmarkMenu: (data)   => ipcRenderer.send('show-bookmark-menu', data),
 
   // Chrome Extensions (MV2, unpacked)
   extLoad:         (extPath) => ipcRenderer.invoke('ext-load', extPath),
@@ -65,7 +66,7 @@ contextBridge.exposeInMainWorld('ave', {
       'request-captured', 'response-captured', 'window-state',
       'open-devtools-for', 'tor-ip-changed',
       'ctx-action', 'download-started', 'download-done',
-      'permission-denied-toast',
+      'permission-denied-toast', 'bookmark-action',
     ];
     if (!ok.includes(ch)) return;
     // ipcRenderer.on() needs the exact wrapper instance to unregister later —

@@ -208,6 +208,17 @@ function createWindow() {
     Menu.buildFromTemplate(tpl).popup({ window: mainWindow });
   });
 
+  // ── Context menu (right-click on bookmark chip) ───────────────────────────
+  ipcMain.on('show-bookmark-menu', (event, { url, name }) => {
+    const send = (action, data) => event.sender.send('bookmark-action', action, data || {});
+    Menu.buildFromTemplate([
+      { label: `⭐ ${name}`, enabled: false },
+      { type: 'separator' },
+      { label: 'Renomear', click: () => send('rename', { url, name }) },
+      { label: 'Remover',  click: () => send('remove', { url }) },
+    ]).popup({ window: mainWindow });
+  });
+
   // ── Request interception ────────────────────────────────────────────────────
   ses.webRequest.onBeforeSendHeaders({ urls: ['<all_urls>'] }, (details, callback) => {
     if (captureEnabled && !['image','stylesheet','font'].includes(details.resourceType)) {
