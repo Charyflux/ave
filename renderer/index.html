@@ -1467,6 +1467,8 @@ function newTab(url = '') {
     if (e.url === 'about:blank') return; // ignore blank init
     tab.url = e.url;
     if (id === activeTabId) {
+      // Webview navigated to real content — make sure it's visible
+      _showWebview(tab);
       document.getElementById('url-input').value = e.url;
       updateSecIcon(e.url);
       updateStarIcon(e.url);
@@ -1480,7 +1482,10 @@ function newTab(url = '') {
   });
   wv.addEventListener('did-navigate-in-page', e => {
     tab.url = e.url;
-    if (id === activeTabId) document.getElementById('url-input').value = e.url;
+    if (id === activeTabId) {
+      document.getElementById('url-input').value = e.url;
+      updateNavBtns(); // SPA navigation also updates back/forward state
+    }
   });
   wv.addEventListener('page-title-updated', e => {
     tab.title = e.title || 'Sem título';
@@ -1565,15 +1570,17 @@ function newTab(url = '') {
 
 function activateTab(id) {
   activeTabId = id;
+  const tab = tabs.find(t => t.id === id);
+  const isNew = !tab?.url;
+
+  // Active webview = current tab AND has a real URL (not new-tab state)
   tabs.forEach(t => {
-    t.wv.classList.toggle('active', t.id === id);
+    t.wv.classList.toggle('active', t.id === id && !isNew);
   });
   // Re-sync all webview sizes whenever a tab is activated
   requestAnimationFrame(syncWebviewSizes);
-  const tab = getActiveTab();
   if (!tab) return;
 
-  const isNew = !tab.url;
   document.getElementById('newtab-page').style.display = isNew ? 'flex' : 'none';
 
   if (tab.url) {
@@ -1782,13 +1789,11 @@ function navigate(input) {
   const tab = getActiveTab();
   if (!tab) return;
   tab.url = url;
-  document.getElementById('newtab-page').style.display = 'none';
+  _showWebview(tab);   // ensure webview is visible before loading
 
   if (tab.ready) {
-    // Webview webContents is initialized — loadURL() is reliable
     tab.wv.loadURL(url).catch(() => { tab.wv.src = url; });
   } else {
-    // Webview still initializing about:blank — queue URL for dom-ready
     tab.pendingUrl = url;
   }
 
@@ -1804,10 +1809,38 @@ function ntSearch() {
   document.getElementById('nt-search-input').value = '';
 }
 
-function navBack()    { getActiveTab()?.wv?.goBack(); }
-function navForward() { getActiveTab()?.wv?.goForward(); }
+function navBack() {
+  const t = getActiveTab();
+  if (!t || !t.wv.canGoBack?.()) return;
+  _showWebview(t);
+  t.wv.goBack();
+}
+function navForward() {
+  const t = getActiveTab();
+  if (!t || !t.wv.canGoForward?.()) return;
+  _showWebview(t);
+  t.wv.goForward();
+}
 function navReload()  { getActiveTab()?.wv?.reload(); }
-function navHome()    { const t = getActiveTab(); if(t){t.url=''; t.wv.stop(); showNewTabPage(); document.getElementById('url-input').value=''; updateStarIcon(''); renderTabs();} }
+function navHome() {
+  const t = getActiveTab();
+  if (!t) return;
+  t.url = '';
+  t.wv.stop();
+  t.wv.loadURL('about:blank').catch(() => {});
+  t.wv.classList.remove('active');   // hide webview so newtab shows
+  showNewTabPage();
+  document.getElementById('url-input').value = '';
+  updateStarIcon('');
+  updateNavBtns();
+  renderTabs();
+}
+// Show webview for the given tab object and hide the newtab overlay
+function _showWebview(t) {
+  if (!t) return;
+  t.wv.classList.add('active');
+  document.getElementById('newtab-page').style.display = 'none';
+}
 
 function updateNavBtns() {
   const t = getActiveTab();
